@@ -1,0 +1,26 @@
+Package: epic
+Type: Package
+Title: Integrative Analysis and Visualization of Epigenomic Sequencing Data
+Version: 0.99.0
+Date: 2016-4-6
+Author: Zuguang Gu
+Maintainer: Zuguang Gu <z.gu@dkfz.de>
+Depends: R (>= 3.1.2), IRanges, GenomicRanges, GenomicFeatures, AnnotationDbi, 
+    GlobalOptions (>= 0.0.10)
+Imports: circlize (>= 0.3.4), GetoptLong, parallel, ComplexHeatmap (>= 1.11.6),
+    EnrichedHeatmap (>= 1.1.5), matrixStats, GenomeInfoDb, S4Vectors,
+    Gviz, HilbertCurve, gtrellis (>= 1.3.4), numbers,
+    ConsensusClusterPlus, ggplot2, Rcpp, memoise, 
+    graphics, utils, stats, grDevices, RColorBrewer, grid
+Suggests: testthat (>= 0.3), knitr, markdown, rGREAT
+VignetteBuilder: knitr
+Description: Many functions for analyzing methylome, transcriptome and 
+    histone modifications are provided.
+biocViews: Software, Visualization, Sequencing, Epigenetics, Coverage
+URL: https://github.com/jokergoo/epic
+SystemRequirements: Perl, bedtools
+License: GPL (>= 2)
+Packaged: 2016-4-6 00:00:00 UTC; Administrator
+Repository: Bioconductor
+Date/Publication: 2016-4-6 00:00:00
+LinkingTo: Rcpp

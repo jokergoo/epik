@@ -1,0 +1,89 @@
+
+# == title
+# Wrapper of system calls in which input and output are all table-like files
+# 
+# == param
+# -cmd     shell command
+# -envir   environment where to look for variables encoded in ``cmd``
+# -verbose whether print messages
+#
+# == details
+# This function (system + data frame) provides a convinient way to invoke
+# system calls in R. Since most of system calls expect tables as inputs and outputs, 
+# `systemdf` does following things step by step:
+#
+# - use backtick to mark variables which are data frames or other variables which can be converted
+#    to data frames by `base::as.data.frame`
+# - extract data frames
+# - write data frames into temporary files 
+# - replace variables names with paths that correspond to temporary files
+# - make the system call 
+# - finally send back the output by piping back to R
+#
+# A simple example is as follows:
+#
+#     bed1 = circlize::generateRandomBed(nr = 1000)
+#     bed2 = circlize::generateRandomBed(nr = 1000)
+#     df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")
+#
+# == value
+# A data frame. Sometimes column names may be lost.
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
+# == example
+# if(Sys.info()["sysname"] \%in\% c("Linux", "Darwin")) {
+#     df = data.frame(x = sample(1:10, 10), y = sample(11:20, 10))
+#     systemdf("sort -k1,1n `df`")
+# }
+systemdf = function(cmd, envir = parent.frame(), verbose = FALSE) {
+	
+	op = qq.options(READ.ONLY = FALSE)
+	qq.options(code.pattern = "@\\{CODE\\}")
+	
+	tmpdir = tempdir()
+	if(length(grep("^.*`.+?`.*$", cmd))) {
+		re = gregexpr("`.+?`", cmd)[[1]]
+		gr = character(length(re))
+		file = character(length(re))
+		cmd2 = cmd
+		matched_name = NULL
+		for(i in seq_along(re)) {
+			gr[i] = substr(cmd, as.numeric(re)[i]+1, as.numeric(re)[i] + attr(re, "match.length")[i] - 2)
+			if(gr[i] %in% matched_name) {
+				next
+			}
+			matched_name = c(matched_name, gr[i])
+			grv = eval(parse(text = gr[i]), envir = envir)
+			file[i] = paste(tempfile(fileext = ".bed", tmpdir = tmpdir), sep = "/")
+			# just in case `grv` is a GRanges object
+			write.table(as.data.frame(grv), file = file[i], sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+			if(verbose) message(qq("writing @{gr[i]} into temporary file: @{file[i]}\n"))
+			cmd2 = gsub(qq("`@{gr[i]}`"), file[i], cmd2, fixed = TRUE)
+		}
+		if(verbose) message(qq("Command: @{cmd2}\n"))
+		eo = try(tb <- read.table(pipe(cmd2), sep = "\t", stringsAsFactors = FALSE, flush = TRUE, comment.char = ""))
+		file = file[!is.null(file)]
+		file = file[file != ""]
+		file.remove(file)
+
+		if(class(eo) == "try-error") {
+			stop(eo)
+		}
+	} else {
+		tb <- read.table(pipe(cmd), sep = "\t", stringsAsFactors = FALSE, flush = TRUE, comment.char = "")
+	}
+
+	# if(class(eo) == "try-error") {
+	# 	# empty pipe, it is not an error
+	# 	# if(grepl("no lines available in input", eo)) {
+	# 	# 	tb = data.frame(character(0), numeric(0), numeric(0))
+	# 	# } else {
+	# 		stop(msg)
+	# 	# }
+	# }
+	
+	qq.options(op)
+	return(tb)
+}
