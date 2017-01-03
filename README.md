@@ -1,6 +1,6 @@
-## epic
+## epik
 
-The **epic** package provides tools for integrative analysis and visualization of epigenomic sequencing data such as whole genome bisulfite sequencing, ChIP-Seq and RNA-Seq.
+The **epik** package provides tools for integrative analysis and visualization of epigenomic sequencing data such as whole genome bisulfite sequencing, ChIP-Seq and RNA-Seq.
 
 ### Functions that deal with general genomic regions
 
