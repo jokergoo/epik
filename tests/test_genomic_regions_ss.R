@@ -35,6 +35,6 @@ genomic_features = list(
 strand(genomic_features[[1]]) = "*"
 strand(genomic_features[[2]]) = "*"
 
-subgroup_specificity_heatmap(res, genomic_features = genomic_features)
+heatmap_subgroup_specificity(res, genomic_features = genomic_features)
 
 }

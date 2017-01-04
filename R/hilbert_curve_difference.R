@@ -5,7 +5,28 @@ generate_diff_color_fun = function(x) {
 	colorRamp2(c(-max_q, 0, max_q), c("#3794bf", "#FFFFFF", "#df8640"))
 }
 
-
+# == title
+# Visualize methylation by Hilbert curve
+#
+# == param
+# -subgroup subgroup information which corresponds to sample IDs stored in `methylation_hooks`.
+#      The value can be a vector with same length as sample IDs or a named vector that names are sample IDs.
+# -comparison if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference
+#        The value is a vector of length of two and the difference is calculated as subgroup[1] - subgroup[2]
+# -chromosome a vector fo chromosome
+# -species species
+# -type Three types of visualization supported, see "details" section
+# 
+# == details
+# There are three types of visualization methods:
+#
+# -global_mean the mean methylation averaged from all samples
+# -subgroup_mean the mean methylation averaged in every subgroup
+# -difference the difference of methylation in two subgroups
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome = paste0("chr", 1:22), 
 	species = "hg19", type = c("global_mean", "subgroup_mean", "difference")) {
 
@@ -39,10 +60,14 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 	# mean methylaiton by 1kb window, compared to histone modifications which are also segmented by 1kb window
 	qqcat("calculating mean methylation in every 1kb window\n")
 	gr_meth = get_mean_methylation_in_genomic_features(sample_id, chromosome = chromosome, 
-		gf_list = list(chromGr_1kb_window = chromGr_1kb_window), filter_fun = function(s) TRUE)[[1]]
+		gf_list = list(chromGr_1kb_window = chromGr_1kb_window))[[1]]
 	mat = mcols(gr_meth)
 	mat = as.matrix(mat[, -ncol(mat)])
 	mcols(gr_meth) = NULL
+
+	l = apply(mat, 1, function(x) sum(is.na(x))/length(x) < 0.1)
+	mat = mat[l, ]
+	gr_meth = gr_meth[l]
 
 	for(i in seq_along(le)) {
 		qqcat("calculating mean methylation in subgroup @{le[i]}\n")
@@ -117,7 +142,31 @@ average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(a
 }
 
 
-
+# == title
+# Visualize ChIP-Seq signals by Hilbert curve
+#
+# == param
+# -mark name of the histone mark, should also be supported in `chipseq_hooks`
+# -subgroup subgroup information which corresponds to sample IDs stored in `methylation_hooks`.
+#      The value should be a named vector that names are sample IDs.
+# -comparison if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference
+#        The value is a vector of length of two and the difference is calculated as subgroup[1] - subgroup[2]
+# -chromosome a vector fo chromosome
+# -species species
+# -type four types of visualization supported, see "details" section
+# -density_column the column name of the signal defined in `chipseq_hook`$peak
+# 
+# == details
+# There are four types of visualization methods:
+#
+# -global_mean the mean signal averaged from all samples
+# -subgroup_mean the mean signal averaged in every subgroup
+# -abs_difference the absolute difference of signal in two subgroups
+# -rel_difference the relative difference in two subgroups. The value is calculated as absolute difference divided by mean singal.
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromosome = paste0("chr", 1:22), 
 	species = "hg19", type = c("global_mean", "subgroup_mean", "abs_difference", "rel_difference"),
 	density_column = "density") {
