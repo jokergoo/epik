@@ -1,4 +1,20 @@
+CorrelatedRegions = setClass("CorrelatedRegions",
+	slots = c(getClass("GRanges")@slots,
+		      list(parameters = "list")),
+	contains = "GRanges")
 
+setMethod(f = "[",
+	signature = "CorrelatedRegions",
+	definition = function() {
+	callNextMethod()
+})
+
+setMethod(f = "c",
+	signature = "CorrelatedRegions",
+	definition = function() {
+
+	callNextMethod
+})
 
 # title
 # correlated regions in extended gene model
