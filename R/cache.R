@@ -1,0 +1,1 @@
+getChromInfoFromUCSC = memoise(GenomicFeatures::getChromInfoFromUCSC)
