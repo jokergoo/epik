@@ -7,6 +7,7 @@ subgroup = c(rep("group1", 10), rep("group2", 17))
 names(subgroup) = c("E003", "E004", "E005", "E006", "E007", "E011", "E012", "E013", "E016",
               "E024", "E050", "E065", "E066", "E071", "E079", "E094", "E095", "E096",
               "E097", "E098", "E100", "E104", "E105", "E106", "E109", "E112", "E113")
+sample_id = names(subgroup)
 
 methylation_hooks$get_by_chr = function(chr) {
     obj = readRDS(qq("@{BASE_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))

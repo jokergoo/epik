@@ -1,60 +1,52 @@
-CorrelatedRegions = setClass("CorrelatedRegions",
-	slots = c(getClass("GRanges")@slots,
-		      list(parameters = "list")),
-	contains = "GRanges")
-
-setMethod(f = "[",
-	signature = "CorrelatedRegions",
-	definition = function() {
-	callNextMethod()
-})
-
-setMethod(f = "c",
-	signature = "CorrelatedRegions",
-	definition = function() {
-
-	callNextMethod
-})
 
 # title
-# correlated regions in extended gene model
+# correlated regions in a specified regio
 #
 # == param
-# -site CpG sites, a vector
+# -site position of CpG sites, should be sorted
 # -meth methylation matrix corresponding to ``site``
-# -cov coverage
-# -expr expression for current gene
-# -chr chromosome
+# -expr expression for the associated gene
+# -chr chromosome, used to construct the `GenomicRanges::GRanges` object
+# -cov CpG coverage matrix
 # -cov_cutoff cutoff for coverage
 # -min_dp minimal number of non-NA values for calculating correlations
 # -cor_method method for calcualting correlations
 # -window_size how many CpG sites in a window
-# -factor subtype
+# -subgroup subgroup information
 # -max_width maximum width of a window
 #
+# == details
+# ``cov`` and ``cov_cutoff`` should be set when the methylation is unsmoothed, because
+# for the unsmoothed data, the methylation rate is not unreliable when the CpG coverage is low.
+# 
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-correlated_regions_per_gene = function(site, meth, cov, expr, chr, cov_cutoff = 3, min_dp = 4,
-	cor_method = "spearman", window_size = 5, factor = NULL, max_width = 10000) {
+correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_cutoff = 3, min_dp = 4,
+	cor_method = "spearman", window_size = 5, window_step = window_size, subgroup = NULL, max_width = 10000) {
 
 	if(ncol(meth) != length(expr)) {
 		stop("number of columsn of `meth` should be same as length of `expr`.\n")
 	}
 
-	index = seq(1, length(site), by = window_size)
+	index = seq(1, length(site) - window_size, by = window_step)  # just forget last few sites
 	
-	i = seq_len(length(index) - 1)
-	ir = IRanges(site[index[i]], site[index[i+1]-1])
+	i = seq_len(length(index))
+	ir = IRanges(site[index[i]], site[index[i]+window_size-1])
+	l = width(ir) <= max_width
+	i = i[l]
+	ir = ir[l]
+
+	if(!is.null(cov)) {
+		meth[cov < cov_cutoff] = NA
+	}
 
 	m = lapply(index[i], function(x) {
 		ind = x+0:(window_size-1)
 		meth_m = meth[ind, , drop = FALSE]
-		cov_m = cov[ind, , drop = FALSE]
 		sapply(seq_len(ncol(meth_m)), function(i) {
 			xm = meth_m[, i]
-			ym = cov_m[, i]
-			mean(xm[ym >= cov_cutoff], na.rm = TRUE)
+			mean(xm, na.rm = TRUE)
 		})
 	})
 	m = do.call('rbind', m)
@@ -70,23 +62,23 @@ correlated_regions_per_gene = function(site, meth, cov, expr, chr, cov_cutoff = 
 		cor.test(x[l], expr[l], method = cor_method)$p.value
 	}))
 
-	if(!is.null(factor)) {
-		if(length(unique(factor)) == 1) factor = NULL
+	if(!is.null(subgroup)) {
+		if(length(unique(subgroup)) == 1) subgroup = NULL
 	}
 
-	if(!is.null(factor)) {
-		factor = as.vector(factor)
+	if(!is.null(subgroup)) {
+		subgroup = as.vector(subgroup)
 		meth_anova = apply(m, 1, function(x) {
 			l = !is.na(x)
-			data = data.frame(value = x[l], class = factor[l], stringsAsFactors = FALSE)
+			data = data.frame(value = x[l], class = subgroup[l], stringsAsFactors = FALSE)
 			if(length(unique(data$class)) < 2) return(NA)
 			if(any(table(data$class) < 2)) return(NA)
 			oneway.test(value ~ class, data = data)$p.value
 		})
 		meth_diameter = apply(m, 1, function(x) {
 			l = !is.na(x)
-			if(any(table(factor[l]) < 2)) return(NA)
-			diameter(as.vector(tapply(x[l], factor[l], mean)))
+			if(any(table(subgroup[l]) < 2)) return(NA)
+			diameter(as.vector(tapply(x[l], subgroup[l], mean)))
 		})
 	}
 	if(nrow(m) == 1) {
@@ -94,16 +86,16 @@ correlated_regions_per_gene = function(site, meth, cov, expr, chr, cov_cutoff = 
 	} else {
 		meth_IQR = rowIQRs(m, na.rm = TRUE)
 	}
-	gr = GRanges(seqnames = rep(chr, length(ir)),
-		    ranges = ir)
-	if(is.null(factor)) {
-		df = DataFrame(n = window_size,
+	gr = GRanges(seqnames = rep(chr, length(ir)), ranges = ir)
+
+	if(is.null(subgroup)) {
+		df = DataFrame(ncpg = window_size,
 		    m, # mean methylation
 		    corr = corr,
 		    corr_p = corr_p,
 		    meth_IQR = meth_IQR)	
 	} else {
-		df = DataFrame(n = window_size,
+		df = DataFrame(ncpg = window_size,
 		    m, # mean methylation
 		    corr = corr,
 		    corr_p = corr_p,
@@ -176,8 +168,8 @@ correlated_regions_per_gene = function(site, meth, cov, expr, chr, cov_cutoff = 
 #
 correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	cov_filter = function(x) sum(x > 0, na.rm = TRUE) > length(x)/2,
-	cor_method = "spearman", factor = NULL, window_size = 5, max_width = 10000,
-	raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL) {
+	cor_method = "spearman", subgroup = NULL, window_size = 5, window_step = window_size, 
+	max_width = 10000, raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL) {
 
 	qqcat("extracting gene model (extend = @{extend}, chr = @{chr})...\n")
 	gene = genes(txdb)
@@ -196,19 +188,31 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	s = start(genemodel)
 	start(genemodel) = ifelse(s > 0, s, 1)
 
-	expr = expr[, sample_id, drop = FALSE]
-
 	all_gi = rownames(expr)
 	n_gene = length(all_gi)
 
-	methylation_hooks$set(chr)
-	site = methylation_hooks$site()
-	if(raw_meth) {
-		meth = methylation_hooks$raw(col_index = sample_id)
-	} else {
-		meth = methylation_hooks$meth(col_index = sample_id)
+	methylation_hooks$set_chr(chr, verbose = FALSE)
+	meth_gr = methylation_hooks$gr
+	site = start(meth_gr)
+
+	# sample_id = c(sample_id, methylation_hooks$sample_id)
+	sample_id = intersect(sample_id, colnames(expr))
+
+	if(!is.null(subgroup)) {
+		lt = format_sample_id_and_subgroup(sample_id, subgroup)
+		sample_id = lt$sample_id
+		subgroup = lt$subgroup
 	}
-	cov = methylation_hooks$coverage(col_index = sample_id)
+	qqcat("@{length(sample_id)} samples are used\n")
+	
+	if(raw_meth) {
+		meth = methylation_hooks$raw[, sample_id]
+	} else {
+		meth = methylation_hooks$meth[, sample_id]
+	}
+	cov = methylation_hooks$cov[, sample_id]
+
+	expr = expr[, sample_id, drop = FALSE]
 
 	if(!is.null(cov_filter)) {
 		
@@ -221,7 +225,7 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		cov = cov[l, , drop = FALSE]
 	}
 
-	op = qq.options("cat_prefix")
+	qqcat("on chromosome @{chr}, @{length(site)} CpG sites, @{n_gene} genes\n")
 
 	if(!raw_meth) cov_cutoff = 0
 	
@@ -234,36 +238,28 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		# expression of current gene
 		e = expr[gi, ]
 
-		if(is.function(op)) {
-			qq.options(cat_prefix = function(x) {
-				qq("@{op()} [@{chr}:@{gi}, @{i}/@{n_gene}]")
-			})
-		} else {
-			qq.options(cat_prefix = qq("@{op} [@{chr}:@{gi}, @{i}/@{n_gene}]"))
-		}
-
 		# if gene has low expression in many samples
 		if(all(e == 0) || sd(e) == 0)  {
-			qqcat("@{gi} has zero expression in all samples, skip\n")
+			qqcat("[@{chr}:@{gi}, @{i}/@{n_gene}] @{gi} has zero expression in all samples, skip\n")
 			next
 		}
 
 		start = start(genemodel[gi])
 		end = end(genemodel[gi])
-		gm_site_index = extract_sites(start, end, site, TRUE)
+		gm_site_index = extract_sites(start, end, site, TRUE, 0)
 		gm_site = site[gm_site_index]
-		gm_meth = meth[gm_site_index, sample_id, drop = FALSE]
-		gm_cov = cov[gm_site_index, sample_id, drop = FALSE]
+		gm_meth = meth[gm_site_index, , drop = FALSE]
+		gm_cov = cov[gm_site_index, , drop = FALSE]
 
 		if(length(gm_site) < 10) {
-			qqcat("@{gi} has too few cpg sites, skip\n")
+			qqcat("[@{chr}:@{gi}, @{i}/@{n_gene}] @{gi} has too few cpg sites, skip\n")
 			next
 		}
 
-		qqcat("...\n")
-		gr = correlated_regions_per_gene(gm_site, gm_meth, gm_cov, e, cov_cutoff = cov_cutoff, chr = chr,
-			factor = factor, cor_method = cor_method, window_size = window_size, min_dp = min_dp,
-			max_width = max_width)
+		qqcat("[@{chr}:@{gi}, @{i}/@{n_gene}] @{length(gm_site)} CpG sites ...\n")
+		gr = correlated_regions_by_window(gm_site, gm_meth, e, gm_cov, cov_cutoff = cov_cutoff, chr = chr,
+			subgroup = subgroup, cor_method = cor_method, window_size = window_size, window_step = window_step,
+			min_dp = min_dp, max_width = max_width)
 		gr$gene_id = rep(gi, length(gr))
 
 		## distance to gene tss
@@ -279,8 +275,12 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		## distance to tx tss
 		tx = tx_list[[gi]]
 		tx = tx[tx$tx_name != gi]
+		tx_width = width(tx)
 		tss = promoters(tx, upstream = 1, downstream = 0)
-		dist = as.data.frame(distanceToNearest(gr, tss))
+		dist = as.data.frame(distanceToNearest(gr, tss, select = "all"))
+		dist = data.frame(queryHits = as.vector(tapply(dist[[1]], dist[[1]], unique)),
+			              subjectHits = as.vector(tapply(dist[[2]], dist[[1]], function(x) x[which.max(tx_width[x])[1]])),
+			              distance = as.vector(tapply(dist[[3]], dist[[1]], unique)))
 		tx_tss_dist = dist[, 3]
 		if(as.vector(strand(gene[gi])) == "+") {
 			tx_tss_dist = ifelse(end(gr) < start(tss[dist[,2]]), -tx_tss_dist, tx_tss_dist)
@@ -291,257 +291,90 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		gr$nearest_tx_tss = tss[dist[,2]]$tx_name
 
 		res = c(res, gr)
-
 	}
-	qq.options(cat_prefix = op)
-	
-	attr(res, "factor") = factor
-	attr(res, "col") = col
-	attr(res, "cor_method") = cor_method
-	attr(res, "extend") = extend
-	attr(res, "window_size") = window_size
-	attr(res, "sample_id") = sample_id
-	attr(res, "cor_method") = cor_method
-	attr(res, "cov_filter") = cov_filter
-	attr(res, "raw_meth") = raw_meth
-	attr(res, "cov_filter") = cov_filter
-	attr(res, "min_dp") = min_dp
 
+	param = list()
+	param$subgroup = subgroup
+	param$cor_method = cor_method
+	param$extend = extend
+	param$window_size = window_size
+	param$window_step = window_step
+	param$max_width = max_width
+	param$sample_id = sample_id
+	param$cov_filter = cov_filter
+	param$cov_cutoff = cov_cutoff
+	param$raw_meth = raw_meth
+	param$min_dp = min_dp
+	if(is.null(col)) {
+		if(is.null(subgroup)) {
+			col = rand_color(length(sample_id))
+		} else {
+			n_subgroup = length(unique(subgroup))
+			col = structure(rand_color(n_subgroup), names = unique(subgroup))
+		}
+	}
+	param$col = col
+
+	metadata(res) = list(cr_param = param)
 	return(res)
 }
 
-readRDS_or_readRData = function(file) {
-	if(grepl("\\.rds$", file, ignore.case = TRUE)) {
-		cr = readRDS(file)
-	} else if(grepl("\\.rdata", file, ignore.case = TRUE)) {
-		var_name = load(file)
-		eval(parse(text = paste0("cr = ", var_name)))
+cr_add_fdr_column = function(cr, fdr_method = "BH") {
+
+	# separate neg and pos
+	l_neg = cr$corr < 0
+	l_pos = cr$corr > 0
+
+	# add corr_fdr column
+	cr$corr_fdr = NA
+	cr$corr_fdr[l_neg] = p.adjust(cr$corr_p[l_neg], fdr_method)
+	cr$corr_fdr[l_pos] = p.adjust(cr$corr_p[l_pos], fdr_method)
+
+	if(!is.null(cr$meth_anova)) {
+		cr$meth_anova_fdr = NA
+		cr$meth_anova_fdr[l_neg] = p.adjust(cr$meth_anova[l_neg], fdr_method)
+		cr$meth_anova_fdr[l_pos] = p.adjust(cr$meth_anova[l_pos], fdr_method)
 	}
+
+	cr_param = metadata(cr)$cr_param
+	cr_param$fdr_method = fdr_method
+	metadata(cr)$cr_param = cr_param
 	cr
 }
 
-# == title
-# Get correlated regions with significant correlations
-# 
-# == param
-# -chromosome a vector of chromosome names
-# -template template path to find cr files
-# -cutoff cutoff of adjusted correlation p-values
-# -adj_method method for calculating adjusted p-values
-# -meth_diameter_cutoff cutoff for methylation diameters
-# -meth_IQR_cutoff cutoff for IQR, if there is no subtype information, IQR is used to remove less variable methylation
-# -anova_cutoff cutoff for adjust ANOVA p-values
-#
-# == details
-# As explained in `correlated_regions`, original cr is huge and is always saved as a separated file for single chromosome.
-# Here ``template`` defined how to get the cr files. E.g. if ``template``is defined as "path_to/@{chr}_cr.rds", the funciton
-# will replace "@{chr}" to every chromosome and read the data.
-#
-# Two additional columns are attached:
-#
-# -corr_fdr FDR for correlation p-values
-# -meth_anova_fdr FDR for anova test, will be added only if ``factor`` is set in `correlated_regions`.
-#
-# == value
-# A `GenomicRanges::GRanges` object
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-# 
-filter_correlated_regions = function(chromosome = paste0("chr", 1:22), template, 
-	cutoff = 0.05, adj_method = "BH", meth_diameter_cutoff = 0.25, meth_IQR_cutoff = 0.25,
-	anova_cutoff = 0.05) {
+# gr is sorted
+reduce_cr_by_gene = function(gr, gap = 1) {
+	if(length(gr) == 0) return(GRanges())
 
-	if(length(cutoff) == 1) cutoff = rep(cutoff, 2)
+	window_size = metadata(gr)$cr_param$window_size
+	window_step = metadata(gr)$cr_param$window_step
 
-	cat("calculate fdr...\n")
-	corr_p = NULL
-	meth_anova = NULL
-	meth_diameter = NULL
-	meth_IQR = NULL
-	chr_name = NULL
-	corr = NULL
-	for(chr in chromosome) {
-		qqcat("reading cr for @{chr}\n")
-		cr = readRDS_or_readRData(qq(template))
-
-		has_anova = FALSE
-		if("meth_anova" %in% colnames(mcols(cr))) {
-			has_anova = TRUE
-		}
-
-		if(has_anova) {
-			cr = cr[(!is.na(cr$corr)) & (!is.na(cr$corr_p)) & (!is.na(cr$meth_anova)) & (!is.na(cr$meth_diameter))]
-		} else {
-			cr = cr[(!is.na(cr$corr)) & (!is.na(cr$corr_p))]
-		}
-	    
-	    corr_p = c(corr_p, cr$corr_p)
-	    corr = c(corr, cr$corr)
-	   	if(has_anova) {
-	   		meth_anova = c(meth_anova, cr$meth_anova)
-	   		meth_diameter = c(meth_diameter, cr$meth_diameter)
-	   	} else {
-	   		meth_mat = as.matrix(mcols(cr)[, grep("^mean_meth", colnames(mcols(cr)))])
-	   		meth_IQR = c(meth_IQR, rowIQRs(meth_mat, na.rm = TRUE))
-	   		# meth_IQR = c(meth_IQR, cr$meth_IQR)
-	   	}
-	    chr_name = c(chr_name, rep(chr, length(cr)))
-	}
-
-	if(has_anova) {
-		anova_fdr = p.adjust(meth_anova, method = adj_method)
-		l = anova_fdr <= cutoff[1] & meth_diameter >= meth_diameter_cutoff
-		qqcat("filter out @{sum(!l)}/@{length(l)} by differential methylation.\n")
-		corr_fdr = rep(Inf, length(corr_p))
-		corr_fdr[l] = p.adjust(corr_p[l], method = adj_method)
-		l = l & ifelse(corr > 0, corr_fdr <= cutoff[1], corr_fdr <= cutoff[2])
+	n = length(gr)
+	if(all(start(gr)[-1] > end(gr)[-n]+1)) {
+		gr2 = gr
+		mcols(gr2) = NULL
+		gr2$mean_corr = gr$corr
+		gr2$merged_windows = rep(1, n)
+		gr2$ncpg = window_size
 	} else {
-		corr_fdr = p.adjust(corr_p, method = adj_method)
-		l = ifelse(corr > 0, corr_fdr <= cutoff[1], corr_fdr <= cutoff[2]) & meth_IQR >= meth_IQR_cutoff & !is.na(meth_IQR)
+		gr2 = reduce(gr, min.gap = gap, with.revmap = TRUE)
+		revmap = mcols(gr2)$revmap
+		mcols(gr2) = NULL
+		gr2$mean_corr = sapply(revmap, function(ind) mean(gr[ind]$corr, na.rm = TRUE))
+		gr2$merged_windows = sapply(revmap, length)
+		gr2$ncpg = gr2$merged_windows*window_size - (gr2$merged_windows-1)*(window_size - window_step)
 	}
-
-	l = l & !is.na(corr)
-
-	cat("filter by fdr...\n")
-	cr2 = GRanges()
-	for(chr in chromosome) {
-		qqcat("reading cr for @{chr}\n")
-		cr = readRDS_or_readRData(qq(template))
-
-		if(has_anova) {
-			cr = cr[(!is.na(cr$corr)) & (!is.na(cr$corr_p)) & (!is.na(cr$meth_anova)) & (!is.na(cr$meth_diameter))]
-		} else {
-			cr = cr[(!is.na(cr$corr)) & (!is.na(cr$corr_p))]
-		}
-
-		lo = chr_name == chr
-		cr$corr_fdr = corr_fdr[lo]
-		if(has_anova) {
-			cr$meth_anova_fdr = anova_fdr[lo]
-		}
-		if(sum(l[lo])) {
-			cr2 = suppressWarnings(c(cr2, cr[l[lo]]))
-		}
-	}
-
-	attr(cr2, "factor") = attr(cr, "factor")
-	attr(cr2, "col") = attr(cr, "col")
-	attr(cr2, "cor_method") = attr(cr, "cor_method")
-	attr(cr2, "extend") = attr(cr, "extend")
-	attr(cr2, "window_size") = attr(cr, "window_size")
-	attr(cr2, "sample_id") = attr(cr, "sample_id")
-	attr(cr2, "cor_method") = attr(cr, "cor_method")
-	attr(cr2, "cov_filter") = attr(cr, "cov_filter")
-	attr(cr2, "cov_cutoff") = attr(cr, "cov_cutoff")
-	attr(cr2, "raw_meth") = attr(cr, "raw_meth")
-	attr(cr2, "min_dp") = attr(cr, "min_dp")
-
-	cr2
+	qqcat("  @{deparse(substitute(gr))} has been reduced from @{length(gr)} to @{length(gr2)}\n")
+	return(gr2)
 }
 
-# == title
-# Test a proper gap value for cr merging
-#
-# == param
-# -cr correlated regions generated by `filter_correlated_regions`
-#
-# == value
-# No value is returned
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-#
-reduce_cr_gap_test = function(cr) {
-	neg_cr = cr[cr$corr < 0]
-	neg_cr_list = split(as.data.frame(neg_cr), neg_cr$gene_id)
-	neg_cr_rainfall = do.call("rbind", lapply(neg_cr_list, rainfallTransform))
-	neg_cr_rainfall$ratio = neg_cr_rainfall$dist/(neg_cr_rainfall$end - neg_cr_rainfall$start + 1)
+reduce_cr = function(cr, txdb, gap = 1, mc.cores = 1) {
 
-	x = neg_cr_rainfall$dist
-
-	par(mfrow = c(2, 3))
-	for(i in c(10, 100, 500, 1000, 2000)) {
-		plot(density(log10(x[x >= i])), axes = FALSE, main = qq("neg_cr, dist >= @{i}bp"))
-		axis(side = 1, at = 1:10, labels = 10^(1:10))
-		axis(side = 2)
-		box()
-	}
-
-	pos_cr = cr[cr$corr > 0]
-	pos_cr_list = split(as.data.frame(pos_cr), pos_cr$gene_id)
-	pos_cr_rainfall = do.call("rbind", lapply(pos_cr_list, rainfallTransform))
-	pos_cr_rainfall$ratio = pos_cr_rainfall$dist/(pos_cr_rainfall$end - pos_cr_rainfall$start + 1)
-
-	x = pos_cr_rainfall$dist
-
-	par(mfrow = c(2, 3))
-	for(i in c(10, 100, 500, 1000, 2000)) {
-		plot(density(log10(x[x >= i])), axes = FALSE, main = qq("pos_cr, dist >= @{i}bp"))
-		axis(side = 1, at = 1:10, labels = 10^(1:10))
-		axis(side = 2)
-		box()
-	}
-}
-
-# == title
-# Merge neighbouring cr regions
-#
-# == param
-# -cr filtered correlated regions from `filter_correlated_regions`
-# -expr the expression matrix which is same as in `correlated_regions`
-# -txdb a ``GenomicFeatures::GRanges`` object.
-# -max_gap maximum gap for merging.
-# -gap gap for merging, a numeric value represents the ratio of width of itself and use `bp`, `kb` or `mb` to represent the number is absoltue base pairs.
-#  Pass to `reduce2`.
-# -mc.cores number of cores
-#
-# == detail
-# Since cr with positive correlation and negative correlation has different distribution patterns
-# in the genome, i.e. generally, pos_cr are long and CpG density in it is low while neg_cr is short,
-# clustered and has high CpG density, thus, pos cr and neg cr are reduced separatedly.
-#
-# Even only look at e.g. pos cr, the pattern for the distribution in the genome is still different, 
-# thus, we recommend to merge crs by width itself while not by an absolute value for which you can set
-# ``gap`` by a numeric value.
-#
-# Since original regions are merged and columns related to calculation of correlation will be dropped.
-#
-# The merging is applied by gene, so it is still possible that regions associated with gene A overlap to gene B.
-#
-# == value
-# A `GenomicRanges::GRanges` object
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-#
-reduce_cr = function(cr, expr, txdb, max_gap = 1000, gap = 1.0, mc.cores = 1) {
-
-	sample_id = attr(cr, "sample_id")
-	cor_method = attr(cr, "cor_method")
-	raw_meth = attr(cr, "raw_meth")
-
-	if(raw_meth) warning("only smoothed meth is supported")
+	cr_param = metadata(cr)$cr_param
 
 	qqcat("extracting gene and tx models.\n")
 	gene = genes(txdb)
 	tx_list = transcriptsBy(txdb, by = "gene")
-
-	reduce_cr_by_gene = function(cr, e, max_gap = 1000) {
-		if(length(cr) == 0) return(GRanges())
-		n = cr$n
-		meth_mat = as.matrix(mcols(cr)[, paste0("mean_meth_", sample_id)]) * n
-
-		mcols(cr) = cbind(n = n, meth_mat)
-		gr = reduce2(cr, max_gap = max_gap, gap = gap)
-
-		n = gr$n
-		meth_mat = as.matrix(mcols(gr)[, paste0("mean_meth_", sample_id)]) / n
-	
-		corr = apply(meth_mat, 1, function(x) cor(x, e, method = cor_method))
-		mcols(gr) = cbind(n = n, meth_mat, corr = corr)
-		return(gr)
-	}
 
 	cr_list = split(cr, cr$gene_id)
 	i = 0
@@ -551,8 +384,8 @@ reduce_cr = function(cr, expr, txdb, max_gap = 1000, gap = 1.0, mc.cores = 1) {
 		cr = cr_list[[gi]]
 		neg_cr = cr[cr$corr < 0]
 		pos_cr = cr[cr$corr > 0]
-		gr = c(reduce_cr_by_gene(neg_cr, expr[gi, sample_id], max_gap = max_gap),
-			   reduce_cr_by_gene(pos_cr, expr[gi, sample_id], max_gap = max_gap))
+		gr = c(reduce_cr_by_gene(neg_cr, gap = gap),
+			   reduce_cr_by_gene(pos_cr, gap = gap))
 		gr = sort(gr)
 		gr$gene_id = rep(gi, length(gr))
 
@@ -567,10 +400,15 @@ reduce_cr = function(cr, expr, txdb, max_gap = 1000, gap = 1.0, mc.cores = 1) {
 		gr$gene_tss_dist = gene_tss_dist
 
 		## distance to tx tss
+		## distance to tx tss
 		tx = tx_list[[gi]]
 		tx = tx[tx$tx_name != gi]
+		tx_width = width(tx)
 		tss = promoters(tx, upstream = 1, downstream = 0)
-		dist = as.data.frame(distanceToNearest(gr, tss))
+		dist = as.data.frame(distanceToNearest(gr, tss, select = "all"))
+		dist = data.frame(queryHits = as.vector(tapply(dist[[1]], dist[[1]], unique)),
+			              subjectHits = as.vector(tapply(dist[[2]], dist[[1]], function(x) x[which.max(tx_width[x])[1]])),
+			              distance = as.vector(tapply(dist[[3]], dist[[1]], unique)))
 		tx_tss_dist = dist[, 3]
 		if(as.vector(strand(gene[gi])) == "+") {
 			tx_tss_dist = ifelse(end(gr) < start(tss[dist[,2]]), -tx_tss_dist, tx_tss_dist)
@@ -584,101 +422,8 @@ reduce_cr = function(cr, expr, txdb, max_gap = 1000, gap = 1.0, mc.cores = 1) {
 	}, mc.cores = mc.cores)
 
 	cr2 = do.call("c", res)
-
-	attr(cr2, "factor") = attr(cr, "factor")
-	attr(cr2, "col") = attr(cr, "col")
-	attr(cr2, "cor_method") = attr(cr, "cor_method")
-	attr(cr2, "extend") = attr(cr, "extend")
-	attr(cr2, "window_size") = attr(cr, "window_size")
-	attr(cr2, "sample_id") = attr(cr, "sample_id")
-	attr(cr2, "cor_method") = attr(cr, "cor_method")
-	attr(cr2, "cov_filter") = attr(cr, "cov_filter")
-
-	cr2
+	metadata(cr2)$cr_param = cr_param
+	return(cr2) 
 }
 
-# == title
-# Add subtype specificity columns in cr
-#
-# == param
-# -cr correlated regions generated by `filter_correlated_regions` or `reduce_cr`
-# -cutoff cutoff for p-values of ANOVA test
-# -suffix suffix of column names
-#
-# == details
-# If ``factor`` is set in `correlated_regions`, this function can assign subtype specificity to each subtype.
-#
-# We use following digits to represent subtype specificity: 1 is defined as the methylation is higher than all other subtypes and the difference is significant.
-# -1 is defined as the methylation is lower than all other subtypes and the difference is significant.
-# All the others are defined as 0.
-#
-# == value
-# A `GenomicRanges::GRanges` object
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-#
-cr_add_subtype_specificity = function(cr, cutoff = 0.05, suffix = "_ss") {
-	
-	factor = attr(cr, "factor")
-	if(length(unique(factor)) <= 1) {
-		warning("no grouping settings.")
-		return(cr)
-	}
 
-	level = unique(factor)
-	n_level = length(level)
-	sample_id = attr(cr, "sample_id")
-	subtype_ss = matrix(nrow = length(cr), ncol = n_level)
-	colnames(subtype_ss) = level
-
-	meth_mat = mcols(cr)
-	meth_mat = meth_mat[, grep("^mean_meth_", colnames(meth_mat))]
-	meth_mat = as.matrix(meth_mat)
-	counter = set_counter(length(cr))
-	for(i in seq_len(length(cr))) {
-		x = meth_mat[i, paste0("mean_meth_", sample_id)]
-		# pairwise t-test, t-value and p-value
-		mat_t = matrix(nrow = n_level, ncol = n_level)
-		rownames(mat_t) = level
-		colnames(mat_t) = level
-		mat_p = mat_t
-
-		for(i1 in 2:n_level) {
-			for(i2 in 1:(i1-1)) {
-				x1 = x[factor == level[i1]]
-				x2 = x[factor == level[i2]]
-				test = t.test(x1, x2)
-				mat_t[i1, i2] = test$statistic
-				mat_p[i1, i2] = test$p.value
-				mat_t[i2, i1] = -mat_t[i1, i2]
-				mat_p[i2, i1] = mat_p[i1, i2]	
-			}
-		}
-
-		ss = apply(mat_t, 1, function(x) {
-			x = x[!is.na(x)]
-			if(all(x > 0)){
-				return(1)
-			} else if(all(x < 0)) {
-				return(-1)
-			} else {
-				return(0)
-			}
-		})
-
-		l = apply(mat_p, 1, function(x) {
-			x = x[!is.na(x)]
-			all(x < cutoff)
-		})
-		ss[!l] = 0
-		subtype_ss[i, ] = ss
-
-		counter()
-	}
-
-	colnames(subtype_ss) = paste0(colnames(subtype_ss), suffix)
-
-	mcols(cr) = cbind(as.data.frame(mcols(cr)), subtype_ss)
-	return(cr)
-}

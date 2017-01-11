@@ -1,1 +1,8 @@
 getChromInfoFromUCSC = memoise(GenomicFeatures::getChromInfoFromUCSC)
+transcriptsBy = memoise(GenomicFeatures::transcriptsBy)
+genes = memoise(GenomicFeatures::genes)
+transcripts = memoise(GenomicFeatures::transcripts)
+exons = memoise(GenomicFeatures::exons)
+intronsByTranscript = memoise(GenomicFeatures::intronsByTranscript)
+fiveUTRsByTranscript = memoise(GenomicFeatures::fiveUTRsByTranscript)
+threeUTRsByTranscript = memoise(GenomicFeatures::threeUTRsByTranscript)

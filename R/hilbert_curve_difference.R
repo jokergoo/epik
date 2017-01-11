@@ -46,11 +46,6 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 		}
 	} else {
 		sample_id = intersect(names(subgroup), sample_id)
-		if(length(sample_id) == 0) {
-			if(length(subgroup) != length(sample_id)) {
-				stop("length of `subgroup` should be same as the number of samples in `methylation_hooks`.")
-			}
-		}
 		subgroup = subgroup[sample_id]
 	}
 
