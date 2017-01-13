@@ -8,8 +8,8 @@ chipseq_hooks$peak = function(mark, sid, chr) {
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
 
-peak_list = lapply(MARKS[1:2], get_peak_list, chr = "chr21")
-names(peak_list) = MARKS[1:2]
+peak_list = lapply(MARKS, get_peak_list, chr = "chr21")
+names(peak_list) = MARKS
 
 tx_list = transcriptsBy(TXDB, "gene")
 

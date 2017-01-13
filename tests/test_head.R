@@ -39,7 +39,7 @@ chipseq_hooks$peak = function(mark, sid, ...) {
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
 
-chipseq_hooks$chromHMM = function(sid) {
+chipseq_hooks$chromHMM = function(sid, ...) {
     qqcat("reading chromHMM file for @{sid}\n")
     f = qq("@{BASE_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
     gr = read.table(f, sep = "\t", stringsAsFactors = FALSE)
