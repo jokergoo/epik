@@ -228,10 +228,8 @@ chipseq_hooks = setGlobalOptions(
 		             .class = "function",
 		             .validate = function(f) length(as.list(f)) == 2,
 		             .failed_msg = "The function should only have one argument which is the name of the histome mark."),
-	peak = list(.value = function(mark, sid) stop("you need to define `peak` hook"),
-		        .class = "function",
-		        .validate = function(f) length(as.list(f)) == 3,
-		        .failed_msg = "The function should only have two argument which are the name of the histome mark and a sample ID."),
+	peak = list(.value = function(mark, sid, ...) stop("you need to define `peak` hook"),
+		        .class = "function"),
 	chromHMM = list(.value = function(sid) stop("you need to define `chromHMM` hook"),
 		            .class = "function",
 		            .validate = function(f) length(as.list(f)) == 2,
@@ -254,8 +252,8 @@ chipseq_hooks = setGlobalOptions(
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark)) {
-    peak_list = lapply(sample_id, function(sid) chipseq_hooks$peak(mark, sid))
+get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
+    peak_list = lapply(sample_id, function(sid) chipseq_hooks$peak(mark, sid, ...))
     names(peak_list) = sample_id
     peak_list
 }

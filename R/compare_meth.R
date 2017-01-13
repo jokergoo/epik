@@ -48,7 +48,7 @@ compare_meth_in_one_gene = function(g, cr_smoothed, sample_id, col) {
 		for(i in seq_len(ncol(meth))) {
 			grid.lines(site, meth[, i], gp = gpar(col = col[i]), default.units = "native")
 		}
-	})
+	}, use_raster = TRUE, raster_quality = 2)
 
 	add_track(NULL, panel_fun = function(gr) {
 		l = cr_smoothed$corr > 0
@@ -61,14 +61,14 @@ compare_meth_in_one_gene = function(g, cr_smoothed, sample_id, col) {
 				grid.rect(mid(ranges(cr_smoothed[l])), 0, width = width(cr_smoothed[l]), height = abs(cr_smoothed$corr[l]), default.units = "native",
 				gp = gpar(fill = "green", col = NA), just = "top")
 		}
-	})
+	}, use_raster = TRUE, raster_quality = 2)
 	
 	# raw methylation
 	add_track(NULL, panel_fun = function(gr) {
 		for(i in seq_len(ncol(raw))) {
 			grid.lines(site, raw[, i], gp = gpar(col = col[i]), default.units = "native")
 		}
-	})
+	}, use_raster = TRUE, raster_quality = 2)
 	
 	# raw methylation with CpG coverage > q25
 	add_track(NULL, panel_fun = function(gr) {
@@ -78,7 +78,7 @@ compare_meth_in_one_gene = function(g, cr_smoothed, sample_id, col) {
 		    if(sum(yy >= cov_cutoff_1) > 1)
 		    	grid.lines(site[yy >= cov_cutoff_1], xx[yy >= cov_cutoff_1], gp = gpar(col = col[i]), default.units = "native")
 		}
-	})
+	}, use_raster = TRUE, raster_quality = 2)
 
 	# raw methylation with CpG coverage > q50
 	add_track(NULL, panel_fun = function(gr) {
@@ -88,12 +88,12 @@ compare_meth_in_one_gene = function(g, cr_smoothed, sample_id, col) {
 		    if(sum(yy > cov_cutoff_2) > 1)
 		    	grid.lines(site[yy >= cov_cutoff_2], xx[yy >= cov_cutoff_2], gp = gpar(col = col[i]), default.units = "native")
 		}
-	})
+	}, use_raster = TRUE, raster_quality = 2)
 
 	cov_quantile = apply(cov, 1, quantile, c(0.25, 0.5, 0.75))
 	add_track(NULL, panel_fun = function(gr) {
 		grid.segments(site, 0, site, cov_quantile[2, ], default.units = "native")
 		# grid.segments(site, cov_quantile[1, ], site, cov_quantile[3, ], default.units = "native", gp = gpar(col = "#FF000040"))
-	})
+	}, use_raster = TRUE, raster_quality = 2)
 
 }

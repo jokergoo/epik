@@ -326,12 +326,12 @@ cr_add_fdr_column = function(cr, fdr_method = "BH") {
 	l_pos = cr$corr > 0
 
 	# add corr_fdr column
-	cr$corr_fdr = NA
+	cr$corr_fdr = 1
 	cr$corr_fdr[l_neg] = p.adjust(cr$corr_p[l_neg], fdr_method)
 	cr$corr_fdr[l_pos] = p.adjust(cr$corr_p[l_pos], fdr_method)
 
 	if(!is.null(cr$meth_anova)) {
-		cr$meth_anova_fdr = NA
+		cr$meth_anova_fdr = 1
 		cr$meth_anova_fdr[l_neg] = p.adjust(cr$meth_anova[l_neg], fdr_method)
 		cr$meth_anova_fdr[l_pos] = p.adjust(cr$meth_anova[l_pos], fdr_method)
 	}

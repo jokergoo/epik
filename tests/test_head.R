@@ -33,7 +33,7 @@ chipseq_hooks$sample_id = function(mark) {
 	return(sample_id)	
 }
 
-chipseq_hooks$peak = function(mark, sid) {
+chipseq_hooks$peak = function(mark, sid, ...) {
     qqcat("reading peaks: @{sid}, @{mark}\n")
     df = read.table(qq("@{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz"), stringsAsFactors = FALSE)
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
