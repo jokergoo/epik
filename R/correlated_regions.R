@@ -353,14 +353,14 @@ reduce_cr_by_gene = function(gr, gap = 1) {
 	if(all(start(gr)[-1] > end(gr)[-n]+1)) {
 		gr2 = gr
 		mcols(gr2) = NULL
-		gr2$mean_corr = gr$corr
+		# gr2$mean_corr = gr$corr
 		gr2$merged_windows = rep(1, n)
 		gr2$ncpg = window_size
 	} else {
 		gr2 = reduce(gr, min.gap = gap, with.revmap = TRUE)
 		revmap = mcols(gr2)$revmap
 		mcols(gr2) = NULL
-		gr2$mean_corr = sapply(revmap, function(ind) mean(gr[ind]$corr, na.rm = TRUE))
+		# gr2$mean_corr = sapply(revmap, function(ind) mean(gr[ind]$corr, na.rm = TRUE))
 		gr2$merged_windows = sapply(revmap, length)
 		gr2$ncpg = gr2$merged_windows*window_size - (gr2$merged_windows-1)*(window_size - window_step)
 	}
@@ -368,9 +368,10 @@ reduce_cr_by_gene = function(gr, gap = 1) {
 	return(gr2)
 }
 
-reduce_cr = function(cr, txdb, gap = 1, mc.cores = 1) {
+reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 
 	cr_param = metadata(cr)$cr_param
+	cr = sort(cr)
 
 	qqcat("extracting gene and tx models.\n")
 	gene = genes(txdb)
@@ -378,7 +379,7 @@ reduce_cr = function(cr, txdb, gap = 1, mc.cores = 1) {
 
 	cr_list = split(cr, cr$gene_id)
 	i = 0
-	res = mclapply(names(cr_list), function(gi) {
+	cr_reduced_list = mclapply(names(cr_list), function(gi) {
 
 		qqcat("reducing cr on @{gi}, @{i <<- i+1}/@{length(cr_list)}...\n")
 		cr = cr_list[[gi]]
@@ -421,7 +422,135 @@ reduce_cr = function(cr, txdb, gap = 1, mc.cores = 1) {
 		gr
 	}, mc.cores = mc.cores)
 
-	cr2 = do.call("c", res)
+	# add mean methylation and meth_diameter, meth_IQR columns
+	sample_id = cr_param$sample_id
+	subgroup = cr_param$subgroup
+	cov_filter = cr_param$cov_filter
+	cov_cutoff = cr_param$cov_cutoff
+	raw_meth = cr_param$raw_meth
+	min_dp = cr_param$min_dp
+	cor_method = cr_param$cor_method
+
+	prev_chr = ""
+
+	for(i in seq_along(cr_list)) {
+
+		gi = names(cr_list)[i]
+		qqcat("re-calculating mean methylation for reduced cr for @{gi}\n")
+
+		cr = cr_list[[i]]
+		cr = c(reduce(cr[cr$corr > 0]), reduce(cr[cr$corr < 0]))
+		cr_reduced = cr_reduced_list[[i]]
+
+		mtch_reduced = as.matrix(findOverlaps(cr, cr_reduced))
+
+		chr = as.vector(seqnames(cr))[1]
+
+		if(chr != prev_chr) {
+			methylation_hooks$set_chr(chr, verbose = FALSE)
+			meth_gr = methylation_hooks$gr
+			if(raw_meth) {
+				meth = methylation_hooks$raw[, sample_id]
+			} else {
+				meth = methylation_hooks$meth[, sample_id]
+			}
+			cov = methylation_hooks$cov[, sample_id]
+
+			meth[cov < cov_cutoff] = NA
+
+			if(!is.null(cov_filter)) {
+				
+				l = apply(cov, 1, cov_filter)
+				if(any(is.na(l))) {
+					stop("`cov_filter` generates `NA`, check it.")
+				}
+				meth_gr = meth_gr[l]
+				meth = meth[l, , drop = FALSE]
+				cov = cov[l, , drop = FALSE]
+			}
+			prev_chr = chr
+		}
+
+		# mean methylation for each reduced cr
+		mtch = as.matrix(findOverlaps(cr, meth_gr))
+		mtch_cr_list = split(mtch[, 2], mtch[, 1])
+
+		m = tapply(mtch_reduced[, 1], mtch_reduced[, 2], function(ind) {
+			ind = unlist(mtch_cr_list[as.character(ind)])
+			colMeans(meth[ind, , drop = FALSE], na.rm = TRUE)
+		})
+		m = do.call("rbind", m)
+
+		colnames(m) = paste0("mean_meth_", colnames(meth))
+		
+		if(!is.null(expr)) {
+			e = expr[gi, sample_id]
+			corr = apply(m, 1, function(x) {
+				l = !is.na(x)
+				if(sum(l) < min_dp) return(NA)
+				cor(x[l], e[l], method = cor_method)
+			})
+			corr_p = suppressWarnings(apply(m, 1, function(x) {
+				l = !is.na(x)
+				if(sum(l) < min_dp) return(NA)
+				cor.test(x[l], e[l], method = cor_method)$p.value
+			}))
+		}
+		if(!is.null(subgroup)) {
+			if(length(unique(subgroup)) == 1) subgroup = NULL
+		}
+
+		if(!is.null(subgroup)) {
+			subgroup = as.vector(subgroup)
+			meth_anova = apply(m, 1, function(x) {
+				l = !is.na(x)
+				data = data.frame(value = x[l], class = subgroup[l], stringsAsFactors = FALSE)
+				if(length(unique(data$class)) < 2) return(NA)
+				if(any(table(data$class) < 2)) return(NA)
+				oneway.test(value ~ class, data = data)$p.value
+			})
+			meth_diameter = apply(m, 1, function(x) {
+				l = !is.na(x)
+				if(any(table(subgroup[l]) < 2)) return(NA)
+				diameter(as.vector(tapply(x[l], subgroup[l], mean)))
+			})
+		}
+		if(nrow(m) == 1) {
+			meth_IQR = IQR(m, na.rm = TRUE)
+		} else {
+			meth_IQR = rowIQRs(m, na.rm = TRUE)
+		}
+		
+		if(is.null(expr)) {
+			if(is.null(subgroup)) {
+				df = DataFrame(m, # mean methylation
+				    meth_IQR = meth_IQR)	
+			} else {
+				df = DataFrame(m, # mean methylation
+				    meth_IQR = meth_IQR,
+				    meth_anova = meth_anova,
+				    meth_diameter = meth_diameter)
+			}
+		} else {
+			if(is.null(subgroup)) {
+				df = DataFrame(m, # mean methylation
+					corr = corr,
+		   			corr_p = corr_p,
+				    meth_IQR = meth_IQR)	
+			} else {
+				df = DataFrame(m, # mean methylation
+					corr = corr,
+		    		corr_p = corr_p,
+				    meth_IQR = meth_IQR,
+				    meth_anova = meth_anova,
+				    meth_diameter = meth_diameter)
+			}
+		}
+		mcols(cr_reduced_list[[i]]) = cbind(mcols(cr_reduced_list[[i]]), df)
+	}
+
+	cr2 = do.call("c", cr_reduced_list)
+
 	metadata(cr2)$cr_param = cr_param
 	return(cr2) 
 }
