@@ -1,10 +1,4 @@
 
-generate_diff_color_fun = function(x) {
-	q = quantile(x, c(0.05, 0.95), na.rm = TRUE)
-	max_q = max(abs(q))
-	colorRamp2(c(-max_q, 0, max_q), c("#3794bf", "#FFFFFF", "#df8640"))
-}
-
 # == title
 # Visualize methylation by Hilbert curve
 #

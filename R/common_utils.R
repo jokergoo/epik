@@ -217,3 +217,17 @@ cor_columns = function (x, abs_cutoff = 0.5, size = 1000, mc = 1, ...) {
 	return(count)
 }
 
+
+generate_diff_color_fun = function(x, quantile = 0.95, col = c("#3794bf", "#FFFFFF", "#df8640")) {
+	q = quantile(abs(x), quantile)
+	if(sum(x < 0)) {
+		colorRamp2(c(-q, 0, q), col)
+	} else {
+		if(length(col) == 3) {
+			colorRamp2(c(0, q), col[2:3])
+		} else {
+			colorRamp2(c(0, q), col)
+		}
+	}
+}
+

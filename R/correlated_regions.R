@@ -80,6 +80,15 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 			if(any(table(subgroup[l]) < 2)) return(NA)
 			diameter(as.vector(tapply(x[l], subgroup[l], mean)))
 		})
+		if(length(unique(subgroup)) == 2) {
+			unique_subgroup = sort(unique(subgroup))
+			meth_diff = apply(m, 1, function(x) {
+				l = !is.na(x)
+				if(any(table(subgroup[l]) < 2)) return(NA)
+				y = tapply(x[l], subgroup[l], mean)
+				y[unique_subgroup[1]] - y[unique_subgroup[2]]
+			})
+		}
 	}
 	if(nrow(m) == 1) {
 		meth_IQR = IQR(m, na.rm = TRUE)
@@ -101,7 +110,8 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 		    corr_p = corr_p,
 		    meth_IQR = meth_IQR,
 		    meth_anova = meth_anova,
-		    meth_diameter = meth_diameter)
+		    meth_diameter = meth_diameter,
+		    meth_diff = meth_diff)
 	}
 	mcols(gr) = df
 
@@ -514,6 +524,15 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 				if(any(table(subgroup[l]) < 2)) return(NA)
 				diameter(as.vector(tapply(x[l], subgroup[l], mean)))
 			})
+			if(length(unique(subgroup)) == 2) {
+				unique_subgroup = sort(unique(subgroup))
+				meth_diff = apply(m, 1, function(x) {
+					l = !is.na(x)
+					if(any(table(subgroup[l]) < 2)) return(NA)
+					y = as.vector(tapply(x[l], subgroup[l], mean))
+					y[unique_subgroup[1]] - y[unique_subgroup[2]]
+				})
+			}
 		}
 		if(nrow(m) == 1) {
 			meth_IQR = IQR(m, na.rm = TRUE)
@@ -529,7 +548,8 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 				df = DataFrame(m, # mean methylation
 				    meth_IQR = meth_IQR,
 				    meth_anova = meth_anova,
-				    meth_diameter = meth_diameter)
+				    meth_diameter = meth_diameter,
+				    meth_diff = meth_diff)
 			}
 		} else {
 			if(is.null(subgroup)) {
@@ -543,7 +563,8 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 		    		corr_p = corr_p,
 				    meth_IQR = meth_IQR,
 				    meth_anova = meth_anova,
-				    meth_diameter = meth_diameter)
+				    meth_diameter = meth_diameter,
+				    meth_diff = meth_diff)
 			}
 		}
 		mcols(cr_reduced_list[[i]]) = cbind(mcols(cr_reduced_list[[i]]), df)
