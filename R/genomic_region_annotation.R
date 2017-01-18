@@ -53,12 +53,12 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 
 	### need to make sure 'gene' also has 'transcript' attribute !!! remove it
 
-	cat("extracting genes\n")
+	qqcat("extracting genes\n")
 	gene = genes(txdb)
 	
 	# intergenic is gaps between 'gene'
 	# we re-define `gene` here to set all strand to '*' (including its levels)
-	cat("extracting intergenic regions\n")
+	qqcat("extracting intergenic regions\n")
 	gene2 = GRanges(seqnames = seqnames(gene),
 		            ranges = ranges(gene))
 	gene2 = set_proper_seqlengths(gene2, species)
@@ -69,7 +69,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 	gene_id = names(gene)
 
 	if(gene_model == "tx") {
-		cat("extracting transcripts\n")
+		qqcat("extracting transcripts\n")
 		# note tx also contain 'gene', because for some case, gene contains transcript_id information.
 	    # need to remove them
 		tx = transcripts(txdb)
@@ -90,7 +90,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 		gm = tx
 	}
 
-	cat("extracting tss, promoter, exon, intron, 5'UTR and 3'UTR\n")
+	qqcat("extracting tss, promoter, exon, intron, 5'UTR and 3'UTR\n")
 	# tss and promoter are defined according to gene model (gene or transcript)
 	tss = promoters(gm, upstream = 0, downstream = 1) # `promoters` is a GRanges method
 	promoter = promoters(gm, upstream = promoters_upstream, downstream = promoters_downstream)

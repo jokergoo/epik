@@ -44,7 +44,7 @@ common_regions = function(gr_list, min_coverage = floor(length(gr_list)/4),
 		qqcat("merging @{i}/@{length(gr_list)} samples\n")
 	}
 	
-	cat("calculating cross-sample coverage\n")
+	qqcat("calculating cross-sample coverage\n")
 	cov = coverage(gr_merge)
 	gr_cov = as(cov, "GRanges")
 	
@@ -61,7 +61,7 @@ common_regions = function(gr_list, min_coverage = floor(length(gr_list)/4),
 	qqcat("there are @{length(gr_common)} common regions\n")
 	
 	# calculate the percentage for each CR covered by gr_list
-	cat("overlapping `gr_list` to common regions.\n")
+	qqcat("overlapping `gr_list` to common regions.\n")
 	gr_common = annotate_to_genomic_features(gr_common, gr_list, type = "percent")
 	
 	return(gr_common)
@@ -105,6 +105,7 @@ subgroup_specific_genomic_regions = function(gr, subgroup, present = 0.7, absent
 	if(is.null(type)) {
 		ss = expand.grid(rep(list(0:1), length(level)))
 		type = apply(ss, 1, paste, collapse = "")
+		type = type[-c(1, length(type))]
 	} else {
 		ss = as.matrix(as.data.frame(strsplit(type, "")))
 		ss = t(ss)

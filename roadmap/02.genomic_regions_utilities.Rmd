@@ -1,0 +1,146 @@
+Utilities for analyzing genomic regions
+=======================================
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(GlobalOptions)
+library(GenomicRanges)
+source("~/project/development/epik/R/read_data_hooks.R")
+library(GenomicFeatures)
+source("~/project/development/epik/R/genomic_region_annotation.R")
+source("~/project/development/epik/R/genomic_region_correlation.R")
+source("~/project/development/epik/R/genomic_region_merge.R")
+source("~/project/development/epik/R/genomic_region_stat.R")
+source("~/project/development/epik/R/genomic_region_subgroup_specificity.R")
+source("~/project/development/epik/R/systemdf.R")
+library(circlize)
+library(ggplot2)
+library(ComplexHeatmap)
+
+library(knitr)
+knitr::opts_chunk$set(
+    error = FALSE,
+    tidy  = FALSE,
+    message = FALSE,
+    warning = FALSE)
+qq.options(cat_verbose = FALSE)
+```
+
+There are several functions in the **epik** package which provides convinient ways to
+analyze genomic regions. This document demostrates the usage of these functions.
+
+First we configure how to read data:
+
+```{r}
+source("~/project/development/epik/roadmap/data_config.R")
+```
+
+## Basic statistics
+
+`basic_genomic_regions_stat()` simply makes barplots for some basic statistics for genomic regions.
+There are following statistics:
+
+- `proportion`: proportion in genome. If `by_chr = TRUE`, each bar represents the proportion in each chromosome.
+- `number`: number of regions. If `by_chr = TRUE`, each bar represents the number of regions in each chromosome.
+- `median_width`: meidan width of regions. If `by_chr = TRUE`, each bar represents the meidan width in each chromosome.
+
+We use H3K4me1 peaks as an example:
+
+```{r basic_genomic_regions_stat}
+peak_list = get_peak_list("H3K4me1")
+basic_genomic_regions_stat(peak_list, annotation = SUBGROUP, 
+	annotation_color = SUBGROUP_COLOR, type = "proportion")
+basic_genomic_regions_stat(peak_list, annotation = SUBGROUP, 
+	annotation_color = SUBGROUP_COLOR, type = "number")
+basic_genomic_regions_stat(peak_list, annotation = SUBGROUP, 
+	annotation_color = SUBGROUP_COLOR, type = "median_width")
+basic_genomic_regions_stat(peak_list, annotation = SUBGROUP, 
+	annotation_color = SUBGROUP_COLOR, by_chr = TRUE)
+```
+
+## Merge regions
+
+`GenomicRanges::reduce` only merges regions with fixed gap width, but sometimes it is not reasonable to set gap
+to a same width for all regions. Assuming we have a list of differentially methylated regions (DMRs) and we want to reduce
+the number of DMRs by merging neighouring DMRs. DMRs distribute differently in different places in the genome, e.g. DMRs are dense
+and short in CpG-rich regions (e.g. CpG islands) while long in CpG-sparse regions (e.g. gene bodies and intergenic regions),
+thus the merging should be applied based to the width of every DMR itself. `reduce2` can merge regions by the width of every region itself.
+This type of merging is dynamic because after each iteration of merging, some regions are merged into a large region and 
+it will has longer extension. The whole merging will proceed iteratively unless there is no new merging.
+
+```{r reduce_by_pct}
+peak_list[[1]]
+peak_reduced = reduce2(peak_list[[1]], gap = 0.5)
+peak_reduced
+```
+
+Use `bp()`, `mb()` to wrap a number to an absolute gap:
+
+```{r reduce_by_bp}
+peak_reduced = reduce2(peak_list[[1]], gap = bp(100))
+peak_reduced
+```
+
+## Annotation
+
+You can annotate to other genomic features by `annotate_to_genomic_features()`. You can choose to return
+the percent of every region in `peak` which is covered by regions in `gf_list`, or just the number of regions
+in `gf_list` that overlap to.
+
+```{r annotate_to_genomic_features}
+peak = peak_list[[1]]
+gf_list = list(gene = GENE, promoter = PROMOTER, cgi = CGI, cgi_shore = CGI_SHORE)
+annotate_to_genomic_features(peak, gf_list)
+annotate_to_genomic_features(peak, gf_list, type = "number")
+```
+
+You can also annotate the genomic regions to gene models. There will be following columns attached to `peak`:
+
+- `nearest_gene_tss` the nearest tss
+- `dist_to_gene_tss` distance to the closest tss
+- `nearest_gene` the closest gene model
+- `dist_to_gene` distance to the closest gene model
+- `overlap_to_exon` percent of the region which is covered by exons or number of exons overlapped to the region
+- `overlap_to_intron` percent of the region which is covered by introns or number of introns overlapped to the region
+- `overlap_to_promoter` percent of the region which is covered by promoters or number of promoters overlapped to the region
+- `overlap_to_intergenic` percent of the region which is covered by intergenic regions or number of intergenic regions overlapped to the region
+- `overlap_to_fiveUTR` percent of the region which is covered by 5'UTRs or number of 5'UTRs overlapped to the region
+- `overlap_to_threeUTR` percent of the region which is covered by 3'UTRs or number of 3'UTRs overlapped to the region
+
+```{r annotate_to_gene_models}
+annotate_to_gene_models(peak, TXDB)
+```
+
+## Correlation
+
+`genomic_regios_correlation()` calculates how two sets of genomic regions correlate.
+There are following correlation methods provides:
+
+```{r genomic_corr}
+sid = SAMPLE_ID[1]
+peak_list2 = lapply(MARKS, function(mk) chipseq_hooks$peak(mk, sid))
+names(peak_list2) = MARKS
+genomic_corr_jaccard(peak_list2[[1]], peak_list2[[2]])
+genomic_corr_reldist(peak_list2[[1]], peak_list2[[2]])
+genomic_corr_absdist(peak_list2[[1]], peak_list2[[2]])
+genomic_corr_intersect(peak_list2[[1]], peak_list2[[2]], method = "number")
+genomic_corr_intersect(peak_list2[[1]], peak_list2[[2]], method = "percent")
+genomic_corr_intersect(peak_list2[[1]], peak_list2[[2]], method = "length")
+```
+
+```{r genomic_regions_correlation}
+res = genomic_regions_correlation(peak_list2, peak_list2, nperm = 3)
+Heatmap(res$stat, name = "Jaccard_corr")
+```
+
+## Subgroup specific regions
+
+```{r subgroup_specific_genomic_regions}
+peak_list = get_peak_list("H3K4me3")
+gr = common_regions(peak_list)
+res = subgroup_specific_genomic_regions(gr, subgroup = SUBGROUP, 
+	present = 0.6, absent = 0.2, type = c("01", "10"))
+res
+heatmap_subgroup_specificity(res, 
+	top_annotation = HeatmapAnnotation(subgroup = SUBGROUP, col = list(subgroup = SUBGROUP_COLOR)))
+```
+

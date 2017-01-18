@@ -1,0 +1,201 @@
+Import datasets
+=================
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(GlobalOptions)
+library(GenomicRanges)
+source("~/project/development/epik/R/read_data_hooks.R")
+library(GenomicFeatures)
+source("~/project/development/epik/R/import_gencode.R")
+library(rtracklayer)
+
+library(knitr)
+knitr::opts_chunk$set(
+    error = FALSE,
+    tidy  = FALSE,
+    message = FALSE,
+    warning = FALSE)
+```
+
+Basicly, for epigenomic datasets, there are methylation datasets (we only consider whole genome
+bisulfite seuqencing datasets), expression datasets (e.g. RNA-seq) and ChIP-seq datasets. We assume
+in the study, methylation and expression are the major datasets that more samples are sequenced and
+only part of sammples have ChIP-seq datasets.
+
+## Methylation datasets
+
+Since methylation datasets are always huge, they are stored and processed by chromosome. In **epik** package,
+users should define how to get the methylation data so that it will be used in further analysis. To define
+reading methylation datasets is simple that users only need to define a function for `methylation_hooks$get_by_chr`.
+The self-defined function only accepts one argument which is the chromosome name and it returnes a list that
+contains:
+
+- `gr`: a `GRanges` object which contains positions of CpG sites. Note we only take the start positions
+- `meth`: methylation matrix. It is used in most of the analysis. So if you apply smoothing to the methylation, set it to the smoothed values.
+         The column name of this matrix will be used as sample names or sample IDs.
+- `cov`: CpG coverage matrix
+- `raw`: the unsmoothed methylation values
+
+It should be noted that rows in `gr` should be sorted and rows in all four elements should be corresponded.
+
+Following code shows how to read methylation data from roadmap datasets. Here the methylation has already been smoothed by **bsseq** package.
+
+```{r}
+library(GetoptLong)
+library(bsseq)
+BASE_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/roadmap_analysis/re_analysis/"
+
+methylation_hooks$get_by_chr = function(chr) {
+    obj = readRDS(qq("@{BASE_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))
+    obj2 = list(gr = obj@rowData,
+                raw = obj@assays$data$M/obj@assays$data$Cov,
+                cov = obj@assays$data$Cov,
+                meth = obj@trans(obj@assays$data$coef)
+                )
+    return(obj2)
+}
+```
+
+After you defined `get_by_chr` hook, you can load data for a chromosome by `set_chr()`:
+
+```{r}
+methylation_hooks$set_chr("chr21")
+```
+
+Then there are following variables you can directly access: `methylation_hooks$gr`, `methylation_hooks$meth`,
+`methylation_hooks$cov`, `methylation_hooks$raw` and `methylation_hooks$sample_id`:
+
+```{r}
+methylation_hooks$gr
+head(methylation_hooks$meth)
+head(methylation_hooks$cov)
+head(methylation_hooks$sample_id)
+```
+
+The data will be reloaded when you switch to a different chromosome, and the values in the five variables will change.
+
+```{r}
+methylation_hooks$set_chr("chr21")
+methylation_hooks$set_chr("chr22")
+methylation_hooks$gr
+```
+
+## ChIP-seq datasets
+
+We assume sometimes, only a subset of samples have ChIP-seq data and across different histone marks, the samples under
+sequenced are not exactly the same. In this case, the data structure for ChIP-seq datasets is loose and will be stored 
+as a simple list.
+
+
+There are following functions that users should define:
+
+- `chipseq_hooks$sample_id`: given a histome mark, it returnes a vector of sample ids. This hook is important that it
+             will be used to match samples in other types of datasets.
+- `chipseq_hooks$peak`: given a histome mark and a sample id (maybe additional arguments), it returns regions of peaks.
+    There must be a meta column containing density of the peaks.
+
+```{r}
+mark = "H3K4me1"
+chipseq_hooks$sample_id = function(mark) {
+    sample_id = dir(qq("@{BASE_DIR}/data/narrow_peaks"), pattern = qq("E\\d+-@{mark}.narrowPeak.gz"))
+    sample_id = gsub(qq("-@{mark}.narrowPeak.gz"), "", sample_id)
+	sample_id[1:4] # just for fast producing the document
+}
+
+chipseq_hooks$peak = function(mark, sid, ...) {
+    df = read.table(qq("@{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz"), stringsAsFactors = FALSE)
+    GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
+}
+
+sample_id = chipseq_hooks$sample_id(mark)
+sample_id
+chipseq_hooks$peak(mark, sample_id[1])
+```
+
+After these two hooks are defined, there is a `get_peak_list()` function which gives peaks in all supported samples for 
+a given histome mark.
+
+```{r}
+peak_list = get_peak_list(mark)
+names(peak_list)
+length(peak_list)
+```
+
+In `chipseq_hooks$peak`, `...` is useful, e.g. you can only read peaks in a single chromosome:
+
+```{r}
+chipseq_hooks$peak = function(mark, sid, chr) {
+    df = read.table(pipe(qq("zcat @{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz | grep @{chr}")), 
+    	stringsAsFactors = FALSE)
+    GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
+}
+chipseq_hooks$peak(mark, sample_id[1], "chr21")
+```
+
+Then these additional arguments can be passed in `get_peak_list()`:
+
+```{r}
+peak_list = get_peak_list(mark, chr = "chr21")
+peak_list[[1]]
+```
+
+There is also another hook for reading chromHMM results if it is available. The returned `GRanges` object must have a
+`state` column which contains prediced chromatin states.
+
+And also you can set addition arguments by `...`.
+
+```{r}
+chipseq_hooks$chromHMM = function(sid, ...) {
+    f = qq("@{BASE_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
+    gr = read.table(f, sep = "\t", stringsAsFactors = FALSE)
+    GRanges(seqnames = gr[[1]], ranges = IRanges(gr[[2]] + 1, gr[[3]]), states = gr[[4]])
+}
+chipseq_hooks$chromHMM(sample_id[1])
+```
+
+Or get the data for all samples:
+
+```{r}
+chromHMM_list = get_chromHMM_list(sample_id)
+length(chromHMM_list)
+```
+
+## Expression datasets
+
+The expression datasets are always represented as matrix, so the data importing is straightforward.
+
+## Processing Gencode annotations
+
+Normally, we can use `GenomicFeatures::makeTranscriptDbFromGFF()` to import the GTF file into R. Here `import_gencode_as_txdb()`
+is a modified version which additionally allows to do pre-filtering on the GTF file and also retrieve some mapping information which
+cannot be provided by the original function.
+
+```{r, results = "hide"}
+GTF_FILE = qq("@{BASE_DIR}/data/gen10.long.chr21.gtf")
+txdb = import_gencode_as_txdb(GTF_FILE)
+```
+
+The TxDb database which only contains protein coding genes:
+
+```{r, results = "hide"}
+txdb = import_gencode_as_txdb(GTF_FILE, gene_type == "protein_coding")
+```
+
+In Gencode annotation file, there are some additional useful information such as gene symbols and gene types,
+this information can be kept by setting `include_mappings = TRUE`:
+
+```{r, results = "hide"}
+lt = import_gencode_as_txdb(GTF_FILE, include_mappings = TRUE)
+names(lt$mapping)
+head(lt$mapping$gene_id2name)
+```
+
+The mapping can also be retrieved later by `extract_field_from_gencode()`. This function
+uses an external Perl script.
+
+```{r}
+mapping = extract_field_from_gencode(GTF_FILE, level = "gene", primary_key = "gene_id", field = "gene_name")
+head(mapping)
+```
+
+

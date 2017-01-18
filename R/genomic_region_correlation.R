@@ -89,19 +89,19 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		}
 	}
 
-	cat("set strand to * and merge potential overlapped regions in gr_list_1.\n")
+	qqcat("set strand to * and merge potential overlapped regions in gr_list_1.\n")
 	gr_list_1 = lapply(gr_list_1, function(gr) {
 		strand(gr) = "*"
 		reduce(sort(gr))
 	})
-	cat("set strand to * and merge potential overlapped regions in gr_list_2.\n")
+	qqcat("set strand to * and merge potential overlapped regions in gr_list_2.\n")
 	gr_list_2 = lapply(gr_list_2, function(gr) {
 		strand(gr) = "*"
 		reduce(sort(gr))
 	})
 	
 	# limit in chromosomes
-	cat("subset regions in selected chromosomes.\n")
+	qqcat("subset regions in selected chromosomes.\n")
 	gr_list_1 = lapply(gr_list_1, function(gr) gr[ seqnames(gr) %in% chromosome])
 	gr_list_2 = lapply(gr_list_2, function(gr) gr[ seqnames(gr) %in% chromosome])
 
@@ -114,11 +114,11 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		background = background[ seqnames(background) %in% chromosome ]
 		background = reduce(background)
 
-		cat("overlaping `gr_list_1` to background\n")
+		qqcat("overlaping `gr_list_1` to background\n")
 		gr_list_1 = lapply(gr_list_1, function(gr) {
 			intersect(gr, background)
 		})
-		cat("overlaping `gr_list_2` to background\n")
+		qqcat("overlaping `gr_list_2` to background\n")
 		gr_list_2 = lapply(gr_list_2, function(gr) {
 			intersect(gr, background)
 		})

@@ -121,7 +121,7 @@ print.bp = function(x, ...) {
 # reduce2(gr, gap = bp(2))
 # reduce2(gr, gap = 0.6)
 # reduce2(gr, gap = 0.6, max_gap = 4)
-reduce2 = function(gr, gap = 0.1, max_gap = Inf, .message = TRUE, ...) {
+reduce2 = function(gr, gap = 0.1, max_gap = Inf, .message = TRUE, .revmap = NULL, ...) {
 	if(length(gr) == 0) {
 		mcols(gr) = NULL
 		gr$revmap = IntegerList()
@@ -143,11 +143,6 @@ reduce2 = function(gr, gap = 0.1, max_gap = Inf, .message = TRUE, ...) {
 		start(gr_extend) = start(gr) - round(pmin(gr_width*gap/2, max_gap/2))
 		end(gr_extend) = end(gr) + round(pmin(gr_width*gap/2, max_gap/2))
 
-		old_revmap = NULL
-		if("revmap" %in% colnames(mcols(gr))) {
-			old_revmap = gr$revmap
-		}
-
 		gr_reduced = reduce(gr_extend, with.revmap = TRUE, ...)
 		revmap = mcols(gr_reduced)[, "revmap"]
 		s = start(gr)
@@ -157,19 +152,22 @@ reduce2 = function(gr, gap = 0.1, max_gap = Inf, .message = TRUE, ...) {
 		start(gr_reduced) = os
 		end(gr_reduced) = oe
 
-		if(!is.null(old_revmap)) {
-			revmap = as(lapply(revmap, function(ind) unlist(old_revmap[ind])), "IntegerList")
-			gr_reduced$revmap = revmap
+		if(is.null(.revmap)) {
+			.revmap = lapply(1:n, function(x) x)
 		}
+
+		.revmap = lapply(revmap, function(ind) unlist(.revmap[ind]))
 
 		n2 = length(gr_reduced)
 		if(n2 == 1) {
+			gr_reduced$revmap = as(.revmap, "IntegerList")
 			return(gr_reduced)
 		} else if(n == n2) {
+			gr_reduced$revmap = as(.revmap, "IntegerList")
 			return(gr_reduced)
 		} else {
 			qqcat("regions have been reduced from @{n} to @{n2}...\n")
-			gr = reduce2(gr_reduced, max_gap = max_gap, gap = gap, .message = FALSE, ...)
+			gr = reduce2(gr_reduced, max_gap = max_gap, gap = gap, .message = FALSE, .revmap = .revmap, ...)
 			return(gr)
 		}
 	}

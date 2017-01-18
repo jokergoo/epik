@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Import datasets</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+<!-- Styles for R syntax highlighter -->
+<style type="text/css">
+   pre .operator,
+   pre .paren {
+     color: rgb(104, 118, 135)
+   }
+
+   pre .literal {
+     color: #990073
+   }
+
+   pre .number {
+     color: #099;
+   }
+
+   pre .comment {
+     color: #998;
+     font-style: italic
+   }
+
+   pre .keyword {
+     color: #900;
+     font-weight: bold
+   }
+
+   pre .identifier {
+     color: rgb(0, 0, 0);
+   }
+
+   pre .string {
+     color: #d14;
+   }
+</style>
+
+<!-- R syntax highlighter -->
+<script type="text/javascript">
+var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>Import datasets</h1>
+
+<p>Basicly, for epigenomic datasets, there are methylation datasets (we only consider whole genome
+bisulfite seuqencing datasets), expression datasets (e.g. RNA-seq) and ChIP-seq datasets. We assume
+in the study, methylation and expression are the major datasets that more samples are sequenced and
+only part of sammples have ChIP-seq datasets.</p>
+
+<h2>Methylation datasets</h2>
+
+<p>Since methylation datasets are always huge, they are stored and processed by chromosome. In <strong>epik</strong> package,
+users should define how to get the methylation data so that it will be used in further analysis. To define
+reading methylation datasets is simple that users only need to define a function for <code>methylation_hooks$get_by_chr</code>.
+The self-defined function only accepts one argument which is the chromosome name and it returnes a list that
+contains:</p>
+
+<ul>
+<li><code>gr</code>: a <code>GRanges</code> object which contains positions of CpG sites. Note we only take the start positions</li>
+<li><code>meth</code>: methylation matrix. It is used in most of the analysis. So if you apply smoothing to the methylation, set it to the smoothed values.
+     The column name of this matrix will be used as sample names or sample IDs.</li>
+<li><code>cov</code>: CpG coverage matrix</li>
+<li><code>raw</code>: the unsmoothed methylation values</li>
+</ul>
+
+<p>It should be noted that rows in <code>gr</code> should be sorted and rows in all four elements should be corresponded.</p>
+
+<p>Following code shows how to read methylation data from roadmap datasets. Here the methylation has already been smoothed by <strong>bsseq</strong> package.</p>
+
+<pre><code class="r">library(GetoptLong)
+library(bsseq)
+BASE_DIR = &quot;/icgc/dkfzlsdf/analysis/B080/guz/roadmap_analysis/re_analysis/&quot;
+
+methylation_hooks$get_by_chr = function(chr) {
+    obj = readRDS(qq(&quot;@{BASE_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds&quot;))
+    obj2 = list(gr = obj@rowData,
+                raw = obj@assays$data$M/obj@assays$data$Cov,
+                cov = obj@assays$data$Cov,
+                meth = obj@trans(obj@assays$data$coef)
+                )
+    return(obj2)
+}
+</code></pre>
+
+<p>After you defined <code>get_by_chr</code> hook, you can load data for a chromosome by <code>set_chr()</code>:</p>
+
+<pre><code class="r">methylation_hooks$set_chr(&quot;chr21&quot;)
+</code></pre>
+
+<pre><code>## Following methylation datasets have been set for chr21:
+## - `methylation_hooks$gr`: a GRanges object which contains positions of CpG sites.
+## - `methylation_hooks$meth`: methylation matrix
+## - `methylation_hooks$raw`: raw methylation matrix (unsmoothed)
+## - `methylation_hooks$cov`: CpG coverage matrix
+## There are 373473 CpG sites, 33 samples.
+</code></pre>
+
+<p>Then there are following variables you can directly access: <code>methylation_hooks$gr</code>, <code>methylation_hooks$meth</code>,
+<code>methylation_hooks$cov</code>, <code>methylation_hooks$raw</code> and <code>methylation_hooks$sample_id</code>:</p>
+
+<pre><code class="r">methylation_hooks$gr
+</code></pre>
+
+<pre><code>## GRanges object with 373473 ranges and 0 metadata columns:
+##            seqnames               ranges strand
+##               &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt;
+##        [1]    chr21   [9411552, 9411552]      *
+##        [2]    chr21   [9411784, 9411784]      *
+##        [3]    chr21   [9412099, 9412099]      *
+##        [4]    chr21   [9412376, 9412376]      *
+##        [5]    chr21   [9412503, 9412503]      *
+##        ...      ...                  ...    ...
+##   [373469]    chr21 [48119473, 48119473]      *
+##   [373470]    chr21 [48119505, 48119505]      *
+##   [373471]    chr21 [48119516, 48119516]      *
+##   [373472]    chr21 [48119519, 48119519]      *
+##   [373473]    chr21 [48119538, 48119538]      *
+##   -------
+##   seqinfo: 1 sequence from an unspecified genome; no seqlengths
+</code></pre>
+
+<pre><code class="r">head(methylation_hooks$meth)
+</code></pre>
+
+<pre><code>##           E003      E004      E005      E006      E007      E008      E011
+## [1,] 0.7142217 0.7872469 0.7511234 0.5207780 0.7184070 0.6320306 0.6581870
+## [2,] 0.7084592 0.7791235 0.7426325 0.5219837 0.7105972 0.6370402 0.6497308
+## [3,] 0.7009525 0.7682274 0.7314745 0.5236844 0.7003123 0.6433852 0.6388015
+## [4,] 0.6946713 0.7588145 0.7220677 0.5252476 0.6916028 0.6485412 0.6297571
+## [5,] 0.6918961 0.7545628 0.7178952 0.5259873 0.6877224 0.6507757 0.6257980
+## [6,] 0.6855107 0.7445430 0.7082669 0.5278274 0.6787116 0.6558166 0.6167961
+##           E012      E013      E016      E017      E021      E022      E024
+## [1,] 0.5192272 0.4647443 0.7425690 0.2062727 0.9238569 0.9035792 0.7141583
+## [2,] 0.5177450 0.4658386 0.7325431 0.2128867 0.9179200 0.8967871 0.7062145
+## [3,] 0.5161186 0.4675165 0.7193164 0.2219526 0.9091847 0.8868893 0.6957982
+## [4,] 0.5150731 0.4691907 0.7081275 0.2299945 0.9008209 0.8775110 0.6870251
+## [5,] 0.5147187 0.4700247 0.7031553 0.2337001 0.8967616 0.8729917 0.6831328
+## [6,] 0.5142002 0.4722093 0.6916657 0.2426384 0.8864084 0.8615545 0.6741405
+##           E050      E053      E058      E065      E066      E071      E079
+## [1,] 0.5218743 0.2594966 0.4966984 0.4686218 0.4552843 0.4282101 0.4984796
+## [2,] 0.5215680 0.2692788 0.4964824 0.4732506 0.4529363 0.4346531 0.5070684
+## [3,] 0.5214453 0.2824509 0.4964663 0.4795770 0.4501663 0.4432953 0.5183900
+## [4,] 0.5216328 0.2938887 0.4967064 0.4851741 0.4481370 0.4507999 0.5280124
+## [5,] 0.5218156 0.2990766 0.4968936 0.4877494 0.4473363 0.4542125 0.5323174
+## [6,] 0.5225146 0.3113660 0.4975346 0.4939534 0.4457523 0.4623402 0.5423769
+##           E094      E095      E096      E097      E098      E100      E104
+## [1,] 0.5249127 0.4106633 0.4421115 0.3493896 0.2544267 0.4569943 0.3858376
+## [2,] 0.5309428 0.4189998 0.4515964 0.3606577 0.2634982 0.4643034 0.3960060
+## [3,] 0.5389489 0.4300968 0.4641459 0.3756954 0.2757225 0.4740372 0.4095632
+## [4,] 0.5458116 0.4396297 0.4748530 0.3886305 0.2863497 0.4824059 0.4212222
+## [5,] 0.5489011 0.4439262 0.4796555 0.3944607 0.2911748 0.4861805 0.4264789
+## [6,] 0.5561717 0.4540456 0.4909070 0.4081816 0.3026193 0.4950799 0.4388600
+##           E105      E106      E109      E112      E113
+## [1,] 0.4606906 0.5422712 0.5123722 0.6406768 0.5194789
+## [2,] 0.4659035 0.5476611 0.5160727 0.6413254 0.5250885
+## [3,] 0.4728514 0.5548592 0.5211275 0.6422788 0.5325942
+## [4,] 0.4788336 0.5610722 0.5255990 0.6431844 0.5390846
+## [5,] 0.4815354 0.5638835 0.5276566 0.6436200 0.5420249
+## [6,] 0.4879166 0.5705378 0.5326156 0.6447170 0.5489923
+</code></pre>
+
+<pre><code class="r">head(methylation_hooks$cov)
+</code></pre>
+
+<pre><code>##      E003 E004 E005 E006 E007 E008 E011 E012 E013 E016 E017 E021 E022 E024
+## [1,]   11   22   18    7   29   38   65   72   52   52   23    0    0   10
+## [2,]   37   43   35    5   38   13   68   25   27   34  110    0    0   15
+## [3,]   22   23    4    0   14    5    8    8    0    0   52    0    0   24
+## [4,]   28   32   31    0   25   19    8    0    0    0   88    0    0   23
+## [5,]   10    8    7    0    5    0    0    0    0    0    0    0    0    0
+## [6,]   11   25    4    4    4   11    4    0    0    0   35    0    0   10
+##      E050 E053 E058 E065 E066 E071 E079 E094 E095 E096 E097 E098 E100 E104
+## [1,]   41   15   40   56   17   75   67   61  105   67   44   49   62   55
+## [2,]   18   13   65   81    4   46   73   68  130   54   43   75   95   60
+## [3,]    7   24  109   99    0    0  109  124  214   90  102  121  137  128
+## [4,]    0   23   68   77    0    0   85   80  154   80   86  100  100   90
+## [5,]    0    6   21   42    0    0   38   42   71   31   28   44   52   46
+## [6,]    0   25   97   77    0    4   93   89  174   87  102  104  133  111
+##      E105 E106 E109 E112 E113
+## [1,]   56  111   32   35   53
+## [2,]   72  107   44   58   61
+## [3,]  119  180   72   88  111
+## [4,]   82  159   57   57   69
+## [5,]   37   66   18   30   26
+## [6,]   96  177   69   81   78
+</code></pre>
+
+<pre><code class="r">head(methylation_hooks$sample_id)
+</code></pre>
+
+<pre><code>## [1] &quot;E003&quot; &quot;E004&quot; &quot;E005&quot; &quot;E006&quot; &quot;E007&quot; &quot;E008&quot;
+</code></pre>
+
+<p>The data will be reloaded when you switch to a different chromosome, and the values in the five variables will change.</p>
+
+<pre><code class="r">methylation_hooks$set_chr(&quot;chr21&quot;)
+</code></pre>
+
+<pre><code>## [chr21] chr21 is already set.
+</code></pre>
+
+<pre><code class="r">methylation_hooks$set_chr(&quot;chr22&quot;)
+</code></pre>
+
+<pre><code>## Following methylation datasets have been set for chr22:
+## - `methylation_hooks$gr`: a GRanges object which contains positions of CpG sites.
+## - `methylation_hooks$meth`: methylation matrix
+## - `methylation_hooks$raw`: raw methylation matrix (unsmoothed)
+## - `methylation_hooks$cov`: CpG coverage matrix
+## There are 550973 CpG sites, 33 samples.
+</code></pre>
+
+<pre><code class="r">methylation_hooks$gr
+</code></pre>
+
+<pre><code>## GRanges object with 550973 ranges and 0 metadata columns:
+##            seqnames               ranges strand
+##               &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt;
+##        [1]    chr22 [16050633, 16050633]      *
+##        [2]    chr22 [16050678, 16050678]      *
+##        [3]    chr22 [16050688, 16050688]      *
+##        [4]    chr22 [16050703, 16050703]      *
+##        [5]    chr22 [16051245, 16051245]      *
+##        ...      ...                  ...    ...
+##   [550969]    chr22 [51244169, 51244169]      *
+##   [550970]    chr22 [51244175, 51244175]      *
+##   [550971]    chr22 [51244181, 51244181]      *
+##   [550972]    chr22 [51244185, 51244185]      *
+##   [550973]    chr22 [51244205, 51244205]      *
+##   -------
+##   seqinfo: 1 sequence from an unspecified genome; no seqlengths
+</code></pre>
+
+<h2>ChIP-seq datasets</h2>
+
+<p>We assume sometimes, only a subset of samples have ChIP-seq data and across different histone marks, the samples under
+sequenced are not exactly the same. In this case, the data structure for ChIP-seq datasets is loose and will be stored 
+as a simple list.</p>
+
+<p>There are following functions that users should define:</p>
+
+<ul>
+<li><code>chipseq_hooks$sample_id</code>: given a histome mark, it returnes a vector of sample ids. This hook is important that it
+         will be used to match samples in other types of datasets.</li>
+<li><code>chipseq_hooks$peak</code>: given a histome mark and a sample id (maybe additional arguments), it returns regions of peaks.
+There must be a meta column containing density of the peaks.</li>
+</ul>
+
+<pre><code class="r">mark = &quot;H3K4me1&quot;
+chipseq_hooks$sample_id = function(mark) {
+    sample_id = dir(qq(&quot;@{BASE_DIR}/data/narrow_peaks&quot;), pattern = qq(&quot;E\\d+-@{mark}.narrowPeak.gz&quot;))
+    sample_id = gsub(qq(&quot;-@{mark}.narrowPeak.gz&quot;), &quot;&quot;, sample_id)
+    sample_id[1:4] # just for fast producing the document
+}
+
+chipseq_hooks$peak = function(mark, sid, ...) {
+    df = read.table(qq(&quot;@{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz&quot;), stringsAsFactors = FALSE)
+    GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
+}
+
+sample_id = chipseq_hooks$sample_id(mark)
+sample_id
+</code></pre>
+
+<pre><code>## [1] &quot;E001&quot; &quot;E002&quot; &quot;E003&quot; &quot;E004&quot;
+</code></pre>
+
+<pre><code class="r">chipseq_hooks$peak(mark, sample_id[1])
+</code></pre>
+
+<pre><code>## GRanges object with 308752 ranges and 1 metadata column:
+##            seqnames                 ranges strand |   density
+##               &lt;Rle&gt;              &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##        [1]    chr20 [ 30298909,  30300550]      * |       423
+##        [2]    chr17 [ 75284496,  75284928]      * |       410
+##        [3]    chr12 [114024796, 114025578]      * |       400
+##        [4]     chr2 [172173141, 172175014]      * |       400
+##        [5]     chr6 [158250559, 158252604]      * |       391
+##        ...      ...                    ...    ... .       ...
+##   [308748]    chr17 [ 76929272,  76929591]      * |        20
+##   [308749]     chr8 [ 76007005,  76007198]      * |        20
+##   [308750]     chr4 [128765826, 128766052]      * |        20
+##   [308751]    chr15 [ 73656516,  73656709]      * |        20
+##   [308752]    chr20 [ 55452364,  55452624]      * |        20
+##   -------
+##   seqinfo: 24 sequences from an unspecified genome; no seqlengths
+</code></pre>
+
+<p>After these two hooks are defined, there is a <code>get_peak_list()</code> function which gives peaks in all supported samples for 
+a given histome mark.</p>
+
+<pre><code class="r">peak_list = get_peak_list(mark)
+names(peak_list)
+</code></pre>
+
+<pre><code>## [1] &quot;E001&quot; &quot;E002&quot; &quot;E003&quot; &quot;E004&quot;
+</code></pre>
+
+<pre><code class="r">length(peak_list)
+</code></pre>
+
+<pre><code>## [1] 4
+</code></pre>
+
+<p>In <code>chipseq_hooks$peak</code>, <code>...</code> is useful, e.g. you can only read peaks in a single chromosome:</p>
+
+<pre><code class="r">chipseq_hooks$peak = function(mark, sid, chr) {
+    df = read.table(pipe(qq(&quot;zcat @{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz | grep @{chr}&quot;)), 
+        stringsAsFactors = FALSE)
+    GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
+}
+chipseq_hooks$peak(mark, sample_id[1], &quot;chr21&quot;)
+</code></pre>
+
+<pre><code>## GRanges object with 3194 ranges and 1 metadata column:
+##          seqnames               ranges strand |   density
+##             &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##      [1]    chr21 [44752216, 44752778]      * |       295
+##      [2]    chr21 [27520010, 27523105]      * |       262
+##      [3]    chr21 [37581770, 37582452]      * |       258
+##      [4]    chr21 [35320733, 35321807]      * |       255
+##      [5]    chr21 [39221506, 39222338]      * |       247
+##      ...      ...                  ...    ... .       ...
+##   [3190]    chr21 [18980024, 18980259]      * |        20
+##   [3191]    chr21 [30687622, 30687887]      * |        20
+##   [3192]    chr21 [31387319, 31387564]      * |        20
+##   [3193]    chr21 [34077608, 34077850]      * |        20
+##   [3194]    chr21 [39355897, 39356122]      * |        20
+##   -------
+##   seqinfo: 1 sequence from an unspecified genome; no seqlengths
+</code></pre>
+
+<p>Then these additional arguments can be passed in <code>get_peak_list()</code>:</p>
+
+<pre><code class="r">peak_list = get_peak_list(mark, chr = &quot;chr21&quot;)
+peak_list[[1]]
+</code></pre>
+
+<pre><code>## GRanges object with 3194 ranges and 1 metadata column:
+##          seqnames               ranges strand |   density
+##             &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##      [1]    chr21 [44752216, 44752778]      * |       295
+##      [2]    chr21 [27520010, 27523105]      * |       262
+##      [3]    chr21 [37581770, 37582452]      * |       258
+##      [4]    chr21 [35320733, 35321807]      * |       255
+##      [5]    chr21 [39221506, 39222338]      * |       247
+##      ...      ...                  ...    ... .       ...
+##   [3190]    chr21 [18980024, 18980259]      * |        20
+##   [3191]    chr21 [30687622, 30687887]      * |        20
+##   [3192]    chr21 [31387319, 31387564]      * |        20
+##   [3193]    chr21 [34077608, 34077850]      * |        20
+##   [3194]    chr21 [39355897, 39356122]      * |        20
+##   -------
+##   seqinfo: 1 sequence from an unspecified genome; no seqlengths
+</code></pre>
+
+<p>There is also another hook for reading chromHMM results if it is available. The returned <code>GRanges</code> object must have a
+<code>state</code> column which contains prediced chromatin states.</p>
+
+<p>And also you can set addition arguments by <code>...</code>.</p>
+
+<pre><code class="r">chipseq_hooks$chromHMM = function(sid, ...) {
+    f = qq(&quot;@{BASE_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz&quot;)
+    gr = read.table(f, sep = &quot;\t&quot;, stringsAsFactors = FALSE)
+    GRanges(seqnames = gr[[1]], ranges = IRanges(gr[[2]] + 1, gr[[3]]), states = gr[[4]])
+}
+chipseq_hooks$chromHMM(sample_id[1])
+</code></pre>
+
+<pre><code>## GRanges object with 510150 ranges and 1 metadata column:
+##            seqnames               ranges strand |      states
+##               &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;
+##        [1]    chr10     [     1, 119600]      * |    15_Quies
+##        [2]    chr10     [119601, 120400]      * |      1_TssA
+##        [3]    chr10     [120401, 136200]      * | 14_ReprPCWk
+##        [4]    chr10     [136201, 139400]      * |    15_Quies
+##        [5]    chr10     [139401, 145200]      * |       9_Het
+##        ...      ...                  ...    ... .         ...
+##   [510146]     chrY [59003801, 59005800]      * |    15_Quies
+##   [510147]     chrY [59005801, 59006000]      * |       9_Het
+##   [510148]     chrY [59006001, 59011800]      * |    15_Quies
+##   [510149]     chrY [59011801, 59026000]      * |       9_Het
+##   [510150]     chrY [59026001, 59373400]      * |    15_Quies
+##   -------
+##   seqinfo: 25 sequences from an unspecified genome; no seqlengths
+</code></pre>
+
+<p>Or get the data for all samples:</p>
+
+<pre><code class="r">chromHMM_list = get_chromHMM_list(sample_id)
+length(chromHMM_list)
+</code></pre>
+
+<pre><code>## [1] 4
+</code></pre>
+
+<h2>Expression datasets</h2>
+
+<p>The expression datasets are always represented as matrix, so the data importing is straightforward.</p>
+
+<h2>Processing Gencode annotations</h2>
+
+<p>Normally, we can use <code>GenomicFeatures::makeTranscriptDbFromGFF()</code> to import the GTF file into R. Here <code>import_gencode_as_txdb()</code>
+is a modified version which additionally allows to do pre-filtering on the GTF file and also retrieve some mapping information which
+cannot be provided by the original function.</p>
+
+<pre><code class="r">GTF_FILE = qq(&quot;@{BASE_DIR}/data/gen10.long.chr21.gtf&quot;)
+txdb = import_gencode_as_txdb(GTF_FILE)
+</code></pre>
+
+<p>The TxDb database which only contains protein coding genes:</p>
+
+<pre><code class="r">txdb = import_gencode_as_txdb(GTF_FILE, gene_type == &quot;protein_coding&quot;)
+</code></pre>
+
+<p>In Gencode annotation file, there are some additional useful information such as gene symbols and gene types,
+this information can be kept by setting <code>include_mappings = TRUE</code>:</p>
+
+<pre><code class="r">lt = import_gencode_as_txdb(GTF_FILE, include_mappings = TRUE)
+names(lt$mapping)
+head(lt$mapping$gene_id2name)
+</code></pre>
+
+<p>The mapping can also be retrieved later by <code>extract_field_from_gencode()</code>. This function
+uses an external Perl script.</p>
+
+<pre><code class="r">mapping = extract_field_from_gencode(GTF_FILE, level = &quot;gene&quot;, primary_key = &quot;gene_id&quot;, field = &quot;gene_name&quot;)
+head(mapping)
+</code></pre>
+
+<pre><code>## ENSG00000223662.1 ENSG00000235277.1 ENSG00000229047.1 ENSG00000231201.1 
+##      &quot;SAMSN1-AS1&quot;      &quot;AF127577.8&quot;     &quot;AF127577.10&quot;     &quot;AF127577.11&quot; 
+## ENSG00000226771.1 ENSG00000233783.1 
+##      &quot;AP001136.2&quot;      &quot;AP001442.2&quot;
+</code></pre>
+
+</body>
+
+</html>
