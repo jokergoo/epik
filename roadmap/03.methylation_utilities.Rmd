@@ -1,0 +1,67 @@
+Utilities for analyzing methylation data
+=======================================
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(GlobalOptions)
+library(GenomicRanges)
+source("~/project/development/epik/R/read_data_hooks.R")
+library(GenomicFeatures)
+source("~/project/development/epik/R/genomic_region_annotation.R")
+source("~/project/development/epik/R/methylation_genomic_features.R")
+source("~/project/development/epik/R/methylation_qc_and_distribution.R")
+library(circlize)
+library(ComplexHeatmap)
+library(EnrichedHeatmap)
+library(gtrellis)
+library(GetoptLong)
+
+library(knitr)
+knitr::opts_chunk$set(
+    error = FALSE,
+    tidy  = FALSE,
+    message = FALSE,
+    warning = FALSE)
+qq.options(cat_verbose = FALSE)
+```
+
+First we configure how to read data:
+
+```{r}
+source("~/project/development/epik/roadmap/data_config.R")
+```
+
+
+```{r wgbs_qcplot, fig.width = 12, fig.height = 8}
+wgbs_qcplot(SAMPLE_ID[1])
+wgbs_qcplot(SAMPLE_ID[1], background = CGI)
+wgbs_qcplot(SAMPLE_ID[1], background = CGI_SHORE)
+```
+
+```{r gtrellis_coverage_and_methylation, fig.width = 14, fig.height = 8}
+gtrellis_coverage_and_methylation(SAMPLE_ID[1], nrow = 3, compact = TRUE)
+```
+
+```{r gtrellis_methylation_for_multiple_samples, fig.width = 14, fig.height = 8}
+gtrellis_methylation_for_multiple_samples(SAMPLE_ID, subgroup = SUBGROUP, nrow = 3, compact = TRUE)
+```
+
+```{r global_methylation_distribution}
+ha = HeatmapAnnotation(subgroup = SUBGROUP, col = list(subgroup = SUBGROUP_COLOR))
+global_methylation_distribution(SAMPLE_ID, subgroup = SUBGROUP, ha = ha)
+global_methylation_distribution(SAMPLE_ID, subgroup = SUBGROUP, ha = ha, 
+	background = CGI, meth_range = c(0, 0.1))
+global_methylation_distribution(SAMPLE_ID, subgroup = SUBGROUP, ha = ha, 
+	background = CGI_SHORE)
+```
+
+```{r heatmap_diff_methylation_in_genomic_features}
+sid = SAMPLE_ID[1]
+peak_list = lapply(MARKS, function(mk) chipseq_hooks$peak(mk, sid))
+names(peak_list) = MARKS
+gf_list = list(gene = GENE, promoter = PROMOTER, cgi = CGI, cgi_shore = CGI_SHORE)
+gr = get_mean_methylation_in_genomic_features(SAMPLE_ID, peak_list)
+gr[[1]]
+heatmap_diff_methylation_in_genomic_features(gr[[1]], subgroup = SUBGROUP, ha = ha,
+	min_mean_range = 0.2, cutoff = 0.01, genomic_features = gf_list)
+```
+

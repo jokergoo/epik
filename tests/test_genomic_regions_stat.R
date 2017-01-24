@@ -1,4 +1,11 @@
-require(circlize)
+library(circlize)
+library(GenomicRanges)
+library(GlobalOptions)
+library(ggplot2)
+
+source("/home/guz/project/development/epik/R/read_data_hooks.R")
+source("/home/guz/project/development/epik/R/genomic_region_stat.R")
+
 set.seed(123)
 gr_list = lapply(1:10, function(i) {
 	df = generateRandomBed(1000)[1:sample(100:1000, 1), ]

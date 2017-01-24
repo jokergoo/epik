@@ -22,3 +22,4 @@ l = apply(count, 1, function(x) sum(x > 0) > length(x)/2)
 expr = rpkm[l, , drop = FALSE]
 EXPR = log2(expr + 1)   # log2(rpkm + 1)
 EXPR = EXPR[intersect(rownames(EXPR), names(genes)), , drop = FALSE]
+

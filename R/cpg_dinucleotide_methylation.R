@@ -1,12 +1,7 @@
 
-two_rows_are_similar = function(x1, x2, meth_diff = 0.05, p = 0.8) {
-	sum(abs(x1 - x2) < meth_diff)/length(x1) > p
-}
-
-two_row_means = function(x1, x2, w1, w2) {
-	y = (x1*w1 + x2*w2)/(w1 + w2)
-	y[is.na(y)] = 0
-	y[is.infinite(y)] = 0
+weighted_mean = function(x1, x2, w1, w2) {
+	y = ifelse(is.na(x1), x2, ifelse(is.na(x2), x1, (x1*w1 + x2*w2)/(w1 + w2)))
+	y[is.infinite(y)] = NA
 	y
 }
 
@@ -37,7 +32,7 @@ two_row_means = function(x1, x2, w1, w2) {
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 # 
-cpg_dinucleotide_methylation = function(pos, meth, cov, meth_diff = 0.05, p = 0.8) {
+cpg_dinucleotide_methylation = function(pos, meth, cov) {
 
 	if(length(pos) != nrow(meth)) {
 		stop("length of `pos` should be same as the number of rows of `meth`.")
@@ -61,52 +56,51 @@ cpg_dinucleotide_methylation = function(pos, meth, cov, meth_diff = 0.05, p = 0.
 	meth2 = matrix(nrow = nrow(meth), ncol = ncol(meth))
 	cov2 = matrix(nrow = nrow(cov), ncol = ncol(cov))
 	pos2 = numeric(length(pos))
+
+	n = length(pos)
+
+	l_continous = rep(FALSE, n)
+	l_continous[2:n] = l_continous[2:n] | pos[2:n] - pos[1:(n-1)] == 1
+	l_continous[1:(n-1)] = l_continous[1:(n-1)] | pos[1:(n-1)] - pos[2:n] == -1
+
+	l_single = !l_continous
 	
-	next_used = FALSE
-	for(i in seq_len(nrow(meth))) {
-		if(next_used) {
-			next_used = FALSE
-			next
+	for(i in seq_len(n-1)) {
+		if(!l_continous[i+1]) {
+			l_continous[i] = FALSE
 		}
-
-		if(i < length(pos)) {
-			if(pos[i] >= pos[i + 1]) {
-				stop("`pos` should be sorted.")
-			}
-		}
-
-		if(pos[i] + 1 == pos[i + 1] && i < length(pos)) {
-			# check whether the methylation values are same in all samples
-			if(two_rows_are_similar(meth[i, ], meth[i+1, ], meth_diff, p)) {
-				j = j + 1
-				meth2[j, ] = two_row_means(meth[i, ], meth[i+1, ], cov[i, ], cov[i+1, ])
-				cov2[j, ] = round(two_row_means(cov[i, ], cov[i+1, ], cov[i, ], cov[i+1, ]))
-				pos2[j] = pos[i]
-				next_used = TRUE
-				qqcat("Merge CpG dinucleotide at position [@{pos[i]}, @{pos[i+1]}]\n")
-			} else {
-				j = j + 1
-				meth2[j, ] = meth[i, ]
-				cov2[j, ] = round(cov[i, ])
-				pos2[j] = pos[i]
-				qqcat("find an alone C in a continous CpG*** at position @{pos[i]}\n")
-			}
-		} else { 
-			j = j + 1
-			meth2[j, ] = meth[i, ]
-			cov2[j, ] = round(cov[i, ])
-			pos2[j] = pos[i]
-			qqcat("find an alone C at position @{pos[i]}\n")
+		if(l_continous[i]) {
+			l_continous[i+1] = FALSE
 		}
 	}
-	l = apply(meth2, 1, function(x) all(is.na(x)))
-	meth2 = meth2[!l, , drop = FALSE]
-	cov2 = cov2[!l, , drop = FALSE]
-	pos2 = pos2[!l]
+	if(l_continous[n]) {
+		l_continous[n] = FALSE
+	}
+
+	pos2[l_single] = pos[l_single]
+	meth2[l_single, ] = meth[l_single, ]
+	cov2[l_single, ] = cov[l_single, ]
+
+	ind = which(l_continous)
+	pos2[ind] = pos[ind]
+	meth2[ind, ] = weighted_mean(x1 = meth[ind, ], x2 = meth[ind+1, ],
+		                         w1 = cov[ind, ], w2 = cov[ind+1, ])
+	cov2[ind, ] = weighted_mean(x1 = cov[ind, ], x2 = cov[ind+1, ],
+		                         w1 = cov[ind, ], w2 = cov[ind+1, ])
+	
+	l = pos2 > 0
+	meth2 = meth2[l, , drop = FALSE]
+	cov2 = cov2[l, , drop = FALSE]
+	pos2 = pos2[l]
+
+	cov2 = round(cov2)
+	l = is.na(meth2)
+	cov2[l] = 0
+	meth2[l] = 0
 
 	colnames(meth2) = colnames(meth)
 	colnames(cov2) = colnames(cov)
 
-	return(list(pos = pos, meth = meth2, cov = cov2))
+	return(list(pos = pos2, meth = meth2, cov = cov2))
 }
 

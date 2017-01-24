@@ -43,14 +43,14 @@ Following code shows how to read methylation data from roadmap datasets. Here th
 ```{r}
 library(GetoptLong)
 library(bsseq)
-BASE_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/roadmap_analysis/re_analysis/"
+PROJECT_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap/"
 
 methylation_hooks$get_by_chr = function(chr) {
-    obj = readRDS(qq("@{BASE_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))
-    obj2 = list(gr = obj@rowData,
-                raw = obj@assays$data$M/obj@assays$data$Cov,
-                cov = obj@assays$data$Cov,
-                meth = obj@trans(obj@assays$data$coef)
+    obj = readRDS(qq("@{PROJECT_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))
+    obj2 = list(gr = granges(obj),
+                raw = getMeth(obj, type = "raw"),
+                cov = getCoverage(obj, type = "Cov"),
+                meth = getMeth(obj, type = "smooth")
                 )
     return(obj2)
 }
@@ -97,13 +97,13 @@ There are following functions that users should define:
 ```{r}
 mark = "H3K4me1"
 chipseq_hooks$sample_id = function(mark) {
-    sample_id = dir(qq("@{BASE_DIR}/data/narrow_peaks"), pattern = qq("E\\d+-@{mark}.narrowPeak.gz"))
+    sample_id = dir(qq("@{PROJECT_DIR}/data/narrow_peaks"), pattern = qq("E\\d+-@{mark}.narrowPeak.gz"))
     sample_id = gsub(qq("-@{mark}.narrowPeak.gz"), "", sample_id)
 	sample_id[1:4] # just for fast producing the document
 }
 
 chipseq_hooks$peak = function(mark, sid, ...) {
-    df = read.table(qq("@{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz"), stringsAsFactors = FALSE)
+    df = read.table(qq("@{PROJECT_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz"), stringsAsFactors = FALSE)
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
 
@@ -125,7 +125,7 @@ In `chipseq_hooks$peak`, `...` is useful, e.g. you can only read peaks in a sing
 
 ```{r}
 chipseq_hooks$peak = function(mark, sid, chr) {
-    df = read.table(pipe(qq("zcat @{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz | grep @{chr}")), 
+    df = read.table(pipe(qq("zcat @{PROJECT_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz | grep @{chr}")), 
     	stringsAsFactors = FALSE)
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
@@ -146,7 +146,7 @@ And also you can set addition arguments by `...`.
 
 ```{r}
 chipseq_hooks$chromHMM = function(sid, ...) {
-    f = qq("@{BASE_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
+    f = qq("@{PROJECT_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
     gr = read.table(f, sep = "\t", stringsAsFactors = FALSE)
     GRanges(seqnames = gr[[1]], ranges = IRanges(gr[[2]] + 1, gr[[3]]), states = gr[[4]])
 }
@@ -171,7 +171,7 @@ is a modified version which additionally allows to do pre-filtering on the GTF f
 cannot be provided by the original function.
 
 ```{r, results = "hide"}
-GTF_FILE = qq("@{BASE_DIR}/data/gen10.long.chr21.gtf")
+GTF_FILE = qq("@{PROJECT_DIR}/data/gen10.long.chr21.gtf")
 txdb = import_gencode_as_txdb(GTF_FILE)
 ```
 
@@ -182,15 +182,7 @@ txdb = import_gencode_as_txdb(GTF_FILE, gene_type == "protein_coding")
 ```
 
 In Gencode annotation file, there are some additional useful information such as gene symbols and gene types,
-this information can be kept by setting `include_mappings = TRUE`:
-
-```{r, results = "hide"}
-lt = import_gencode_as_txdb(GTF_FILE, include_mappings = TRUE)
-names(lt$mapping)
-head(lt$mapping$gene_id2name)
-```
-
-The mapping can also be retrieved later by `extract_field_from_gencode()`. This function
+this information can be retrieved later by `extract_field_from_gencode()`. This function
 uses an external Perl script.
 
 ```{r}
@@ -198,4 +190,12 @@ mapping = extract_field_from_gencode(GTF_FILE, level = "gene", primary_key = "ge
 head(mapping)
 ```
 
+In Roadmap project, the transcriptome annotation is Gencode v10 which is quite out-of-date. In this analysis, we
+removed genes which have different annotation to Gencode v19 which is the newest annotation for human genome hg19.
+Genes are kept only if the positions are exactly the same in the two annotations. The matching can be done by
+`match_gencode()` function. In following example, we also filter transcripts by `transcript_type == "protein_coding".
 
+```{r}
+g19 = qq("@{PROJECT_DIR}/data/gencode.v19.annotation.chr21.gtf")
+match_by_gencode(GTF_FILE, g19, transcript_type == "protein_coding")
+```

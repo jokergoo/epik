@@ -129,12 +129,12 @@ reduce2 = function(gr, gap = 0.1, max_gap = Inf, .message = TRUE, .revmap = NULL
 	}
 
 	if(inherits(gap, "bp")) {
-		qqcat("Regions are merged by an absolute distance: (<= @{gap} bp)\n")
+		message(qq("Regions are merged by an absolute distance: (<= @{gap} bp)"))
 		return(reduce(gr, min.gapwidth = gap, with.revmap = TRUE, ...))
 		
 	} else {
 
-		if(.message) qqcat("Regions are extended by @{gap}*width (maximum @{max_gap} bp).\n")
+		if(.message) message(qq("Regions are extended by @{gap}*width (maximum @{max_gap} bp)."))
 		
 		n = length(gr)
 		gr_extend = gr
@@ -166,7 +166,7 @@ reduce2 = function(gr, gap = 0.1, max_gap = Inf, .message = TRUE, .revmap = NULL
 			gr_reduced$revmap = as(.revmap, "IntegerList")
 			return(gr_reduced)
 		} else {
-			qqcat("regions have been reduced from @{n} to @{n2}...\n")
+			message(qq("regions have been reduced from @{n} to @{n2}..."))
 			gr = reduce2(gr_reduced, max_gap = max_gap, gap = gap, .message = FALSE, .revmap = .revmap, ...)
 			return(gr)
 		}

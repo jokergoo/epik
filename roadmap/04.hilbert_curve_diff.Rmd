@@ -1,0 +1,59 @@
+Visualize global difference by Hilbert curve
+=============================================
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(GlobalOptions)
+library(GenomicRanges)
+library(memoise)
+source("~/project/development/epik/R/read_data_hooks.R")
+library(GenomicFeatures)
+source("~/project/development/epik/R/hilbert_curve_difference.R")
+source("~/project/development/epik/R/methylation_genomic_features.R")
+source("~/project/development/epik/R/genomic_region_correlation.R")
+source("~/project/development/epik/R/common_utils.R")
+library(circlize)
+library(ComplexHeatmap)
+library(EnrichedHeatmap)
+library(GetoptLong)
+library(HilbertCurve)
+
+library(knitr)
+knitr::opts_chunk$set(
+    error = FALSE,
+    tidy  = FALSE,
+    message = FALSE,
+    warning = FALSE)
+qq.options(cat_verbose = FALSE)
+```
+
+First we configure how to read data:
+
+```{r}
+source("~/project/development/epik/roadmap/data_config.R")
+```
+
+```{r}
+gr_meth = hilbert_curve_methylation_difference(subgroup = SUBGROUP,
+	comparison = c("group1", "group2"), type = c("global_mean", "subgroup_mean", "difference"))
+gr_meth
+```
+
+```{r}
+gr_list = lapply(MARKS, function(mk) hilbert_curve_chipseq_difference(mk, subgroup = SUBGROUP, 
+	comparison = c("group1", "group2"), type = "rel_difference"))
+gr_list[[1]]
+```
+
+```{r}
+names(gr_list) = MARKS
+gr_meth$diff = gr_meth$mean_group1 - gr_meth$mean_group2
+gr_list = lapply(gr_list, function(gr) {
+	gr$diff = gr$mean_group1 - gr$mean_group2
+	gr
+})
+general_chipseq_association_to_methylation(gr_list, gr_meth)
+
+```{r, fig.width = 12}
+general_chipseq_association(gr_list)
+general_chipseq_association(gr_list, q = seq(0.1, 0.9, by = 0.1))
+```

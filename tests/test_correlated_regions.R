@@ -22,3 +22,7 @@ cr2 = reduce_cr(cr, TXDB)
 cr2 = reduce_cr(cr, TXDB, EXPR)
 
 compare_meth(g[seqnames(g) == "chr21"], cr)
+
+correlated_regions(sample_id, EXPR["ENSG00000197978.8", , drop = FALSE], 
+	TXDB, chr = "chr15", window_size = 6, window_step = 3, 
+	subgroup = subgroup)

@@ -230,10 +230,10 @@ contains:</p>
 
 <pre><code class="r">library(GetoptLong)
 library(bsseq)
-BASE_DIR = &quot;/icgc/dkfzlsdf/analysis/B080/guz/roadmap_analysis/re_analysis/&quot;
+PROJECT_DIR = &quot;/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap/&quot;
 
 methylation_hooks$get_by_chr = function(chr) {
-    obj = readRDS(qq(&quot;@{BASE_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds&quot;))
+    obj = readRDS(qq(&quot;@{PROJECT_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds&quot;))
     obj2 = list(gr = obj@rowData,
                 raw = obj@assays$data$M/obj@assays$data$Cov,
                 cov = obj@assays$data$Cov,
@@ -409,13 +409,13 @@ There must be a meta column containing density of the peaks.</li>
 
 <pre><code class="r">mark = &quot;H3K4me1&quot;
 chipseq_hooks$sample_id = function(mark) {
-    sample_id = dir(qq(&quot;@{BASE_DIR}/data/narrow_peaks&quot;), pattern = qq(&quot;E\\d+-@{mark}.narrowPeak.gz&quot;))
+    sample_id = dir(qq(&quot;@{PROJECT_DIR}/data/narrow_peaks&quot;), pattern = qq(&quot;E\\d+-@{mark}.narrowPeak.gz&quot;))
     sample_id = gsub(qq(&quot;-@{mark}.narrowPeak.gz&quot;), &quot;&quot;, sample_id)
     sample_id[1:4] # just for fast producing the document
 }
 
 chipseq_hooks$peak = function(mark, sid, ...) {
-    df = read.table(qq(&quot;@{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz&quot;), stringsAsFactors = FALSE)
+    df = read.table(qq(&quot;@{PROJECT_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz&quot;), stringsAsFactors = FALSE)
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
 
@@ -466,7 +466,7 @@ names(peak_list)
 <p>In <code>chipseq_hooks$peak</code>, <code>...</code> is useful, e.g. you can only read peaks in a single chromosome:</p>
 
 <pre><code class="r">chipseq_hooks$peak = function(mark, sid, chr) {
-    df = read.table(pipe(qq(&quot;zcat @{BASE_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz | grep @{chr}&quot;)), 
+    df = read.table(pipe(qq(&quot;zcat @{PROJECT_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz | grep @{chr}&quot;)), 
         stringsAsFactors = FALSE)
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
@@ -521,7 +521,7 @@ peak_list[[1]]
 <p>And also you can set addition arguments by <code>...</code>.</p>
 
 <pre><code class="r">chipseq_hooks$chromHMM = function(sid, ...) {
-    f = qq(&quot;@{BASE_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz&quot;)
+    f = qq(&quot;@{PROJECT_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz&quot;)
     gr = read.table(f, sep = &quot;\t&quot;, stringsAsFactors = FALSE)
     GRanges(seqnames = gr[[1]], ranges = IRanges(gr[[2]] + 1, gr[[3]]), states = gr[[4]])
 }
@@ -565,7 +565,7 @@ length(chromHMM_list)
 is a modified version which additionally allows to do pre-filtering on the GTF file and also retrieve some mapping information which
 cannot be provided by the original function.</p>
 
-<pre><code class="r">GTF_FILE = qq(&quot;@{BASE_DIR}/data/gen10.long.chr21.gtf&quot;)
+<pre><code class="r">GTF_FILE = qq(&quot;@{PROJECT_DIR}/data/gen10.long.chr21.gtf&quot;)
 txdb = import_gencode_as_txdb(GTF_FILE)
 </code></pre>
 

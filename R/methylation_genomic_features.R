@@ -136,8 +136,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 
 		}
 		gr_combine = annotate_to_genomic_features(gr2, genomic_features, prefix = "")
-		
-		ht_list = ht_list + Heatmap(as.matrix(mcols(gr2)), name = "anno", col = colorRamp2(c(0, 1), c("white", "orange")),
+		ht_list = ht_list + Heatmap(as.matrix(mcols(gr_combine)), name = "anno", col = colorRamp2(c(0, 1), c("white", "orange")),
 			cluster_columns = FALSE, use_raster = length(gr2) > 2500, raster_quality = 2,
 			width = unit(4, "mm")*length(genomic_features))
 	}

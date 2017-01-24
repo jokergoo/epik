@@ -69,7 +69,7 @@ methylation_hooks$set_chr = function(chr, verbose = TRUE) {
 	previous_chr = METH_OBJ$chr
 	if(!is.null(previous_chr)) {
 		if(previous_chr == chr) {
-			if(verbose) qqcat("[@{chr}] @{chr} is already set.\n")
+			if(verbose) message(qq("[@{chr}] @{chr} is already set."))
 	        return(invisible(NULL))
 	    }
 	}
@@ -147,12 +147,12 @@ methylation_hooks$set_chr = function(chr, verbose = TRUE) {
 	METH_OBJ <<- METH_OBJ
 
 	if(verbose) {
-		qqcat("Following methylation datasets have been set for @{chr}:\n")
-		qqcat("- `methylation_hooks$gr`: a GRanges object which contains positions of CpG sites.\n")
-		qqcat("- `methylation_hooks$meth`: methylation matrix\n")
-		if(!is.null(obj$raw)) qqcat("- `methylation_hooks$raw`: raw methylation matrix (unsmoothed)\n")
-		if(!is.null(obj$cov)) qqcat("- `methylation_hooks$cov`: CpG coverage matrix\n")
-		qqcat("There are @{length(obj$gr)} CpG sites, @{length(sample_id)} samples.\n")
+		message(qq("Following methylation datasets have been set for @{chr}:"))
+		message(qq("- `methylation_hooks$gr`: a GRanges object which contains positions of CpG sites."))
+		message(qq("- `methylation_hooks$meth`: methylation matrix"))
+		if(!is.null(obj$raw)) message(qq("- `methylation_hooks$raw`: raw methylation matrix (unsmoothed)"))
+		if(!is.null(obj$cov)) message(qq("- `methylation_hooks$cov`: CpG coverage matrix"))
+		message(qq("There are @{length(obj$gr)} CpG sites, @{length(sample_id)} samples."))
 	}
 	
 	return(invisible(NULL))
@@ -181,7 +181,7 @@ print.methylation_hooks = function(x, ...) {
 		qqcat("- `gr`: a GRanges object which contains positions of CpG sites.\n")
 		qqcat("- `meth`: methylation matrix\n")
 		qqcat("- `raw`: raw methylation matrix (unsmoothed), optional.\n")
-		qqcat("- `cov`: CpG coverage matrix, optional.\n")
+		qqcat("- `cov`: CpG coverage matrix.\n")
 	} else {
 		if(is.null(METH_OBJ$chr)) {
 			qqcat("`methylation_hooks$get_by_chr` has been set. Use `methylation_hooks$set_chr() to set a chromosome.\n")

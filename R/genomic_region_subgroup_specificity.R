@@ -41,10 +41,10 @@ common_regions = function(gr_list, min_coverage = floor(length(gr_list)/4),
 	for(i in seq_along(gr_list)[-1]) {
 		gr_merge = c(gr_merge, gr_list[[i]])
 
-		qqcat("merging @{i}/@{length(gr_list)} samples\n")
+		message(qq("merging @{i}/@{length(gr_list)} samples"))
 	}
 	
-	qqcat("calculating cross-sample coverage\n")
+	message("calculating cross-sample coverage")
 	cov = coverage(gr_merge)
 	gr_cov = as(cov, "GRanges")
 	
@@ -52,16 +52,16 @@ common_regions = function(gr_list, min_coverage = floor(length(gr_list)/4),
 	mcols(gr_common) = NULL
 
 	if(length(gr_common) == 0) {
-		cat("No common region has been detected.\n")
+		message("No common region has been detected.")
 		return(NULL)
 	}
 	
 	gr_common = gr_common[ width(gr_common) >= min_width ]
 
-	qqcat("there are @{length(gr_common)} common regions\n")
+	message(qq("there are @{length(gr_common)} common regions"))
 	
 	# calculate the percentage for each CR covered by gr_list
-	qqcat("overlapping `gr_list` to common regions.\n")
+	message("overlapping `gr_list` to common regions.")
 	gr_common = annotate_to_genomic_features(gr_common, gr_list, type = "percent")
 	
 	return(gr_common)
@@ -104,8 +104,9 @@ subgroup_specific_genomic_regions = function(gr, subgroup, present = 0.7, absent
 	level = unique(as.character(subgroup))
 	if(is.null(type)) {
 		ss = expand.grid(rep(list(0:1), length(level)))
+		n_ss = nrow(ss)
+		ss = ss[-c(1, n_ss), , drop = FALSE]
 		type = apply(ss, 1, paste, collapse = "")
-		type = type[-c(1, length(type))]
 	} else {
 		ss = as.matrix(as.data.frame(strsplit(type, "")))
 		ss = t(ss)
@@ -125,7 +126,7 @@ subgroup_specific_genomic_regions = function(gr, subgroup, present = 0.7, absent
 	names(gr_list) = type
 	
 	for(i in seq_along(type)) {
-		qqcat("extracting subgroup: '@{type[i]}', ")
+		message(qq("extracting subgroup: '@{type[i]}', "), appendLF = FALSE)
 		l = sapply(seq_len(nrow(mat)), function(k) {
 			x = mat[k, ]
 			for(j in seq_along(level)) {
@@ -150,7 +151,7 @@ subgroup_specific_genomic_regions = function(gr, subgroup, present = 0.7, absent
 			}
 			return(TRUE)
 		})
-		qqcat("@{sum(l)} regions\n")
+		message(qq("@{sum(l)} regions"))
 		
 		gr_list[[i]] = gr[l]
 	}
@@ -250,7 +251,7 @@ heatmap_subgroup_specificity = function(gr_list, genomic_features = NULL,
 			type = c(type, rep(gr_list_name[i], length(gr_list[[i]])))
 		} else {
 			# cluster rows for each sub-matrix
-			qqcat("cluster rows for sub-matrix @{gr_list_name[i]} (@{length(gr_list[[i]])} rows).\n")
+			message(qq("cluster rows for sub-matrix @{gr_list_name[i]} (@{length(gr_list[[i]])} rows)."))
 			rclust = hclust(dist(sub_matrix))
 			mat = rbind(mat, sub_matrix[rclust$order, ])
 			gr_combine = c(gr_combine, gr_list[[i]][rclust$order])
@@ -262,7 +263,7 @@ heatmap_subgroup_specificity = function(gr_list, genomic_features = NULL,
 	# globally cluster inside each subgroup
 	mat2 = NULL
 	for(le in level) {
-		qqcat("cluster columns for samples in subgroup @{le}.\n")
+		message(qq("cluster columns for samples in subgroup @{le}."))
 		m = mat[, subgroup == le, drop = FALSE]
 		if(ncol(m) > 1) {
 			cclust = hclust(dist(t(m)))
@@ -272,7 +273,17 @@ heatmap_subgroup_specificity = function(gr_list, genomic_features = NULL,
 		}
 	}
 
-	ht_list = Heatmap(type, name = "type", width = unit(4, "mm"))
+	type_level = unique(type)
+	n_type = length(type_level)
+	if(n_type <= 9) {
+		type_col = brewer.pal(9, name = "Set1")[1:n_type]
+	} else if(n_type <= 9+7) {
+		type_col = c(brewer.pal(9, name = "Set1"), brewer.pal(7, "Set2"))[1:n_type]
+	} else {
+		type_col = c(brewer.pal(9, name = "Set1"), brewer.pal(7, "Set2"), rand_color(n_type - 16))
+	}
+	names(type_col) = type_level
+	ht_list = Heatmap(type, name = "type", col = type_col, width = unit(4, "mm"))
 	
 	ht_list = ht_list + Heatmap(mat2, name = "pct", col = colorRamp2(c(0, 1), c("white", "blue")), 
 		top_annotation = top_annotation,
@@ -298,6 +309,6 @@ heatmap_subgroup_specificity = function(gr_list, genomic_features = NULL,
 			width = unit(4, "mm")*length(genomic_features))
 	}
 
-	qqcat("generating heatmap, (nrow = @{nrow(mat2)}, ncol = @{ncol(mat2)})\n")
+	message(qq("generating heatmap, (nrow = @{nrow(mat2)}, ncol = @{ncol(mat2)})"))
 	draw(ht_list, ...)
 }

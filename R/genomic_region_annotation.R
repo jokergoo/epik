@@ -53,12 +53,12 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 
 	### need to make sure 'gene' also has 'transcript' attribute !!! remove it
 
-	qqcat("extracting genes\n")
+	message("extracting genes...")
 	gene = genes(txdb)
 	
 	# intergenic is gaps between 'gene'
 	# we re-define `gene` here to set all strand to '*' (including its levels)
-	qqcat("extracting intergenic regions\n")
+	message("extracting intergenic regions...")
 	gene2 = GRanges(seqnames = seqnames(gene),
 		            ranges = ranges(gene))
 	gene2 = set_proper_seqlengths(gene2, species)
@@ -69,7 +69,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 	gene_id = names(gene)
 
 	if(gene_model == "tx") {
-		qqcat("extracting transcripts\n")
+		message("extracting transcripts...")
 		# note tx also contain 'gene', because for some case, gene contains transcript_id information.
 	    # need to remove them
 		tx = transcripts(txdb)
@@ -90,7 +90,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 		gm = tx
 	}
 
-	qqcat("extracting tss, promoter, exon, intron, 5'UTR and 3'UTR\n")
+	message("extracting tss, promoter, exon, intron, 5'UTR and 3'UTR...")
 	# tss and promoter are defined according to gene model (gene or transcript)
 	tss = promoters(gm, upstream = 0, downstream = 1) # `promoters` is a GRanges method
 	promoter = promoters(gm, upstream = promoters_upstream, downstream = promoters_downstream)
@@ -107,7 +107,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
     n_gr = length(gr)
 
 	# closest tss
-	qqcat("annotating to closest @{gene_model} tss\n")
+	message(qq("annotating to closest @{gene_model} tss"))
 	nst = as.matrix(nearest(gr, tss, select = "all"))
 	m1 = gr[ nst[, 1] ]
 	m2 = tss[ nst[, 2] ]
@@ -121,7 +121,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 	mcols(gr)[, qq("dist_to_@{gene_model}_tss")] = dst2  
 	
 	# closest transcript
-	qqcat("annotating to closest @{gene_model}\n")
+	message(qq("annotating to closest @{gene_model}"))
 	nst = as.matrix(nearest(gr, gm, select = "all"))
 	m1 = gr[ nst[, 1] ]
 	m2 = gm[ nst[, 2] ]
@@ -200,7 +200,7 @@ annotate_to_genomic_features = function(gr, genomic_features,
 	
     if(inherits(genomic_features, "GRanges")) {
         
-        qqcat("annotating to @{name}\n")
+        message(qq("annotating to @{name}"))
 
         ostrand = strand(gr)
         if(type == "percent") {

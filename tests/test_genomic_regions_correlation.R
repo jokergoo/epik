@@ -1,4 +1,11 @@
-context("test genomic_regions_correlation")
+library(GenomicRanges)
+library(GetoptLong)
+library(GenomicFeatures)
+library(matrixStats)
+
+source("/home/guz/project/development/epik/R/genomic_region_correlation.R")
+source("/home/guz/project/development/epik/R/systemdf.R")
+source("/home/guz/project/development/epik/R/genomic_region_annotation.R")
 
 gr1 = GRanges(seqname = "chr1", ranges = IRanges(start = c(4, 10), end = c(6, 16)))
 gr2 = GRanges(seqname = "chr1", ranges = IRanges(start = c(7, 13), end = c(8, 20)))
@@ -16,24 +23,22 @@ test_that("test genomic correlation functions", {
 	expect_that(genomic_corr_intersect(gr1, gr2, method = "length"), equals(4))
 })
 
-if(Sys.getenv("IS_PBS") != "") {
 
 makeGRangesFromDataFrameWithFirstThreeColumns = function(df) {
 	GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]], df[[3]]))
 }
 
-BASE_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/roadmap_analysis/re_analysis/"
+PROJECT_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap"
 
-files = dir(qq("@{BASE_DIR}/data/narrow_peaks"), pattern = "gz$")
+files = dir(qq("@{PROJECT_DIR}/data/narrow_peaks"), pattern = "gz$")
 peak_list = lapply(sample(files, 4), function(f) {
-	df = read.table(qq("@{BASE_DIR}/data/narrow_peaks/@{f}"))
+	df = read.table(qq("@{PROJECT_DIR}/data/narrow_peaks/@{f}"))
 	qqcat("reading @{f}\n")
 	makeGRangesFromDataFrameWithFirstThreeColumns(df)
 })
 names(peak_list) = paste0("peak_", seq_along(peak_list))
 
-library(GenomicFeatures)
-txdb = loadDb(qq("@{BASE_DIR}/data/gen10.long.sqlite"))
+txdb = loadDb(qq("@{PROJECT_DIR}/data/gen10.long.sqlite"))
 genomic_features = list(
 	gene = genes(txdb),
 	exon = exons(txdb)
@@ -80,6 +85,3 @@ genomic_corr_jaccard(gr1, gr2, background = background)
 genomic_corr_intersect(gr1, gr2, background = background, method = "number")
 
 genomic_regions_correlation(peak_list, genomic_features, nperm = 4, background = background)
-
-
-}

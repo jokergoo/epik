@@ -37,6 +37,10 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 	i = i[l]
 	ir = ir[l]
 
+	if(length(i) == 0) {
+		return(GRanges())
+	}
+
 	if(!is.null(cov)) {
 		meth[cov < cov_cutoff] = NA
 	}
@@ -300,7 +304,9 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		gr$tx_tss_dist = tx_tss_dist
 		gr$nearest_tx_tss = tss[dist[,2]]$tx_name
 
-		res = c(res, gr)
+		if(length(gr)) {
+			res = c(res, gr)
+		}
 	}
 
 	param = list()

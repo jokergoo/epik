@@ -89,19 +89,19 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		}
 	}
 
-	qqcat("set strand to * and merge potential overlapped regions in gr_list_1.\n")
+	message("set strand to * and merge potential overlapped regions in gr_list_1.")
 	gr_list_1 = lapply(gr_list_1, function(gr) {
 		strand(gr) = "*"
 		reduce(sort(gr))
 	})
-	qqcat("set strand to * and merge potential overlapped regions in gr_list_2.\n")
+	message("set strand to * and merge potential overlapped regions in gr_list_2.")
 	gr_list_2 = lapply(gr_list_2, function(gr) {
 		strand(gr) = "*"
 		reduce(sort(gr))
 	})
 	
 	# limit in chromosomes
-	qqcat("subset regions in selected chromosomes.\n")
+	message("subset regions in selected chromosomes.")
 	gr_list_1 = lapply(gr_list_1, function(gr) gr[ seqnames(gr) %in% chromosome])
 	gr_list_2 = lapply(gr_list_2, function(gr) gr[ seqnames(gr) %in% chromosome])
 
@@ -114,11 +114,11 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		background = background[ seqnames(background) %in% chromosome ]
 		background = reduce(background)
 
-		qqcat("overlaping `gr_list_1` to background\n")
+		message("overlaping `gr_list_1` to background")
 		gr_list_1 = lapply(gr_list_1, function(gr) {
 			intersect(gr, background)
 		})
-		qqcat("overlaping `gr_list_2` to background\n")
+		message("overlaping `gr_list_2` to background")
 		gr_list_2 = lapply(gr_list_2, function(gr) {
 			intersect(gr, background)
 		})
@@ -156,7 +156,7 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		
 		# stat
 		for(j in seq_along(gr_list_2)) {
-			qqcat("calculating correlation between @{gr_name_1[i]} and @{gr_name_2[[j]]}\n")
+			message(qq("calculating correlation between @{gr_name_1[i]} and @{gr_name_2[[j]]}"))
 			stat[j, i] = suppressWarnings(do.call("stat_fun", list(gr_list_1[[i]], gr_list_2[[j]], ...)))
 		}
 
@@ -181,7 +181,7 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 				x = numeric(length(gr_list_2))
 				for(j in seq_along(gr_list_2)) {
 					
-					qqcat("calculating correlation between random_@{gr_name_1[i]} and @{gr_name_2[[j]]}, @{k}/@{nperm}\n")
+					message(qq("calculating correlation between random_@{gr_name_1[i]} and @{gr_name_2[[j]]}, @{k}/@{nperm}"))
 
 					x[j] = suppressWarnings(do.call("stat_fun", list(gr_random, gr_list_2[[j]], ...)))
 				}

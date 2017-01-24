@@ -53,6 +53,9 @@ basic_genomic_regions_stat(peak_list, annotation = SUBGROUP,
 	annotation_color = SUBGROUP_COLOR, type = "number")
 basic_genomic_regions_stat(peak_list, annotation = SUBGROUP, 
 	annotation_color = SUBGROUP_COLOR, type = "median_width")
+```
+
+```{r, fig.width = 12}
 basic_genomic_regions_stat(peak_list, annotation = SUBGROUP, 
 	annotation_color = SUBGROUP_COLOR, by_chr = TRUE)
 ```

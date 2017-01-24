@@ -1,3 +1,8 @@
+library(GenomicRanges)
+library(GetoptLong)
+
+source("/home/guz/project/development/epik/R/genomic_region_merge.R")
+
 gr = GRanges(seqnames = "chr1", ranges = IRanges(start = c(1, 4, 8 ,16), 
     end = c(2, 5, 10, 30)), value = 1:4)
 reduce2(gr, gap = bp(2))

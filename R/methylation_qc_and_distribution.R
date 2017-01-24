@@ -49,10 +49,10 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 				ind = intersect(ind, mtch[, 1])
 			}
 			if(length(ind) > 10000) {
-				cat(", randomly sample 10000 CpG sites.")
+				qqcat(", randomly sample 10000 CpG sites.")
 				ind = sort(sample(ind, 10000))
 			}
-			cat("\n")
+			qqcat("\n")
 			cv = cv[ind]
 
 			mh = as.vector(methylation_hooks$meth[ind, sid])
@@ -79,11 +79,14 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 		# mean coverage per chromosome
 		cpg_coverage_mean = sapply(cov, mean)
 		cpg_coverage_median = sapply(cov, median)
+		cpg_coverage_q25 = sapply(cov, quantile, 0.25)
+		cpg_coverage_q75 = sapply(cov, quantile, 0.75)
 		plot(c(0, length(cpg_coverage_mean)), c(0, max(c(cpg_coverage_mean, cpg_coverage_median))), axes = FALSE, ann = FALSE, type="n")
 		for(i in seq_along(cpg_coverage_mean)) {
 			abline(v = i, lty = 3, col = "grey")
 			lines(c(i-1, i), c(cpg_coverage_mean[i], cpg_coverage_mean[i]), lwd = 2)
 			lines(c(i-1, i), c(cpg_coverage_median[i], cpg_coverage_median[i]), lwd = 2, col = "red")
+			rect(i-1, cpg_coverage_q25[i], i, cpg_coverage_q75[i], col = "#FF000040", border = NA)
 		}
 		abline(v = 0, lty = 3, col = "grey")
 		par(las = 3)
@@ -151,11 +154,14 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 		# mean methylation per chromosome
 		cpg_methyrate_mean = sapply(meth, mean)
 		cpg_methyrate_median = sapply(meth, median)
+		cpg_methyrate_q25 = sapply(meth, quantile, 0.25)
+		cpg_methyrate_q75 = sapply(meth, quantile, 0.75)
 		plot(c(0, length(cpg_methyrate_mean)), c(0, 1), axes = FALSE, ann = FALSE, type = "n")
 		for(i in seq_along(cpg_methyrate_mean)) {
 			abline(v = i, lty = 3, col = "grey")
 			lines(c(i-1, i), c(cpg_methyrate_mean[i], cpg_methyrate_mean[i]), lwd = 2)
 			lines(c(i-1, i), c(cpg_methyrate_median[i], cpg_methyrate_median[i]), lwd = 2, col = "red")
+			rect(i-1, cpg_methyrate_q25[i], i, cpg_methyrate_q75[i], col = "#FF000040", border = NA)
 		}
 		abline(v = 0, lty = 3, col = "grey")
 		par(las = 3)
@@ -175,6 +181,14 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 		plot(as.numeric(names(coverage2methyrate)), coverage2methyrate, ylim = c(0, 1), pch=16, col = "#000000A0", log = "x", cex = 0.8, xlab = "CpG coverage", ylab = "mean methylation", main = qq("Mean Methylation for each CpG coverage (@{sid})"))
 		coverage2methyrate = tapply(unlist(meth), unlist(cov), median)
 		points(as.numeric(names(coverage2methyrate)), coverage2methyrate, pch=16, cex = 0.8, col = "#FF0000A0")
+		coverage2methyrate_q25 = tapply(unlist(meth), unlist(cov), quantile, 0.25)
+		coverage2methyrate_q75 = tapply(unlist(meth), unlist(cov), quantile, 0.75)
+		coverage2methyrate_n = tapply(unlist(meth), unlist(cov), length)
+		x = as.numeric(names(coverage2methyrate))
+		l = coverage2methyrate_n > max(coverage2methyrate_n)*0.05
+		polygon(c(x[l], rev(x[l])), c(coverage2methyrate_q75[l], rev(coverage2methyrate_q25[l])),
+			    col = "#FF000040", border = NA)
+
 		legend("bottomleft", pch = 16, col = c("black", "red"), legend = c("mean", "median"))
 		abline(v = q99, lty = 2, col = "blue"); text(q99, 0, "q99 of cov", adj = c(0, 0))
 		par(mfrow = c(1, 1))
@@ -208,7 +222,7 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 # Zuguang Gu <z.gu@dkfz.de>
 #
 gtrellis_coverage_and_methylation = function(sid, chromosome = paste0("chr", 1:22), 
-	species = "hg19", nw = 10000, pch = ".", pt_gp = gpar(), transparency = 0.8, 
+	species = "hg19", nw = 10000, pch = 16, pt_gp = gpar(size = unit(1, "mm")), transparency = 0.8, 
 	title = qq("Distribution of CpG coverage and methylation for @{sid}"), ...) {
 
 	# window size

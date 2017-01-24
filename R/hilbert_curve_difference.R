@@ -117,6 +117,7 @@ average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(a
 	x = rep(empty_value, length(gr1))
 	chromosome = intersect(chromosome, intersect( unique(as.vector(seqnames(gr1))),  unique(as.vector(seqnames(gr2)))))
 	for(chr in chromosome) {
+		qqcat("  averaging in window for @{chr}\n")
 		l = as.vector(seqnames(gr1) == chr)
 		if(sum(l)) {
 			window = ranges(gr1[seqnames(gr1) == chr])
@@ -244,7 +245,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 		mean = (mcols(gr)[, qq("mean_@{comparison[1]}")] + mcols(gr)[, qq("mean_@{comparison[2]}")])/2
 		s0 = quantile(mean[mean > 1e-6], 0.05)
 		# diff = diff/(mean + s0)
-		diff = diff/mean_density
+		diff = diff/mean(mean_density)
 		col_fun = generate_diff_color_fun(diff)
 		cm = ColorMapping(col_fun = col_fun)
 		lgd = color_mapping_legend(cm, title = "rel_diff", plot = FALSE)
@@ -331,7 +332,9 @@ get_chipseq_association_stat = function(gr_list, q_cutoff) {
 	return(lt)
 }
 
-get_chipseq_association_stat = memoise(get_chipseq_association_stat)
+if(!is.memoized(get_chipseq_association_stat)) {
+	get_chipseq_association_stat = memoise(get_chipseq_association_stat)
+}
 
 general_chipseq_association = function(gr_list, q = 0.9) {
 	
@@ -494,7 +497,7 @@ general_chipseq_association_to_methylation = function(gr_list, gr_meth) {
 	}
 
 	## make the plot
-	cat("making plot\n")
+	qqcat("making plot\n")
 	single_plot = function(i, title = "") {
 		pushViewport(viewport(layout = grid.layout(nrow = 4, ncol = 1, 
 			height = unit.c(3*grobHeight(textGrob(title)), unit(c(3, 1), "null"), unit(5, "mm") + 2*grobHeight(textGrob("foo", gp = gpar(fontsize = 8)))))))
