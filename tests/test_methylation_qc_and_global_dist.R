@@ -1,5 +1,9 @@
-
-source("test_head.R")
+library(circlize)
+library(gtrellis)
+source("/home/guz/project/development/epik/tests/test_head.R")
+source("/home/guz/project/development/epik/R/methylation_qc_and_distribution.R")
+library(EnrichedHeatmap)
+library(ComplexHeatmap)
 
 methylation_hooks$set_chr("chr21")
 sample_id = methylation_hooks$sample_id

@@ -19,9 +19,10 @@ cr_hilbert_curve = function(cr, species = "hg19", chromosome = paste0("chr", 1:2
 			hc_map(hc, add = TRUE, fill = NA, border = NA, labels_gp = gpar(fontsize = 20))
 		}
 	} else {
+		chromosome = intersect(chromosome, unique(as.vector(seqnames(cr))))
 		for(i in seq_along(chromosome)) {
 		    chr = chromosome[i]
-		    qqcat("make hilbert curve for cr for @{chr}\n")
+		    message(qq("make hilbert curve for cr for @{chr}"))
 		    cr2 = cr[seqnames(cr) == chr]
 		    hc = HilbertCurve(s = 1, e = max(chr_len), mode = "pixel", level = 10, title = qq("@{title}@{ifelse(title == '', '', ', ')}@{chr}"), legend = legend)
 		    hc_layer(hc, ranges(cr2), col = col_fun(cr2$corr), mean_mode = "absolute")
@@ -29,8 +30,7 @@ cr_hilbert_curve = function(cr, species = "hg19", chromosome = paste0("chr", 1:2
 	}
 }
 
-cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation,
-	stat_plot = NULL, stat_plot_width = ifelse(n_subgroup == 2, 12, 9), stat_plot_height = 3) {
+cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation) {
 
 	cr_param = metadata(cr)$cr_param
 	sample_id = cr_param$sample_id
@@ -53,7 +53,7 @@ cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation,
 	n_target = length(target_index)
 	p = apply(mat[, target_index], 1, function(x) sum(is.na(x))/n_target)
 	l = p < 0.25
-	qqcat("there are @{length(l) - sum(l)} rows that have too many NAs in the body.\n")
+	message(qq("there are @{length(l) - sum(l)} rows that have too many NAs in the body."))
 	mat2 = mat[l, ]
 	mat2[is.na(mat2)] = 0
 
@@ -105,23 +105,31 @@ cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation,
 			for(i2 in c("high", "low")) {
 				label = paste(i1, i2, sep = ",")
 				l = combined_split == label
-				qqcat("cluster @{label}, @{sum(l)} rows\n")
+				message(qq("cluster @{label}, @{sum(l)} rows"))
+				if(sum(l) == 1) {
+					row_order = c(row_order, which(l))
+				} else {
+					dend1 = as.dendrogram(hclust(dist(meth_mat[l, ])))
+					dend1 = reorder(dend1, rowMeans(meth_mat[l, ]))
+					row_od1 = order.dendrogram(dend1)
+
+					row_order = c(row_order, which(l)[row_od1])
+				}
+			}
+		}
+	} else {
+		for(i1 in 1:4) {
+			l = combined_split == i1
+			message(qq("cluster km = @{i1}, @{sum(l)} rows"))
+			if(sum(l) == 1) {
+				row_order = c(row_order, which(l))
+			} else {
 				dend1 = as.dendrogram(hclust(dist(meth_mat[l, ])))
 				dend1 = reorder(dend1, rowMeans(meth_mat[l, ]))
 				row_od1 = order.dendrogram(dend1)
 
 				row_order = c(row_order, which(l)[row_od1])
 			}
-		}
-	} else {
-		for(i1 in 1:4) {
-			l = combined_split == i1
-			qqcat("cluster km = @{i1}, @{sum(l)} rows\n")
-			dend1 = as.dendrogram(hclust(dist(meth_mat[l, ])))
-			dend1 = reorder(dend1, rowMeans(meth_mat[l, ]))
-			row_od1 = order.dendrogram(dend1)
-
-			row_order = c(row_order, which(l)[row_od1])
 		}
 	}
 
@@ -189,12 +197,31 @@ cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation,
 	cr_param$km = km4
 	cr_param$group_mean_col = group_mean_col
 	cr_param$order = row_order
-	cr_parma$combined_split = combined_split
-	metadata(cr) = cr_param
+	cr_param$combined_split = combined_split
+	metadata(cr) = list(cr_param = cr_param)
 
-	if(!is.null(stat_plot)) {
+	if(!interactive()) {
 		
-		pdf(stat_plot, width = stat_plot_width, height = stat_plot_height)
+		device_type = .Device
+		filepath = attr(.Device, "filepath")
+		if(device_type == "pdf") {
+			filepath = gsub("\\.pdf$", ".stat.pdf", ignore.case = TRUE)
+			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)
+			stat_plot_height = 3
+			pdf(filepath, width = stat_plot_width, height = stat_plot_height)
+		} else if(device_type == "png") {
+			filepath = gsub("\\.png$", ".stat.png", ignore.case = TRUE)
+			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)*200
+			stat_plot_height = 3*200
+			png(filepath, width = stat_plot_width, height = stat_plot_height)
+		} else {
+			filepath = gsub("\\.[^.]+$", ".stat.png", ignore.case = TRUE)
+			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)*200
+			stat_plot_height = 3*200
+			png(filepath, width = stat_plot_width, height = stat_plot_height)
+		}	
+			
+		message("making stat plot")
 		gene_length = w
 		corr_col_fun = colorRamp2(c(-1, 0, 1), c("darkgreen", "white", "red"))
 
@@ -243,7 +270,7 @@ cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation,
 
 sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff = 0.1) {
 
-	cr_param = metadata(cr)
+	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
 	n_subgroup = length(unique(subgroup))
 
@@ -284,7 +311,7 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 		use_raster = TRUE, raster_quality = 4, cluster_rows = TRUE, show_row_dend = FALSE,
 		top_annotation = HeatmapAnnotation(enrich = anno_enriched(ylim = c(0, ymax), gp = gpar(col = group_mean_col))), top_annotation_height = unit(3, "cm"),
 		axis_name = c("-50kb", "TSS", "TES", "50kb"))
-	draw(ht, row_order = row_order, split = km4, cluster_rows = FALSE, main_heatmap = "neg_cr", column_title = qq("cutoff_@{cutoff}_meandiff_@{meandiff}"))
+	draw(ht, row_order = row_order, split = km4, cluster_rows = FALSE, main_heatmap = "neg_cr", column_title = qq("fdr_cutoff_@{fdr_cutoff}_meth_diff_cutoff_@{meth_diff_cutoff}"))
 	for(i in 1:4) {
 		decorate_heatmap_body("cluster", slice = i, {grid.text(i, rot = 90)})
 	}
@@ -292,7 +319,7 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 
  sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01), meth_diff_cutoff = c(0, 0.1, 0.2, 0.3)) {
 
- 	cr_param = metadata(cr)
+ 	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
 	n_subgroup = length(unique(subgroup))
 
@@ -315,7 +342,7 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 	for(i in seq_along(fdr_cutoff)) {
 	     for(j in seq_along(meth_diff_cutoff)) {
 	     	
-	     	qqcat("for cutoff_@{fdr_cutoff[i]}_meandiff_@{meth_diff_cutoff[j]}\n")
+	     	message(qq("for cutoff_@{fdr_cutoff[i]}_meandiff_@{meth_diff_cutoff[j]}"))
 	     	
 	     	if(n_subgroup %in% c(0, 1)) {
 				l = cr$corr_fdr < fdr_cutoff[i] & cr$meth_IQR > meth_diff_cutoff[j]
@@ -343,7 +370,7 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 	ymax = rep(0, n_meth_diff)
 	for(i in seq_along(fdr_cutoff)) {
 	     for(j in seq_along(meth_diff_cutoff)) {
-	     	qqcat("add enrich lines for fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}\n")
+	     	message(qq("add enrich lines for fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}"))
 			
 			mat_neg_cr = mat_neg_cr_list[[qq("fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}")]]
 			mat_pos_cr = mat_pos_cr_list[[qq("fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}")]]
@@ -420,11 +447,11 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 	pushViewport(viewport(layout.pos.row = 3:6, layout.pos.col = 5))
 	grid.text("proportion", rot = 90, x = unit(1, "cm"))
 	upViewport()
-	dev.off()
 }
 
 gtrellis_cr_genes = function(cr, txdb, expr, species = "hg19", highlight_cytoband = TRUE) {
-	cr_param = metadata(cr)
+	
+	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
 	n_subgroup = length(unique(subgroup))
 
@@ -440,6 +467,8 @@ gtrellis_cr_genes = function(cr, txdb, expr, species = "hg19", highlight_cytoban
 
 	gm = genes(txdb)
 	g = gm[cr_gi]
+	w = width(gm)
+	names(w) = names(gm)
 
 	den_list = lapply(1:4, function(i) {
 		gi = names(km4[km4 == i])
@@ -546,7 +575,8 @@ gtrellis_cr_genes = function(cr, txdb, expr, species = "hg19", highlight_cytoban
 
 
 gtrellis_sig_cytoband = function(cr, txdb, cytoband_list, color_head = TRUE) {
-	cr_param = metadata(cr)
+	
+	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
 	n_subgroup = length(unique(subgroup))
 
@@ -623,7 +653,7 @@ gtrellis_sig_cytoband = function(cr, txdb, cytoband_list, color_head = TRUE) {
 
 cr_genes_david = function(cr, david_user) {
 	
-	cr_param = metadata(cr)
+	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
 	n_subgroup = length(unique(subgroup))
 
@@ -637,23 +667,23 @@ cr_genes_david = function(cr, david_user) {
 
 	cr = cr[cr$gene_id %in% cr_gi]
 
-	gene_list = tapply(names(km4), combined_split, function(x) {
+	gene_list = tapply(names(km4), cr_param$combined_split, function(x) {
 		gsub("\\.\\d+$", "", x)
 	})
 
 	gene_list = gene_list[grepl("^[1:4]", names(gene_list))]
 
 	# https should be supported by the machine
-	david = DAVIDWebService$new(email = david_user, url = "https://david.abcc.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+	david = RDAVIDWebService::DAVIDWebService$new(email = david_user, url = "https://david.abcc.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
 
 	map_result = list()
 	res_list = list()
 	for(i in names(gene_list)) {
-		map_result[[i]] <- addList(david, gene_list[[i]],
+		map_result[[i]] <- RDAVIDWebService::addList(david, gene_list[[i]],
 			idType="ENSEMBL_GENE_ID", listName=gsub(",","_",i), listType="Gene")
-		qqcat("current gene list position is @{getCurrentGeneListPosition(david)}\n")
-		setAnnotationCategories(david, c("GOTERM_BP_ALL", "GOTERM_MF_ALL", "GOTERM_CC_ALL"))
-		res_list[[i]] = getClusterReport(david, type="Term")
+		message(qq("current gene list position is @{getCurrentGeneListPosition(david)}"))
+		RDAVIDWebService::setAnnotationCategories(david, c("GOTERM_BP_ALL", "GOTERM_MF_ALL", "GOTERM_CC_ALL"))
+		res_list[[i]] = RDAVIDWebService::getClusterReport(david, type="Term")
 	}
 
 	# filter by count and fdr
@@ -708,7 +738,7 @@ cr_genes_david = function(cr, david_user) {
 				ind = which(df$Term == term)
 				if(length(ind)) {
 					term_df$gene_list[i] = paste0(term_df$gene_list[i], ", ", df$Genes[ind])
-					qqcat("find @{term} in @{names(res_list)[j]} cluster @{k}, row @{ind}\n")
+					message(qq("find @{term} in @{names(res_list)[j]} cluster @{k}, row @{ind}"))
 				}
 			}
 		}
@@ -735,7 +765,7 @@ cr_genes_david = function(cr, david_user) {
 			for(i2 in c("high", "low")) {
 				label = paste(i1, i2, sep = ",")
 				lx = combined_split[index_14] == label
-				qqcat("cluster @{label}, @{sum(lx)} rows\n")
+				message(qq("cluster @{label}, @{sum(lx)} rows"))
 				dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
 				dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
 				row_od1 = order.dendrogram(dend1)
@@ -747,7 +777,7 @@ cr_genes_david = function(cr, david_user) {
 		for(i1 in c("1", "4")) {
 			label = i1
 			lx = combined_split[index_14] == label
-			qqcat("cluster @{label}, @{sum(lx)} rows\n")
+			message(qq("cluster @{label}, @{sum(lx)} rows"))
 			dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
 			dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
 			row_od1 = order.dendrogram(dend1)
@@ -773,7 +803,7 @@ cr_genes_david = function(cr, david_user) {
 			current_term_list = df_list[[i]]$Term
 			ind = which(gsub("GO:.*~", "", df_list[[i]]$Term) == term_names[j])
 			if(length(ind)) {
-				qqcat("@{term_names[j]} is significant in @{names(df_list)[i]}\n")
+				message(qq("@{term_names[j]} is significant in @{names(df_list)[i]}"))
 				decorate_heatmap_body("GO", slice = i, {
 					grid.rect(x = j/n_term, width = 1/n_term, default.units = "native", just = "right", gp = gpar(fill = "transparent", lwd = 2))
 					grid.text(paste(df_list[[i]][ind, "Count"], sprintf("%.1e", df_list[[i]][ind, "Benjamini"]), sep = ", "), 

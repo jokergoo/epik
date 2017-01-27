@@ -1,4 +1,3 @@
-library(methods)
 library(GetoptLong)
 
 library(GlobalOptions)

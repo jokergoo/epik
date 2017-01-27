@@ -60,9 +60,9 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 	if(is.null(window)) {
 		window = numbers::mGCD(c(sapply(gr_list_1, function(gr) numbers::mGCD(unique(width(gr)))),
 		                sapply(gr_list_2, function(gr) numbers::mGCD(unique(width(gr))))))
-		qqcat("window is set to @{window}\n")
+		message(qq("window is set to @{window}"))
 		if(window == 1) {
-			qqcat("when converting bed files to GRanges objects, be careful with the 0-based and 1-based coordinates.\n")
+			message("when converting bed files to GRanges objects, be careful with the 0-based and 1-based coordinates.")
 		}
 	}
 
@@ -70,10 +70,10 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 		all_states = unique(c(unlist(lapply(gr_list_1, function(gr) {unique(as.character(mcols(gr)[, 1]))})),
 			                unlist(lapply(gr_list_2, function(gr) {unique(as.character(mcols(gr)[, 1]))}))))
 		all_states = sort(all_states)
-		qqcat("@{length(all_states)} states in total\n")
+		message(qq("@{length(all_states)} states in total"))
 	# }
 
-	cat("extract states\n")
+	message("extracting states")
 	m1 = as.data.frame(lapply(gr_list_1, function(gr) {
 		k = round(width(gr)/window)
 		s = as.character(mcols(gr)[, 1])
@@ -90,7 +90,7 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 
 	gr = makeWindows(gr_list_1[[1]], w = window)
 
-	cat("count for each state\n")
+	message("counting for each state")
 	t1 = rowTabulates(m1)
 	t2 = rowTabulates(m2)
 	l = rowMaxs(t1) >= min_1 & rowMaxs(t2) >= min_2
@@ -98,7 +98,7 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 	t2 = t2[l, , drop = FALSE]
 	gr = gr[l]
 
-	cat("determine states\n")
+	message("determine states")
 	states1 = rowWhichMax(t1)
 	states2 = rowWhichMax(t2)
 
@@ -119,13 +119,13 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 			
 			mtch = as.matrix(findOverlaps(gr_subset, meth_gr))
 
-			qqcat("calculating mean methylation for transistions from `gr_list_1`\n")
+			message("calculating mean methylation for transistions from `gr_list_1`")
 			x = tapply(mtch[, 2], mtch[, 1], function(ind) {
 				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_1), colnames(meth_mat)), drop = FALSE]))
 			})
 			sum_meth1[which(l_chr)[as.numeric(names(x))]] = x
 			
-			qqcat("calculating mean methylation for transistions from `gr_list_2`\n")
+			message("calculating mean methylation for transistions from `gr_list_2`")
 			x = tapply(mtch[, 2], mtch[, 1], function(ind) {
 				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_2), colnames(meth_mat)), drop = FALSE]))
 			})
@@ -142,7 +142,7 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 		n_cpg = n_cpg[l]
 	}
 
-	cat("generate transition matrix\n")
+	message("generate transition matrix")
 	mat = as.matrix(table(states1, states2))
 	rownames(mat) = all_states[as.numeric(rownames(mat))]
 	colnames(mat) = all_states[as.numeric(colnames(mat))]

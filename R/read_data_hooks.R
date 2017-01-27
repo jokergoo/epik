@@ -251,13 +251,27 @@ chipseq_hooks = setGlobalOptions(
 # Zuguang Gu <z.gu@dkfz.de>
 #
 get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
-    peak_list = lapply(sample_id, function(sid) chipseq_hooks$peak(mark, sid, ...))
+    peak_list = lapply(sample_id, function(sid) {
+    	oe = try(gr <- chipseq_hooks$peak(mark, sid, ...))
+    	if(inherits(oe, "try-error")) {
+			return(NULL)
+		} else {
+			return(gr)
+		}
+    })
     names(peak_list) = sample_id
-    peak_list
+    peak_list[!sapply(peak_list, is.null)]
 }
 
 get_chromHMM_list = function(sample_id, ...) {
-	lt = lapply(sample_id, function(sid) chipseq_hooks$chromHMM(sid, ...))
+	lt = lapply(sample_id, function(sid) {
+		oe = try(gr <- chipseq_hooks$chromHMM(sid, ...))
+		if(inherits(oe, "try-error")) {
+			return(NULL)
+		} else {
+			return(gr)
+		}
+	})
 	names(lt) = sample_id
-	lt
+	lt[!sapply(lt, is.null)]
 }

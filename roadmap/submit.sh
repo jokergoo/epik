@@ -1,6 +1,6 @@
 for rmd in `ls ~/project/development/epik/roadmap/*.Rmd`; do
 	rmd_base=`basename $rmd`
-	qsub_single_line "-l walltime=20:00:00,mem=10G -N knit_$rmd_base" "Rscript-3.3.1 -e \"setwd('~/project/development/epik/roadmap');knitr::knit('$rmd_base')\""
+	qsub_single_line "-l walltime=30:00:00,mem=10G -N knit_$rmd_base" "Rscript-3.3.1 -e \"setwd('~/project/development/epik/roadmap');knitr::knit('$rmd_base')\""
 done
 
 for chr in `seq 1 22`; do

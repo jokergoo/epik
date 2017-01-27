@@ -41,7 +41,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 
 	l = gr$ncpg == 0
 	if(sum(l) > 0) {
-		qqcat("remove @{sum(l)}/@{length(l)} rows with ncpg == 0\n")
+		message(qq("remove @{sum(l)}/@{length(l)} rows with ncpg == 0"))
 		gr = gr[!l]
 		mat = mat[!l, , drop = FALSE]
 	}
@@ -54,7 +54,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 		x = as.matrix(data.frame(x))
 		l = apply(x, 1, function(y) max(y, na.rm = TRUE) - min(y, na.rm = TRUE)) > min_mean_range
 
-		qqcat("remove @{sum(!l)}/@{length(l)} rows by filtering `min_mean_range > @{min_mean_range}`\n")
+		message(qq("remove @{sum(!l)}/@{length(l)} rows by filtering `min_mean_range > @{min_mean_range}`"))
 		gr = gr[l]
 		mat = mat[l, , drop = FALSE]
 	}
@@ -74,7 +74,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 		gr = gr[l]
 		mat = mat[l, , drop = FALSE]
 			
-		qqcat("remove @{sum(!l)}/@{length(l)} rows after filtering by oneway-ANOVA test (@{adj_method} < @{cutoff}).\n")
+		message(qq("remove @{sum(!l)}/@{length(l)} rows after filtering by oneway-ANOVA test (@{adj_method} < @{cutoff})."))
 	}
 	
 	ogr = gr
@@ -195,7 +195,7 @@ get_mean_methylation_in_genomic_features = function(sample_id, genomic_features,
 		meth_gr = methylation_hooks$gr
 		
 		for(i in seq_along(genomic_features)) {
-			qqcat("overlapping to @{names(genomic_features)[i]} on @{chr}\n")
+			message(qq("overlapping to @{names(genomic_features)[i]} on @{chr}"))
 			mtch = as.matrix(findOverlaps(genomic_features[[i]], meth_gr))
 			mean_meth = tapply(mtch[,2], mtch[,1], function(i) colMeans(meth_mat[i, , drop = FALSE], na.rm = TRUE))
 			ncpg = tapply(mtch[,2], mtch[,1], length)

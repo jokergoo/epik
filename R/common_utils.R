@@ -231,3 +231,6 @@ generate_diff_color_fun = function(x, quantile = 0.95, col = c("#3794bf", "#FFFF
 	}
 }
 
+add_transparency = function(col, transparency = 0) {
+	rgb(t(col2rgb(col)/255), alpha = 1 - transparency)
+}

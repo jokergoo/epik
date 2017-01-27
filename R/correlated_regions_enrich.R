@@ -11,7 +11,7 @@ enrich_with_histone_mark = function(target, mark, sample_id, target_ratio = 0.1,
 	sample = names(hm_list)
 	flag = 0
 	for(i in seq_along(sample)) {
-		qqcat("@{sample[i]}: normalize histone modifications to @{target_name}.\n")
+		message(qq("@{sample[i]}: normalize histone modifications to @{target_name}."))
 	    tm = normalizeToMatrix(hm_list[[i]], target, target_ratio = target_ratio, 
 	    	value_column = value_column, extend = extend, mean_mode = mean_mode, w = w, trim = c(0, 0.01), ...)
 	    if(!flag) {
@@ -53,7 +53,7 @@ enrich_with_methylation = function(target, sample_id, target_ratio = 0.1, mode =
 	    meth_gr = c(meth_gr, gr)
 	}
 	colnames(mcols(meth_gr)) = "mean_meth"
-	qqcat("normalize methylation signals to @{target_name}...\n")
+	message(qq("normalize methylation signals to @{target_name}..."))
 	mat = normalizeToMatrix(meth_gr, target, value_column = "mean_meth", target_ratio = target_ratio, extend = extend, 
 		w = w, mean_mode = mean_mode, empty_value = empty_value, smooth = smooth, ...)
 	return(mat)

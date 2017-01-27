@@ -35,12 +35,13 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 	
 	for(chr in chromosome) {
 		
+		message(qq("loading methylation data for @{chr}"))
 		methylation_hooks$set_chr(chr, verbose = FALSE)
 		if(!is.null(background)) {
 			mtch = as.matrix(findOverlaps(methylation_hooks$gr, background))
 		}
 		for(sid in sample_id) {
-			qqcat("split data for @{sid}, @{chr}")
+			message(qq("split data for @{sid}, @{chr}"), appendLF = FALSE)
 
 			cv = methylation_hooks$cov[, sid]
 			ind = which(cv != 0)
@@ -49,10 +50,9 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 				ind = intersect(ind, mtch[, 1])
 			}
 			if(length(ind) > 10000) {
-				qqcat(", randomly sample 10000 CpG sites.")
+				message(", randomly sample 10000 CpG sites.", appendLF = FALSE)
 				ind = sort(sample(ind, 10000))
 			}
-			qqcat("\n")
 			cv = cv[ind]
 
 			mh = as.vector(methylation_hooks$meth[ind, sid])
@@ -67,7 +67,7 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 
 	for(sid in sample_id) {
 
-		qqcat("making qc plot for @{sid}\n")
+		message(qq("making qc plot for @{sid}"))
 
 		cov = data[[sid]]$cov
 		meth = data[[sid]]$meth
@@ -228,7 +228,7 @@ gtrellis_coverage_and_methylation = function(sid, chromosome = paste0("chr", 1:2
 	# window size
 	chr_len = read.chromInfo(species = species)$chr.len[chromosome]
 	w = round(sum(chr_len)/nw)
-	qqcat("number of windows: @{nw}, window size: @{w} bp\n")
+	message(qq("number of windows: @{nw}, window size: @{w} bp"))
 
 	flag = 0
 	col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"), transparency = transparency)
@@ -254,7 +254,7 @@ gtrellis_coverage_and_methylation = function(sid, chromosome = paste0("chr", 1:2
 				add_name_track = TRUE, add_ideogram_track = TRUE, ...)
 			flag = 1
 		}
-		qqcat("making plot for @{chr}\n")
+		message(qq("making plot for @{chr}"))
 		add_points_track(gr2, cov, track = 2, category = chr, pch = pch, 
 			gp = gp_c(gpar(col = add_transparency("black", transparency)), pt_gp))
 		add_points_track(gr2, meth, track = 3, category = chr, pch = pch, 
@@ -268,9 +268,6 @@ gp_c = function(gp1, gp2) {
 	gp
 }
 
-add_transparency = function(col, transparency = 0) {
-	rgb(t(col2rgb(col)/255), alpha = 1 - transparency)
-}
 
 
 # == title
@@ -313,7 +310,7 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 	# window size
 	chr_len = read.chromInfo(species = species)$chr.len[chromosome]
 	w = round(sum(chr_len)/nw)
-	qqcat("number of windows: @{nw}, window size: @{w} bp\n")
+	message(qq("number of windows: @{nw}, window size: @{w} bp"))
 
 	for(chr in chromosome) {
 		methylation_hooks$set_chr(chr, verbose = FALSE)
@@ -330,7 +327,7 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 		meth = do.call("rbind", meth)
 
 		for(i in seq_along(type)) {
-			qqcat("making plot for @{chr}, @{type[i]}\n")
+			message(qq("making plot for @{chr}, @{type[i]}"))
 			# sid = sample_id[subgroup == type[i]]
 			# m = meth[, sid, drop = FALSE]
 			# add_track(gr2, track = i+1, category = chr, panel.fun = function(gr) {
@@ -489,7 +486,7 @@ global_methylation_distribution = function(sample_id, subgroup,
 				if(is.null(p) || by_chr) p <<- min(c(3000, nr))/nr
 				ind = ind[sample(c(FALSE, TRUE), nr, replace = TRUE, prob = c(1-p, p))]
 
-				qqcat("random sampled @{length(ind)} sites from @{nr} sites on @{chr} in @{sample_id[i]} (with p = @{sprintf('%.1e', p)})\n")
+				message(qq("random sampled @{length(ind)} sites from @{nr} sites on @{chr} in @{sample_id[i]} (with p = @{sprintf('%.1e', p)})"))
 				ind
 			})
 
@@ -509,7 +506,7 @@ global_methylation_distribution = function(sample_id, subgroup,
 			# 	cov[cov > max_cov] = NA
 			# 	log10(cov)
 			# })
-			qqcat("on average there are @{round(mean(sapply(current_meth_list, function(x) sum(is.na(x)))))} CpG without coverage information.\n")
+			message(qq("on average there are @{round(mean(sapply(current_meth_list, function(x) sum(is.na(x)))))} CpG without coverage information."))
 			
 			if(by_chr) {
 				# it can be for some chromosomes, no CpG sites are sampled
@@ -565,7 +562,7 @@ global_methylation_distribution = function(sample_id, subgroup,
 			if(is.null(p) || by_chr) p = min(c(3000, nr))/nr
 			ind = ind[sample(c(FALSE, TRUE), nr, replace = TRUE, prob = c(1-p, p))]
 			
-			qqcat("random sampled @{length(ind)} sites from @{nr} sites on @{chr} (with p = @{sprintf('%.1e', p)})\n")
+			message(qq("random sampled @{length(ind)} sites from @{nr} sites on @{chr} (with p = @{sprintf('%.1e', p)})"))
 			mm = methylation_hooks$meth[ind, sample_id]
 			if(!is.null(methylation_hooks$cov)) {
 				cm = methylation_hooks$cov[ind, sample_id]
@@ -576,7 +573,7 @@ global_methylation_distribution = function(sample_id, subgroup,
 			# cm[cm == 0] = NA
 			# cm[cm > max_cov] = NA
 			
-			qqcat("on average there are @{round(mean(apply(mm, 2, function(x) sum(is.na(x)))))} CpG without coverage information.\n")
+			message(qq("on average there are @{round(mean(apply(mm, 2, function(x) sum(is.na(x)))))} CpG without coverage information."))
 
 			meth_mat = rbind(meth_mat, mm)
 			# cov_mat = rbind(cov_mat, cm)

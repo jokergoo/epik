@@ -38,6 +38,7 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 	ir = ir[l]
 
 	if(length(i) == 0) {
+		message(qq("no window left by max_width <= @{max_width} bp"))
 		return(GRanges())
 	}
 
@@ -185,7 +186,7 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	cor_method = "spearman", subgroup = NULL, window_size = 5, window_step = window_size, 
 	max_width = 10000, raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL) {
 
-	qqcat("extracting gene model (extend = @{extend}, chr = @{chr})...\n")
+	message(qq("extracting gene model (extend = @{extend}, chr = @{chr})..."))
 	gene = genes(txdb)
 	tx_list = transcriptsBy(txdb, by = "gene")
 
@@ -217,7 +218,7 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		sample_id = lt$sample_id
 		subgroup = lt$subgroup
 	}
-	qqcat("@{length(sample_id)} samples are used\n")
+	message(qq("@{length(sample_id)} samples are used"))
 	
 	if(raw_meth) {
 		meth = methylation_hooks$raw[, sample_id]
@@ -239,7 +240,7 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		cov = cov[l, , drop = FALSE]
 	}
 
-	qqcat("on chromosome @{chr}, @{length(site)} CpG sites, @{n_gene} genes\n")
+	message(qq("on chromosome @{chr}, @{length(site)} CpG sites, @{n_gene} genes"))
 
 	if(!raw_meth) cov_cutoff = 0
 	
@@ -254,7 +255,7 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 
 		# if gene has low expression in many samples
 		if(all(e == 0) || sd(e) == 0)  {
-			qqcat("[@{chr}:@{gi}, @{i}/@{n_gene}] @{gi} has zero expression in all samples, skip\n")
+			message(qq("[@{chr}:@{gi}, @{i}/@{n_gene}] @{gi} has zero expression in all samples, skip"))
 			next
 		}
 
@@ -266,11 +267,11 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		gm_cov = cov[gm_site_index, , drop = FALSE]
 
 		if(length(gm_site) < 10) {
-			qqcat("[@{chr}:@{gi}, @{i}/@{n_gene}] @{gi} has too few cpg sites, skip\n")
+			message(qq("[@{chr}:@{gi}, @{i}/@{n_gene}] @{gi} has too few cpg sites, skip"))
 			next
 		}
 
-		qqcat("[@{chr}:@{gi}, @{i}/@{n_gene}] @{length(gm_site)} CpG sites ...\n")
+		message(qq("[@{chr}:@{gi}, @{i}/@{n_gene}] @{length(gm_site)} CpG sites ..."))
 		gr = correlated_regions_by_window(gm_site, gm_meth, e, gm_cov, cov_cutoff = cov_cutoff, chr = chr,
 			subgroup = subgroup, cor_method = cor_method, window_size = window_size, window_step = window_step,
 			min_dp = min_dp, max_width = max_width)
@@ -380,7 +381,7 @@ reduce_cr_by_gene = function(gr, gap = 1) {
 		gr2$merged_windows = sapply(revmap, length)
 		gr2$ncpg = gr2$merged_windows*window_size - (gr2$merged_windows-1)*(window_size - window_step)
 	}
-	qqcat("  @{deparse(substitute(gr))} has been reduced from @{length(gr)} to @{length(gr2)}\n")
+	message(qq("  @{deparse(substitute(gr))} has been reduced from @{length(gr)} to @{length(gr2)}"))
 	return(gr2)
 }
 
@@ -389,7 +390,7 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 	cr_param = metadata(cr)$cr_param
 	cr = sort(cr)
 
-	qqcat("extracting gene and tx models.\n")
+	message("extracting gene and tx models.")
 	gene = genes(txdb)
 	tx_list = transcriptsBy(txdb, by = "gene")
 
@@ -397,7 +398,7 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 	i = 0
 	cr_reduced_list = mclapply(names(cr_list), function(gi) {
 
-		qqcat("reducing cr on @{gi}, @{i <<- i+1}/@{length(cr_list)}...\n")
+		message(qq("reducing cr on @{gi}, @{i <<- i+1}/@{length(cr_list)}..."))
 		cr = cr_list[[gi]]
 		neg_cr = cr[cr$corr < 0]
 		pos_cr = cr[cr$corr > 0]
@@ -452,7 +453,7 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 	for(i in seq_along(cr_list)) {
 
 		gi = names(cr_list)[i]
-		qqcat("re-calculating mean methylation for reduced cr for @{gi}\n")
+		message(qq("re-calculating mean methylation for reduced cr for @{gi}"))
 
 		cr = cr_list[[i]]
 		cr = c(reduce(cr[cr$corr > 0]), reduce(cr[cr$corr < 0]))
@@ -534,8 +535,10 @@ reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 				unique_subgroup = sort(unique(subgroup))
 				meth_diff = apply(m, 1, function(x) {
 					l = !is.na(x)
-					if(any(table(subgroup[l]) < 2)) return(NA)
+					tb = table(subgroup[l])
+					if(any(tb < 2)) return(NA)
 					y = as.vector(tapply(x[l], subgroup[l], mean))
+					names(y) = unique(subgroup[l])
 					y[unique_subgroup[1]] - y[unique_subgroup[2]]
 				})
 			}

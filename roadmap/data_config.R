@@ -1,6 +1,12 @@
 
 library(GetoptLong)
 library(bsseq)
+library(GlobalOptions)
+library(GenomicRanges)
+library(ComplexHeatmap)
+library(GenomicFeatures)
+source("/home/guz/project/development/epik/R/read_data_hooks.R")
+
 PROJECT_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap/"
 
 SUBGROUP = c(rep("group1", 10), rep("group2", 17))
@@ -9,14 +15,14 @@ names(SUBGROUP) = c("E003", "E004", "E005", "E006", "E007", "E011", "E012", "E01
               "E097", "E098", "E100", "E104", "E105", "E106", "E109", "E112", "E113")
 SAMPLE_ID = names(SUBGROUP)
 SUBGROUP_COLOR = c("group1" = "red", "group2" = "blue")
+HA = HeatmapAnnotation(subgroup = SUBGROUP, col = list(subgroup = SUBGROUP_COLOR))
 
 methylation_hooks$get_by_chr = function(chr) {
     obj = readRDS(qq("@{PROJECT_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))
-    obj2 = list(gr = obj@rowData,
-                raw = (obj@assays$data$M/obj@assays$data$Cov)[, SAMPLE_ID],
-                cov = obj@assays$data$Cov[, SAMPLE_ID],
-                meth = obj@trans(obj@assays$data$coef)[, SAMPLE_ID]
-                )
+    obj2 = list(gr = granges(obj),
+                raw = getMeth(obj, type = "raw")[, SAMPLE_ID],
+                cov = getCoverage(obj, type = "Cov")[, SAMPLE_ID],
+                meth = getMeth(obj, type = "smooth")[, SAMPLE_ID])
     return(obj2)
 }
 
@@ -27,17 +33,32 @@ MARKS = c("H3K4me1", "H3K4me3", "H3K27ac", "H3K27me3", "H3K36me3", "H3K9me3", "D
 chipseq_hooks$sample_id = function(mark) {
     sample_id = dir(qq("@{PROJECT_DIR}/data/narrow_peaks"), pattern = qq("E\\d+-@{mark}.narrowPeak.gz"))
     sample_id = gsub(qq("-@{mark}.narrowPeak.gz"), "", sample_id)
-    intersect(sample_id, names(SUBGROUP))	
+    return(intersect(sample_id, names(subgroup)))   
 }
 
-chipseq_hooks$peak = function(mark, sid, ...) {
-    df = read.table(qq("@{PROJECT_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz"), stringsAsFactors = FALSE)
+chipseq_hooks$peak = function(mark, sid, chr = NULL) {
+    x = qq("@{PROJECT_DIR}/data/narrow_peaks/@{sid}-@{mark}.narrowPeak.gz")
+    if(is.null(chr)) {
+        qqcat("reading peaks: @{sid}, @{mark}\n")
+        df = read.table(x, stringsAsFactors = FALSE)
+    } else {
+        qqcat("reading peaks: @{sid}, @{mark} on @{paste(chr, collapse = ' ')}\n")
+        df = read.table(pipe(qq("zcat @{x} | grep @{paste(\"-e '\", chr, \"'\", collapse = ' ', sep = '')}")), sep = "\t")
+        df = df[df[[1]] %in% chr, ]
+    }
     GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]] + 1, df[[3]]), density = df[[5]])
 }
 
-chipseq_hooks$chromHMM = function(sid, ...) {
-    f = qq("@{PROJECT_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
-    gr = read.table(f, sep = "\t", stringsAsFactors = FALSE)
+chipseq_hooks$chromHMM = function(sid, chr = NULL) {
+    x = qq("@{PROJECT_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
+    if(is.null(chr)) {
+        qqcat("reading @{x}...\n")
+        gr = read.table(x, sep = "\t")
+    } else {
+        qqcat("reading @{x} on @{paste(chr, collapse = ' ')}...\n")
+        gr = read.table(pipe(qq("zcat @{x} | grep @{paste(\"-e '\", chr, \"'\", collapse = ' ', sep = '')}")), sep = "\t")
+        gr = gr[gr[[1]] %in% chr, ]
+    }
     GRanges(seqnames = gr[[1]], ranges = IRanges(gr[[2]] + 1, gr[[3]]), states = gr[[4]])
 }
 
@@ -63,9 +84,9 @@ count = as.matrix(read.table(qq("@{PROJECT_DIR}/data/expression/57epigenomes.N.p
 rpkm = as.matrix(read.table(qq("@{PROJECT_DIR}/data/expression/57epigenomes.RPKM.pc.gz"), row.names = 1, header = TRUE))
 rownames(count) = map[rownames(count)]
 rownames(rpkm) = map[rownames(rpkm)]
-
-count = count[, SAMPLE_ID, drop = FALSE]
-rpkm = rpkm[, SAMPLE_ID, drop = FALSE]
+l = !is.na(rownames(count))
+count = count[l, sample_id, drop = FALSE]
+rpkm = rpkm[l, sample_id, drop = FALSE]
 
 ######################################################
 ## genes should have raw count > 0 in at least half samples

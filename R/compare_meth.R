@@ -9,7 +9,7 @@ compare_meth = function(g, cr_smoothed) {
 	col = cr_param$col
 	if(!is.null(subgroup)) col = col[subgroup]
 	for(i in seq_len(length(g))) {
-		qqcat("compare smoothed and raw methylation for @{g[i]$gene_id}\n")
+		message(qq("compare smoothed and raw methylation for @{g[i]$gene_id}"))
 		compare_meth_in_one_gene(g[i], cr_smoothed[cr_smoothed$gene_id == g[i]$gene_id], sample_id, col)
 	}
 }

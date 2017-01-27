@@ -1,7 +1,9 @@
-source("test_head.R")
+source("/home/guz/project/development/epik/tests/test_head.R")
+
+library(GenomicFeatures)
 
 cat("load txdb...\n")
-TXDB = loadDb(qq("@{BASE_DIR}/data/gen10_long_protein_coding_gene_adjusted.sqlite"))
+TXDB = loadDb(qq("@{PROJECT_DIR}/txdb/gen10_long_protein_coding_gene_adjusted.sqlite"))
 genes = genes(TXDB)
 map = structure(names(genes), names = gsub("\\.\\d+$", "", names(genes)))
 
@@ -9,12 +11,13 @@ map = structure(names(genes), names = gsub("\\.\\d+$", "", names(genes)))
 ## expression data
 
 cat("load expression...\n")
-count = as.matrix(read.table(qq("@{BASE_DIR}/data/expression/57epigenomes.N.pc.gz"), row.names = 1, header = TRUE))
-rpkm = as.matrix(read.table(qq("@{BASE_DIR}/data/expression/57epigenomes.RPKM.pc.gz"), row.names = 1, header = TRUE))
+count = as.matrix(read.table(qq("@{PROJECT_DIR}/data/expression/57epigenomes.N.pc.gz"), row.names = 1, header = TRUE))
+rpkm = as.matrix(read.table(qq("@{PROJECT_DIR}/data/expression/57epigenomes.RPKM.pc.gz"), row.names = 1, header = TRUE))
 rownames(count) = map[rownames(count)]
 rownames(rpkm) = map[rownames(rpkm)]
-count = count[, sample_id]
-rpkm = rpkm[, sample_id]
+l = !is.na(rownames(count))
+count = count[l, sample_id]
+rpkm = rpkm[l, sample_id]
 
 ######################################################
 ## genes should have raw count > 0 in at least half samples

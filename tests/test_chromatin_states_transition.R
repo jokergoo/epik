@@ -1,14 +1,13 @@
-source("test_cr_chr21.R")
+source("/home/guz/project/development/epik/tests/test_head.R")
+source("/home/guz/project/development/epik/R/chromatin_states_transitions.R")
+library(circlize)
+library(ComplexHeatmap)
+library(EnrichedHeatmap)
+library(matrixStats)
+library(Rcpp)
+sourceCpp("/home/guz/project/development/epik/src/rowWhichMax.cpp")
 
-chipseq_hooks$chromHMM = function(sid, chr) {
-	x = qq("@{BASE_DIR}/data/chromatin_states/@{sid}_15_coreMarks_mnemonics.bed.gz")
-	qqcat("reading @{x} on @{chr}...\n")
-	gr = read.table(pipe(qq("zcat @{x} | grep @{chr}")), sep = "\t")
-	gr = gr[gr[[1]] %in% chr, ]
-	GRanges(seqnames = gr[[1]], ranges = IRanges(gr[[2]] + 1, gr[[3]]), states = gr[[4]])
-}
-
-states_list = get_chromHMM_list(sample_id, "chr21")
+states_list = get_chromHMM_list(sample_id, c("chr21", "chr22"))
 
 methdiff = 0
 
@@ -42,7 +41,6 @@ state_col = c("TssA" = "#E41A1C",
 
 chromatin_states_transition_chord_diagram(mat, state_col = state_col, group_names = c("g1", "g2"),
 	legend_position = c("bottomleft", "bottomright"))
-
 
 
 methylation_hooks(RESET = TRUE)

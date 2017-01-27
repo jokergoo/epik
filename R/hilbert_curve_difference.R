@@ -24,7 +24,7 @@
 hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome = paste0("chr", 1:22), 
 	species = "hg19", type = c("global_mean", "subgroup_mean", "difference")) {
 
-	qqcat("split genome by 1kb window\n")
+	message("split genome by 1kb window")
 	chromInfo = getChromInfoFromUCSC(species)
 	chromInfo = chromInfo[chromInfo$chrom %in% chromosome, ]
 	chromGr = GRanges(chromInfo$chrom, ranges = IRanges(rep(1, nrow(chromInfo)), chromInfo$length))
@@ -47,7 +47,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 
 	## difference of methylation
 	# mean methylaiton by 1kb window, compared to histone modifications which are also segmented by 1kb window
-	qqcat("calculating mean methylation in every 1kb window\n")
+	message("calculating mean methylation in every 1kb window")
 	gr_meth = get_mean_methylation_in_genomic_features(sample_id, chromosome = chromosome, 
 		genomic_features = list(chromGr_1kb_window = chromGr_1kb_window))[[1]]
 	mat = mcols(gr_meth)
@@ -59,13 +59,13 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 	# gr_meth = gr_meth[l]
 
 	for(i in seq_along(le)) {
-		qqcat("calculating mean methylation in subgroup @{le[i]}\n")
+		message(qq("calculating mean methylation in subgroup @{le[i]}"))
 		mcols(gr_meth)[, qq("mean_@{le[i]}")] = rowMeans(mat[, subgroup == le[i], drop = FALSE], na.rm = TRUE)
 	}
 	gr_meth$mean = rowMeans(mat, na.rm = TRUE)
 
 	if("global_mean" %in% type) {
-		qqcat("making hilbert curve for the global mean methylation\n")
+		message("making hilbert curve for the global mean methylation")
 		col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 		cm = ColorMapping(col_fun = col_fun)
 		lgd = color_mapping_legend(cm, title = "mean_meth", plot = FALSE)
@@ -80,7 +80,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 
 	if("subgroup_mean" %in% type) {
 		for(i in seq_along(le)) {
-			qqcat("making hilbert curve for the mean methylation in subgroup @{le[i]}\n")
+			message(qq("making hilbert curve for the mean methylation in subgroup @{le[i]}"))
 			col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 			cm = ColorMapping(col_fun = col_fun)
 			lgd = color_mapping_legend(cm, title = "mean_meth", plot = FALSE)
@@ -95,7 +95,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 	}
 
 	if("difference" %in% type) {
-		qqcat("making hilbert curve for the methylation difference between @{comparison[1]} and @{comparison[2]}\n")
+		message(qq("making hilbert curve for the methylation difference between @{comparison[1]} and @{comparison[2]}"))
 		diff = mcols(gr_meth)[l, qq("mean_@{comparison[1]}")] - mcols(gr_meth)[l, qq("mean_@{comparison[2]}")]
 		col_fun = generate_diff_color_fun(diff)
 		cm = ColorMapping(col_fun = col_fun)
@@ -113,19 +113,22 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 }
 
 
-average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(as.vector(seqnames(gr1)))) {
+average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(as.vector(seqnames(gr1))), window_size = NULL) {
 	x = rep(empty_value, length(gr1))
 	chromosome = intersect(chromosome, intersect( unique(as.vector(seqnames(gr1))),  unique(as.vector(seqnames(gr2)))))
 	for(chr in chromosome) {
-		qqcat("  averaging in window for @{chr}\n")
+		message(qq("  averaging in window for @{chr}"))
 		l = as.vector(seqnames(gr1) == chr)
+		l2 = as.vector(seqnames(gr2) == chr)
 		if(sum(l)) {
-			window = ranges(gr1[seqnames(gr1) == chr])
-			ir = ranges(gr2[seqnames(gr2) == chr])
+			window = ranges(gr1[l])
+			ir = ranges(gr2[l2])
+			vx = v[l2]
 
 			mtch = as.matrix(findOverlaps(window, ir))
-			v2 = HilbertCurve:::average_in_window(window, ir, mtch, v, "w0", empty_value)
-			x[as.vector(seqnames(gr1) == chr)][unique(mtch[, 1])] = v2
+			v2 = HilbertCurve:::average_in_window(window, ir, mtch, vx, "w0", empty_value)
+			x[l][unique(mtch[, 1])] = v2
+			
 		}
 	}
 	return(x)
@@ -161,7 +164,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	species = "hg19", type = c("global_mean", "subgroup_mean", "abs_difference", "rel_difference"),
 	density_column = "density") {
 
-	qqcat("split genome by 1kb window\n")
+	message("split genome by 1kb window")
 	chromInfo = getChromInfoFromUCSC(species)
 	chromInfo = chromInfo[chromInfo$chrom %in% chromosome, ]
 	chromGr = GRanges(chromInfo$chrom, ranges = IRanges(rep(1, nrow(chromInfo)), chromInfo$length))
@@ -179,9 +182,9 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 
 	le = unique(subgroup)
 
-	hm_list = get_peak_list(mark, sample_id)
+	hm_list = get_peak_list(mark, sample_id, chr = chromosome)
 
-	qqcat("calculating mean @{mark} signal in every 1kb window\n")
+	message(qq("calculating mean @{mark} signal in every 1kb window"))
 	gr = chromGr_1kb_window
 	mat = do.call("cbind", lapply(hm_list, function(x) average_in_window(chromGr_1kb_window, x, mcols(x)[, density_column], chromosome = chromosome)))
 	colnames(mat) = sample_id
@@ -189,13 +192,13 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	mean_density = sapply(hm_list, function(x) sum(as.numeric(width(x))*mcols(x)[, density_column])/sum(as.numeric(width(x))))
 	
 	for(i in seq_along(le)) {
-		qqcat("calculating mean @{mark} signal in subgroup @{le[i]}\n")
+		message(qq("calculating mean @{mark} signal in subgroup @{le[i]}"))
 		mcols(gr)[, qq("mean_@{le[i]}")] = rowMeans(mat[, subgroup == le[i], drop = FALSE], na.rm = TRUE)
 	}
 	gr$mean = rowMeans(mat, na.rm = TRUE)
 
 	if("global_mean" %in% type) {
-		qqcat("making hilbert curve for the global mean signal for @{mark}\n")
+		message(qq("making hilbert curve for the global mean signal for @{mark}"))
 		col_fun = generate_diff_color_fun(gr$mean)
 		cm = ColorMapping(col_fun = col_fun)
 		lgd = color_mapping_legend(cm, title = "mean_signal", plot = FALSE)
@@ -211,7 +214,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	if("subgroup_mean" %in% type) {
 		col_fun = generate_diff_color_fun(mcols(gr)[, qq("mean_@{le[i]}")])
 		for(i in seq_along(le)) {
-			qqcat("making hilbert curve for the mean signal for @{mark} in subgroup @{le[i]}\n")
+			message(qq("making hilbert curve for the mean signal for @{mark} in subgroup @{le[i]}"))
 			cm = ColorMapping(col_fun = col_fun)
 			lgd = color_mapping_legend(cm, title = "mean_signal", plot = FALSE)
 
@@ -225,7 +228,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	}
 
 	if("abs_difference" %in% type) {
-		qqcat("making hilbert curve for the absolute signal difference between @{comparison[1]} and @{comparison[2]}\n")
+		message(qq("making hilbert curve for the absolute signal difference between @{comparison[1]} and @{comparison[2]}"))
 		diff = mcols(gr)[, qq("mean_@{comparison[1]}")] - mcols(gr)[, qq("mean_@{comparison[2]}")]
 		col_fun = generate_diff_color_fun(diff)
 		cm = ColorMapping(col_fun = col_fun)
@@ -240,7 +243,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	}
 
 	if("rel_difference" %in% type) {
-		qqcat("making hilbert curve for the relative signal difference between @{comparison[1]} and @{comparison[2]}\n")
+		message(qq("making hilbert curve for the relative signal difference between @{comparison[1]} and @{comparison[2]}"))
 		diff = mcols(gr)[, qq("mean_@{comparison[1]}")] - mcols(gr)[, qq("mean_@{comparison[2]}")]
 		mean = (mcols(gr)[, qq("mean_@{comparison[1]}")] + mcols(gr)[, qq("mean_@{comparison[2]}")])/2
 		s0 = quantile(mean[mean > 1e-6], 0.05)
@@ -312,7 +315,7 @@ get_chipseq_association_stat = function(gr_list, q_cutoff) {
 					}
 				}
 				
-				qqcat("associtating @{nm}, at q_@{q_cutoff[k]}\n")
+				message(qq("associating @{nm}, at q_@{q_cutoff[k]}"))
 			}
 		}
 	}
@@ -440,7 +443,7 @@ general_chipseq_association = function(gr_list, q = 0.9) {
 	}
 
 	for(j in seq_along(q)) {
-		qqcat("venn diagrams are marked for q_@{q[j]}\n")
+		message(qq("venn diagrams are marked for q_@{q[j]}"))
 		grid.newpage()
 		pushViewport(viewport(layout = grid.layout(nr = 2, nc = 2)))
 		pushViewport(viewport(layout.pos.row = 1:2, layout.pos.col = 1))
@@ -479,7 +482,7 @@ general_chipseq_association_to_methylation = function(gr_list, gr_meth) {
 		}
 		gr = gr[abs(gr$diff) > 1e-6]
 		for(q in q_cutoff) {
-			qqcat("associate @{gr_name[i]} to methylation with |signal| > q_@{q}\n")
+			message(qq("associate @{gr_name[i]} to methylation with |signal| > q_@{q}"))
 			c = quantile(abs(gr$diff), q)
 
 			gr_neg = gr[gr$diff < -c]
@@ -497,7 +500,7 @@ general_chipseq_association_to_methylation = function(gr_list, gr_meth) {
 	}
 
 	## make the plot
-	qqcat("making plot\n")
+	message("making plot")
 	single_plot = function(i, title = "") {
 		pushViewport(viewport(layout = grid.layout(nrow = 4, ncol = 1, 
 			height = unit.c(3*grobHeight(textGrob(title)), unit(c(3, 1), "null"), unit(5, "mm") + 2*grobHeight(textGrob("foo", gp = gpar(fontsize = 8)))))))

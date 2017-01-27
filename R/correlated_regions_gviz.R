@@ -113,13 +113,13 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 		gm_cov = gm_cov[l, , drop = FALSE]
 	}
 
-	qqcat("rescan on @{gi} to calculate correlation in @{window_size}-CpG window...\n")
+	message(qq("rescan on @{gi} to calculate correlation in @{window_size}-CpG window..."))
 	
 	gr = correlated_regions_by_window(gm_site, gm_meth, e, gm_cov, cov_cutoff = cov_cutoff, chr = chr,
 			subgroup = subgroup, cor_method = cor_method, window_size = window_size, window_step = window_step, min_dp = min_dp,
 			max_width = max_width)
 
-	qqcat("add transcripts to gviz tracks...\n")
+	message("add transcripts to gviz tracks...")
 	options(Gviz.ucscUrl="http://genome-euro.ucsc.edu/cgi-bin/")
 	trackList = list()
 	trackList = pushTrackList(trackList, GenomeAxisTrack())
@@ -173,7 +173,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 	trackList = pushTrackList(trackList, grtrack)
 
 	## correlation track
-	qqcat("add correlation line to gviz tracks...\n")
+	message("add correlation line to gviz tracks...")
 	corr_mat = matrix(0, nrow = 2, ncol = length(gr$corr))
 	corr_mat[1, gr$corr > 0] = gr$corr[gr$corr > 0]
 	corr_mat[2, gr$corr < 0] = gr$corr[gr$corr < 0]
@@ -189,7 +189,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 								panelFun = local({window_size = window_size; function() grid.text(qq("Correlation, CpG window = @{window_size}bp"), 0, unit(1, "npc") - unit(2, "mm"), gp = gpar(fontsize = 10), just = c("left", "top"))}),
 								size = 1.5))
 
-	qqcat("add sig_cr to gviz tracks...\n")
+	message("add sig_cr to gviz tracks...")
 	pos_cr = sig_cr[sig_cr$corr > 0]
 	if(length(pos_cr))
 		trackList = pushTrackList(trackList, constructAnnotationTrack(reduce(pos_cr), chr, name = "sig_pos_cr", fill = "red", col = NA, 
@@ -201,7 +201,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 			rotate.title = TRUE, start = gene_start, end = gene_end, size = 0.5,
 			panelFun = function() {grid.text("neg_cr", 0, unit(0.5, "npc"), gp = gpar(fontsize = 10), just = c("left", "center"))}))
 
-	qqcat("add methylation to gviz tracks...\n")
+	message("add methylation to gviz tracks...")
 	meth_mat = as.matrix(mcols(gr)[, paste0("mean_meth_", sample_id)])
 	colnames(meth_mat) = NULL
 	if(is.null(subgroup)) {
@@ -237,7 +237,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 	}
 	
 	### CpG density per 100bp
-	qqcat("add cpg density to gviz tracks...\n")
+	message("add cpg density to gviz tracks...")
 	segment = seq(gm_site[1], gm_site[length(gm_site)], by = 100)
 	start = segment[-length(segment)]
 	end = segment[-1]-1
@@ -256,7 +256,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 									fill = "orange",
 									panelFun = function() {grid.text("CpG density, window = 100bp", 0, unit(1, "npc") - unit(2, "mm"), gp = gpar(fontsize = 10), just = c("left", "top"))},))
 	
-	qqcat("add other genomic features to gviz tracks...\n")
+	message("add other genomic features to gviz tracks...")
 	gf_name = names(gf_list)
 	for(i in seq_along(gf_list)) {
 		trackList = pushTrackList(trackList, constructAnnotationTrack(gf_list[[i]], chr, name = gf_name[i], rotate.title = TRUE, start = gene_start, end = gene_end, size = 0.5,
@@ -272,7 +272,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 		for(i in seq_along(hm_list)) {
 			single_hm_list = hm_list[[i]]
 		
-			qqcat("add histome modification (@{hm_name[i]}) to gviz tracks...\n")
+			message(qq("add histome modification (@{hm_name[i]}) to gviz tracks..."))
 			single_hm_list2 = lapply(single_hm_list, function(gr) {
 				gr = gr[seqnames(gr) == chr]
 				l = start(gr) > gene_start & end(gr) < gene_end
@@ -344,7 +344,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 		}
 	}
 
-	qqcat("draw gviz plot...\n")
+	message("draw gviz plot...")
 	# convert fontsize to cex
 	Gviz::plotTracks(trackList, from = gene_start, to = gene_end, chromosome = chr, main = title, cex.main = 1, showTitle = FALSE)
 
@@ -361,7 +361,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gene_start = NULL, gene_end = NULL,
 	coef = sprintf("%.2f", coef)
 	hh = sprintf("%.2f", hh)
 
-	qqcat("The suggested height of the image is @{coef}*n_tx + @{num} inches, here n_tx = @{n_tx} and the height is @{hh} inches.\n")
+	message(qq("The suggested height of the image is @{coef}*n_tx + @{num} inches, here n_tx = @{n_tx} and the height is @{hh} inches."))
 	
 	assignInNamespace(".boxes", .boxes, "Gviz")
 	assignInNamespace(".arrowBar", .arrowBar, "Gviz")
