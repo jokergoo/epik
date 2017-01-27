@@ -31,9 +31,9 @@ set_counter = function(n, fmt = "%s") {
 			str = paste0(i, "/", n, " (", pct, "%)")
 			str = sprintf(fmt, str)
 
-			cat(paste(rep("\b", 200), collapse=""))
-			cat(str)
-			if(i == n) cat("\n")
+			message(paste(rep("\b", 200), collapse=""), appendLF = FALSE)
+			message(str, appendLF = FALSE)
+			if(i == n) message("\n", appendLF = FALSE)
 
 			i = i + 1
 			assign("i", i, envir = parent.env())

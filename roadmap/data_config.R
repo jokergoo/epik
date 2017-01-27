@@ -33,7 +33,7 @@ MARKS = c("H3K4me1", "H3K4me3", "H3K27ac", "H3K27me3", "H3K36me3", "H3K9me3", "D
 chipseq_hooks$sample_id = function(mark) {
     sample_id = dir(qq("@{PROJECT_DIR}/data/narrow_peaks"), pattern = qq("E\\d+-@{mark}.narrowPeak.gz"))
     sample_id = gsub(qq("-@{mark}.narrowPeak.gz"), "", sample_id)
-    return(intersect(sample_id, names(subgroup)))   
+    return(intersect(sample_id, names(SUBGROUP)))   
 }
 
 chipseq_hooks$peak = function(mark, sid, chr = NULL) {
