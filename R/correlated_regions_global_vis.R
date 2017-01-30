@@ -133,19 +133,12 @@ cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation) {
 		}
 	}
 
-	if(n_subgroup == 2) {
-		dend1 = as.dendrogram(hclust(dist(t(expr[, subgroup1_sample_id]))))
-		hc1 = as.hclust(reorder(dend1, colMeans(expr[, subgroup1_sample_id])))
-		expr_col_od1 = hc1$order
-		dend2 = as.dendrogram(hclust(dist(t(expr[, subgroup2_sample_id]))))
-		hc2 = as.hclust(reorder(dend2, colMeans(expr[, subgroup2_sample_id])))
-		expr_col_od2 = hc2$order
-		expr_col_od = c(which(subgroup == subgroup_level[1])[expr_col_od1], which(subgroup == subgroup_level[2])[expr_col_od2])
-	} else {
-		dend1 = as.dendrogram(hclust(dist(t(expr))))
-		hc1 = as.hclust(reorder(dend1, colMeans(expr)))
-		expr_col_od = hc1$order
-	}
+	expr_col_od = do.call("c", lapply(subgroup_level, function(le) {
+		dend1 = as.dendrogram(hclust(dist(t(expr[, subgroup == le, drop = FALSE]))))
+		hc1 = as.hclust(reorder(dend1, colMeans(expr[, subgroup == le, drop = FALSE])))
+		col_od1 = hc1$order
+		which(subgroup == le)[col_od1]
+	}))
 
 	group_mean_col = structure(brewer.pal(9, "Set1")[c(3,4,5,1)], names = c(1:4))
 	if(missing(expr_annotation)) {

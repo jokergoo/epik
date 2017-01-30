@@ -36,7 +36,7 @@ set_counter = function(n, fmt = "%s") {
 			if(i == n) message("\n", appendLF = FALSE)
 
 			i = i + 1
-			assign("i", i, envir = parent.env())
+			assign("i", i, envir = parent.env(environment()))
 			return(invisible(i))
 		}
 	}
@@ -231,6 +231,28 @@ generate_diff_color_fun = function(x, quantile = 0.95, col = c("#3794bf", "#FFFF
 	}
 }
 
+generate_color_fun = function(x, col = c("white", "purple")) {
+	q = quantile(x, c(0, 0.95, 0.99, 1))
+	if(q[2] == 0) {
+		if(q[3] == 0) {
+			if(q[4] == 0) {
+				colorRamp2(c(0, 1), col)
+			} else {
+				colorRamp2(q[c(1, 4)], col)
+			}
+		} else {
+			colorRamp2(q[c(1, 3)], col)
+		}
+	} else {
+		colorRamp2(q[c(1, 2)], col)
+	}
+}
+
+
 add_transparency = function(col, transparency = 0) {
 	rgb(t(col2rgb(col)/255), alpha = 1 - transparency)
+}
+
+is.not.null = function(...) {
+	!is.null(...)
 }

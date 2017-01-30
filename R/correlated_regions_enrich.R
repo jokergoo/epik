@@ -6,12 +6,13 @@ enrich_with_histone_mark = function(target, mark, sample_id, target_ratio = 0.1,
 	target_name = deparse(substitute(target))
 	# 200 is number of windows (5000 + 5000)/50
 
-	hm_list = get_peak_list(mark, sample_id = intersect(sample_id, chipseq_hooks$sample_id(mark)))
+	all_target_chromosome = unique(as.vector(seqnames(target)))
+	hm_list = get_peak_list(mark, sample_id = intersect(sample_id, chipseq_hooks$sample_id(mark)), chr = all_target_chromosome)
 
 	sample = names(hm_list)
 	flag = 0
 	for(i in seq_along(sample)) {
-		message(qq("@{sample[i]}: normalize histone modifications to @{target_name}."))
+		message(qq("@{sample[i]}: normalize @{mark} signal to @{target_name}."))
 	    tm = normalizeToMatrix(hm_list[[i]], target, target_ratio = target_ratio, 
 	    	value_column = value_column, extend = extend, mean_mode = mean_mode, w = w, trim = c(0, 0.01), ...)
 	    if(!flag) {
@@ -38,8 +39,10 @@ enrich_with_methylation = function(target, sample_id, target_ratio = 0.1, mode =
 
 	target_name = deparse(substitute(target))
 
+	if(length(extend) == 1) extend = rep(extend, 2)
+
 	# extrace methylation value which in [-5k, 5k] from TSS, and calculate mean methylation in each subgroup
-	target_extend = GRanges(seqnames = seqnames(target), ranges = IRanges(start(target)-extend, end(target)+extend))
+	target_extend = GRanges(seqnames = seqnames(target), ranges = IRanges(start(target)-extend[1], end(target)+extend[2]))
 	# process raw methylation data
 	meth_gr = GRanges()
 	for(chr in sort(unique(as.vector(seqnames(target))))) {
