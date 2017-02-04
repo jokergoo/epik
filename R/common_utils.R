@@ -130,7 +130,6 @@ find_neighbours = function(query, reference, upstream = 1000, downstream = 1000)
 
 
 
-# == title
 # Number of columns which are highly correlated to other columns
 #
 # == param

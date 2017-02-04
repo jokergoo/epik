@@ -1,17 +1,17 @@
 \name{bp}
 \alias{bp}
 \title{
-Mark the numbers to be number of base pairs
+Add unit "bp" to the number
 }
 \description{
-Mark the numbers to be number of base pairs
+Add unit "bp" to the number
 }
 \usage{
 bp(x)
 }
 \arguments{
 
-  \item{x}{a numeric vector. It will be convert to integers by \code{\link[base]{as.integer}}.}
+  \item{x}{a numeric vector. }
 
 }
 \details{

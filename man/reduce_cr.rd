@@ -1,36 +1,27 @@
 \name{reduce_cr}
 \alias{reduce_cr}
 \title{
-Merge neighbouring cr regions
+Merge correlated regions
 }
 \description{
-Merge neighbouring cr regions
+Merge correlated regions
 }
 \usage{
-reduce_cr(cr, expr, txdb, max_gap = 1000, gap = 1.0, mc.cores = 1)
+reduce_cr(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1)
 }
 \arguments{
 
-  \item{cr}{filtered correlated regions from \code{\link{filter_correlated_regions}}}
-  \item{expr}{the expression matrix which is same as in \code{\link{correlated_regions}}}
-  \item{txdb}{a \code{GenomicFeatures::GRanges} object.}
-  \item{max_gap}{maximum gap for merging.}
-  \item{gap}{gap for merging, a numeric value represents the ratio of width of itself and use \code{\link{bp}}, \code{\link{kb}} or \code{\link{mb}} to represent the number is absoltue base pairs. Pass to \code{\link{reduce2}}.}
-  \item{mc.cores}{number of cores}
+  \item{cr}{correlated regions from \code{\link{correlated_regions}}. It should be CRs with significant correlations.}
+  \item{txdb}{the transcriptome annotation which is same as the one used in \code{\link{correlated_regions}}}
+  \item{expr}{the expression matrix which is same as the one used in \code{\link{correlated_regions}}. If it is set the correlation will be re-calculated for the merged regions.}
+  \item{gap}{gap for the merging, pass to \code{\link{reduce2}}}
+  \item{mc.cores}{cores for parallel computing. It is paralleled by gene}
 
 }
 \details{
-Since cr with positive correlation and negative correlation has different distribution patterns
-in the genome, i.e. generally, pos_cr are long and CpG density in it is low while neg_cr is short,
-clustered and has high CpG density, thus, pos cr and neg cr are reduced separatedly.
-
-Even only look at e.g. pos cr, the pattern for the distribution in the genome is still different, 
-thus, we recommend to merge crs by width itself while not by an absolute value for which you can set
-\code{gap} by a numeric value.
-
-Since original regions are merged and columns related to calculation of correlation will be dropped.
-
-The merging is applied by gene, so it is still possible that regions associated with gene A overlap to gene B.
+As there are overlaps between two neighbouring correlated regions, it is possible to merge them into
+large regions. The mering is gene-wise, and all statistics (e.g. mean methylation, correlation) will be
+re-calculated.
 }
 \value{
 A \code{\link[GenomicRanges]{GRanges}} object
@@ -41,5 +32,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

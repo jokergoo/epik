@@ -1,10 +1,10 @@
 \name{kb}
 \alias{kb}
 \title{
-Mark that the numbers represent number of kilo bases
+Add unit "kb" to the number
 }
 \description{
-Mark that the numbers represent number of kilo bases
+Add unit "kb" to the number
 }
 \usage{
 kb(x)

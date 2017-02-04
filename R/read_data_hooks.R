@@ -4,10 +4,10 @@
 # Read methylation dataset
 #
 # == param
-# -... All the arguments do not make sense here, see 'details' section.
-# -RESET .
-# -READ.ONLY .
-# -LOCAL .
+# -... please ignore, see 'details' section.
+# -RESET please ignore
+# -READ.ONLY please ignore
+# -LOCAL please ignore
 #
 # == detail
 # Methylation dataset from whole genome bisulfite sequencing is always huge and it does not
@@ -27,23 +27,23 @@
 #       package uses, so it should be smoothed methylation rate if the CpG coverage is not high.
 #       Note, this matrix must have column names which is sample names and will be used to match
 #       other datasets (e.g. RNASeq)
+# -cov a matrix which contains CpG coverage.
 #
 # It can also contain some optional elements and they are not needed for the core analysis:
 #
-# -cov a matrix which contains CpG coverage.
 # -raw a matrix which contains unsmoothed methylation rate (or the original methylation rate calculatd
 #      as the fraction of methylated CpG in a CpG site)
 #
 # Note each row in above datasets should correspond to the same CpG site. 
 #
-# After ``methylation_hooks$get_by_chr`` is set, the "current chromosome" for the methylation dataset
+# After ``methylation_hooks$get_by_chr`` is properly set, the "current chromosome" for the methylation dataset
 # can be set by ``methylation_hooks$set_chr(chr)`` where ``chr`` is the chromosome name you want to go.
 # After validating the dataset, following variables can be used directly:
 #
 # - ``methylation_hooks$gr``
 # - ``methylation_hooks$meth``
 # - ``methylation_hooks$sample_id``
-# - ``methylation_hooks$cov`` if available
+# - ``methylation_hooks$cov``
 # - ``methylation_hooks$raw`` if available
 #
 # == value
@@ -158,21 +158,8 @@ methylation_hooks$set_chr = function(chr, verbose = TRUE) {
 	return(invisible(NULL))
 }
 
-class(methylation_hooks) = c("methylation_hooks", class(methylation_hooks))
+class(methylation_hooks) = c("methylation_hooks", "GlobalOptionsFun")
 
-# == title
-# Print the general information for the methylation hooks
-#
-# == param
-# -x methylation hook function
-# -... other arguments
-#
-# == value
-# Hook functions
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-#
 print.methylation_hooks = function(x, ...) {
 	if(is.null(methylation_hooks$get_by_chr)) {
 		cat("Importing data by setting `methylation_hooks$get_by_chr`. The value is a function with\n")
@@ -195,14 +182,14 @@ print.methylation_hooks = function(x, ...) {
 # Read ChIP-Seq dataset
 #
 # == param
-# -... All the arguments do not make sense here, see 'details' section.
-# -RESET .
-# -READ.ONLY .
-# -LOCAL .
+# -... please ignore, see 'details' section.
+# -RESET please ignore
+# -READ.ONLY please ignore
+# -LOCAL please ignore
 #
 # == details
 # Unlike methylation dataset which is always stored as matrix, ChIP-Seq dataset is stored
-# as a list of peak regions that each one corresponds to peaks in a sample. In many cases, 
+# as a list of peak regions that each one corresponds to peaks in one sample. In many cases, 
 # there are ChIP-Seq datasets for multiple histone marks that each mark does not include all
 # samples sequenced in e.g. whole genome bisulfite sequencing or RNA-Seq, thus, to import
 # such type of flexible data format, users need to define following hook functions:
@@ -212,9 +199,14 @@ print.methylation_hooks = function(x, ...) {
 #       histome mark in a given sample. The `GenomicRanges::GRanges` object should better have a meta column 
 #       which is the intensity of the histome modification signals.
 # -chromHMM This hook is optional. If chromatin segmentation by chromHMM is avaialble, this hoook
-#           can be defined as a function which accepts one single sample ID as argument and returns
+#           can be defined as a function which accepts sample ID as argument and returns
 #           a `GenomicRanges::GRanges` object. The `GenomicRanges::GRanges` object should have a meta column named
 #           "states" which is the chromatin states inferred by chromHMM.
+#
+# The ``chipseq_hooks$peak`` must have two arguments ``mark`` and ``sid`` which are the name of the histone mark
+# and the sample id, there can be more arguments such as chromosomes.
+#
+# The ``chipseq_hooks$chromHMM`` must have one argument ``sid`` which is the sample id, also there can be more arguments such as chromosomes.
 #
 # == value
 # Hook functions
@@ -239,7 +231,8 @@ chipseq_hooks = setGlobalOptions(
 #
 # == param
 # -mark name of the histome mark
-# -sample_id a vector of sample IDs
+# -sample_id a vector of sample IDs. If not defined, it is the total samples that are available for this histome mark.
+# -... more arguments pass to ``chipseq_hooks$peak()``.
 #
 # == details
 # It works after `chipseq_hooks` is set.
@@ -263,6 +256,22 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
     peak_list[!sapply(peak_list, is.null)]
 }
 
+# == title
+# Get a list of chromatin segmentation regions 
+#
+# == param
+# -sample_id a vector of sample IDs. If not defined, it is the total samples that are available for this histome mark.
+# -... more arguments pass to ``chipseq_hooks$chromHMM()``.
+#
+# == details
+# It works after `chipseq_hooks` is set.
+#
+# == value
+# A list of `GenomicRanges::GRanges` objects.
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 get_chromHMM_list = function(sample_id, ...) {
 	lt = lapply(sample_id, function(sid) {
 		oe = try(gr <- chipseq_hooks$chromHMM(sid, ...))

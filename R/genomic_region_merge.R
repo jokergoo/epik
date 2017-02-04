@@ -67,18 +67,6 @@ mb = function(x) {
 	bp(x*1000000)
 }
 
-# == title
-# Print bp class object
-#
-# == param
-# -x `bp` class object
-# -... other arguments
-# 
-# == value
-# No value is returned.
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
 print.bp = function(x, ...) {
 	x = paste0(prettyNum(sprintf("%.0f", x), big.mark = ","), " bp")
 	print(x, quote = FALSE)
@@ -95,6 +83,7 @@ print.bp = function(x, ...) {
 #      the functionality is same as `GenomicRanges::reduce` (``gap`` is sent to ``min.gapwidth``).
 # -max_gap maximum distance to merge, measured in base pairs. Only work if ``gap`` is a ratio value.
 # -.message internal use
+# -.revmap internal use
 # -... further arguments passed to `GenomicRanges::reduce` (exclude ``min.gapwidth`` and ``with.revmap``)
 #
 # == details

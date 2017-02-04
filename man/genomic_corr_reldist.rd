@@ -7,19 +7,19 @@ Relative distance between two sets of genomic regions
 Relative distance between two sets of genomic regions
 }
 \usage{
-genomic_corr_reldist(query, reference)
+genomic_corr_reldist(gr1, gr2)
 }
 \arguments{
 
-  \item{query}{genomic region 1, a \code{\link[GenomicRanges]{GRanges}} object}
-  \item{reference}{genomic region 2, a \code{\link[GenomicRanges]{GRanges}} object}
+  \item{gr1}{genomic region 1, a \code{\link[GenomicRanges]{GRanges}} object}
+  \item{gr2}{genomic region 2, a \code{\link[GenomicRanges]{GRanges}} object}
 
 }
 \details{
-For regions in \code{query} and \code{reference}, they are all degenerated as single points
-which are the middle points of regions. For each middle point in \code{query}, it looks 
-for two nearest points in \code{reference} on its left and right. The statistic is defined as the ratio of the distance
-to the nearest neighbour point to the distance of two neighbour points. If \code{query} and \code{reference} are not correlated at all,
+For regions in \code{gr1} and \code{gr2}, they are all degenerated as single points
+which are the middle points of regions. For each middle point in \code{gr1}, it looks 
+for two nearest points in \code{gr2} on its left and right. The statistic is defined as the ratio of the distance
+to the nearest neighbour point to the distance of two neighbour points. If \code{gr1} and \code{gr2} are not correlated at all,
 It is expected that the ratio follows a uniform distribution. So final statisitic are the KS-statistic
 between the real distribution of rations to the uniform distribution.
 }

@@ -170,7 +170,28 @@ add_boxplot_as_column_annotation = function(ht_list, width, anno_name, anno_titl
 	})
 }
 
-
+# == title
+# Visualizing enrichment for epigenomic signals at TSS-CGIs
+#
+# == param
+# -cr
+# -txdb
+# -expr
+# -cgi
+# -fdr_cutoff
+# -meth_diff_cutoff
+# -marks
+# -type
+# -extend
+# -expr_annotation 
+#
+# == details
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
 	expr_annotation) {
@@ -283,6 +304,28 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 }
 
 
+# == title
+# Visualizing enrichment for epigenomic signals at TSS
+#
+# == param
+# -cr
+# -txdb
+# -expr
+# -cgi
+# -fdr_cutoff
+# -meth_diff_cutoff
+# -marks
+# -type
+# -extend
+# -expr_annotation 
+#
+# == details
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = c(5000, 10000),
 	expr_annotation) {
@@ -382,7 +425,27 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi,
 
 }
 
-
+# == title
+# Visualizing enrichment for epigenomic signals at gene body
+#
+# == param
+# -cr
+# -txdb
+# -expr
+# -cgi
+# -K
+# -marks
+# -type
+# -extend
+# -expr_annotation 
+#
+# == details
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL, type = "neg", extend = 5000,
 	expr_annotation) {
 	
@@ -510,7 +573,31 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 
 }
 
-
+# == title
+# Visualizing enrichment for epigenomic signals at TSS-CGIs
+#
+# == param
+# -cr
+# -txdb
+# -expr
+# -gf
+# -fdr_cutoff
+# -meth_diff_cutoff
+# -marks
+# -type
+# -extend
+# -min_reduce
+# -min_width
+# -nearest_by
+# -expr_annotation 
+#
+# == details
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
 	min_reduce = 1, min_width = 1000, nearest_by = "tss", expr_annotation) {

@@ -11,7 +11,8 @@
 #        very short regions.
 #
 # == details
-# A common region is defined as a region which covers at least k samples.
+# First a list of segments are filtered by the cross-sample coverage (``min_coverage``). Then close segments
+# are merged by ``max_gap``.
 #
 # == value
 # A `GenomicRanges::GRanges` object contains coordinates of common regions. The columns in meta data

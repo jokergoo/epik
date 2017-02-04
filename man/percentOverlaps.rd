@@ -1,25 +1,26 @@
 \name{percentOverlaps}
 \alias{percentOverlaps}
 \title{
-Find overlapping genomic regions
+Overlap genomic regions
 }
 \description{
-Find overlapping genomic regions
+Overlap genomic regions
 }
 \usage{
-percentOverlaps(query, subject, ...)
+percentOverlaps(query, subject, ignore.strand = TRUE, ...)
 }
 \arguments{
 
   \item{query}{a \code{\link[GenomicRanges]{GRanges}} object}
   \item{subject}{a \code{\link[GenomicRanges]{GRanges}} object}
+  \item{ignore.strand}{wether ignore strands}
   \item{...}{pass to \code{\link[GenomicRanges]{findOverlaps}}}
 
 }
 \details{
 For every interval in \code{query}, it calculates the percent that is covered by \code{subject}.
 
-Be careful with \code{strand} in your \code{\link[GenomicRanges]{GRanges}} object!!
+Be careful with \code{strand} in your \code{\link[GenomicRanges]{GRanges}} object!
 }
 \value{
 A numeric vector which has the same length as \code{query}.

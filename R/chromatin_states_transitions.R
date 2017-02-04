@@ -6,19 +6,28 @@
 #            The first column in meta columns should be the states. Be careful when importing bed files to 
 #            `GenomicRanges::GRanges` objects (start positions in bed files are 0-based while 1-based in ``GRanges`` objects.
 # -gr_list_2 a list of `GenomicRanges::GRanges` objects which contains chromatin states in group 2.
-# -window window size which was used to do chromHMM states prediction. If it is not specified, the greatest common divisor
+# -window window size which was used to do chromHMM states segmentation If it is not specified, the greatest common divisor
 #         of the width of all regions is used.
-# -min_1 If there are multiple samples in group 1, the state assigned to reach region should have recurrency larger or equal to this value.
+# -min_1  If there are multiple samples in the group, it is possible that a segment has more than one states asigned to it.
+#         If the recurrency of each state is relatively low, it means there is no one dominant state for this segment and it should 
+#         be removed. This argument controls the minimal value for the recurrency of states in a given segment.
 # -min_2 same as ``min_1``, but for samples in group 2.
+# -methylation_diff If methylation dataset is provided, the segments for which the methylation difference between two groups is less than
+#             this value are removed.
+# -chromosome subset of chromosomes
 #
 # == detail
 # The whole genome is segmentated by size of ``window`` and states with highest occurence among samples are assigned to segments.
 #
-# To make the function run successfully, number of segments in all samples should be all the same and there should not be gaps between regions.
+# To make the function run successfully, number of segments (after binned by ``window``) in all samples 
+# should be all the same and there should not be gaps between segments
 #
 # == value
-# A transition matrix in which values represent total width of regions that transite from one state to the other. Rows correspond
+# A transition matrix in which values represent total width of segments that transite from one state to the other in the two groups. Rows correspond
 # to group 1 and columns correspond to group 2.
+#
+# If methylation dataset is provided, the mean methylation for each state in each group is attached, which will be used to calculate
+# mean methylation difference in `chromatin_states_transition_chord_diagram`.
 #
 # == seealso
 # The matrix can be sent to `chromatin_states_transition_chord_diagram` to visualize.
@@ -220,10 +229,49 @@ print.chromatin_states_transition_matrix = function(x, ...) {
 	return(x)
 }
 
+t.chromatin_states_transition_matrix = function(x) {
+	meth_mean_1 = attr(x, "meth_mean_1")
+	meth_mean_2 = attr(x, "meth_mean_2")
+	class(x) = "matrix"
+
+	if(is.null(meth_mean_1)) {
+		x = t(x)
+	} else{
+		x = t(x)
+		meth_mat_1 = t(meth_mat_1)
+		meth_mat_2 = t(meth_mat_2)
+	}
+	attr(x, "meth_mean_1") = meth_mean_1
+	attr(x, "meth_mean_2") = meth_mean_2
+	class(x) = c("chromatin_states_transition_matrix", "matrix")
+	return(x)
+}
+
+# == title
+# Simply returns names of chromatin states
+#
+# == param
+# -x a ``chromatin_states_transition_matrix`` object returned from `make_transition_matrix_from_chromHMM`
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 state_names = function(x) {
 	return(rownames(x))
 }
 
+
+
+# == title
+# Change chromatin state names
+#
+# == param
+# -x a ``chromatin_states_transition_matrix`` object returned from `make_transition_matrix_from_chromHMM`
+# -value new chromatin state names
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 "state_names<-" = function(x, value) {
 	meth_mean_1 = attr(x, "meth_mean_1")
 	meth_mean_2 = attr(x, "meth_mean_2")
@@ -245,11 +293,12 @@ state_names = function(x) {
 }
 
 # == title
-# Chord diagram for chromatin states transistion
+# Chord diagram for visualizing chromatin states transistion
 #
 # == param
-# -mat the transition matrix. It should be a square matrix in which row names and column names are the same.
+# -mat the transition matrix. It should be a square matrix in which row names and column names should be all the same.
 #      If it is not, the function will try to re-format it.
+# -group_names name for the two groups under comparison. You also add it afterwards by using `graphics::text`
 # -max_mat if there are several transition matrix to be compared, set it to the matrix with maximum absolute and it will make
 #          scales of all matrix the same and comparable.
 # -remove_unchanged_transition whether to remove transitions that states are not changed (set the values in diagonal to 0)
@@ -260,11 +309,14 @@ state_names = function(x) {
 # -... pass to `circlize::chordDiagram`
 #
 # == details
-# Rows of ``mat`` locate at the bottom of the circle by default.
+# Rows of ``mat`` locate at the bottom of the circle by default. You can transpose the matrix to move rows to the top of the circle.
 #
 # The chord diagram visualizes how much chromatin states change. In the diagram, width of each link represents the total
-# width of regions in a certain chromatin state in group 1 that transite to other chromatin state in group 2. The width of 
-# each grid represents total width of regions in a certain chromatin in group 1 that transite to all states in group 2.
+# width of segments in a certain chromatin state in group 1 that transite to other chromatin state in group 2. The width of 
+# each grid represents total width of segments in a certain chromatin in group 1 that transite to all states in group 2.
+#
+# If methylation dataset is provided when making the transistion matrix by using `make_transition_matrix_from_chromHMM`,
+# there will be extra tracks on the outside of the circlie to represenst the mean methylation difference in two groups.
 #
 # Chord diagram is implemented in base graphic system, which means, you can add titles or other graphics by base graphic 
 # functions (e.g. `graphics::title`, `graphics::text`, ...)
@@ -275,7 +327,7 @@ state_names = function(x) {
 # No value is returned.
 #
 # == seealso
-# `make_transition_matrix_from_chromHMM` which generates transition matrix from chromHMM results.
+# `make_transition_matrix_from_chromHMM` which generates transition matrix directly from chromHMM results.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>

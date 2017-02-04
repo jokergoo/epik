@@ -1,4 +1,21 @@
-
+# == title
+# Visualize global correlation by Hilbert curve
+#
+# == param
+# -cr correlated regions
+# -species species
+# -chromosome chromosomes
+# -merge_chr whether to merge all chromosomes in one plot
+# -add_chr_name whether add chromosome names to the plot
+# -title title of the plot
+# -legend legend
+# -... pass to `HilbertCurve::GenomicHilbertCurve`
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_hilbert_curve = function(cr, species = "hg19", chromosome = paste0("chr", 1:22), 
 	merge_chr = TRUE, add_chr_name = TRUE, title = "cr", legend = lgd, ...) {
 
@@ -30,6 +47,35 @@ cr_hilbert_curve = function(cr, species = "hg19", chromosome = paste0("chr", 1:2
 	}
 }
 
+# == title
+# Visualize landscape of genome-wide correlations
+#
+# == param
+# -cr correlated regions
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -expr expressio matrix which was used in `correlated_regions`
+# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` objects
+#
+# == details
+# The landscape of genome-wide correlations is visualized by a list of heatmaps.
+# Each row corresponds to a single gene:
+#
+# - an enriched heatmap in which correlation is normalized at gene bodies
+# - a point plot showing the length of genes
+# - a heatmap of gene expression
+# - an heatmap showing the mean methylation in the extended gene regions.
+# - an heatmap showing the methylation difference in the extended gene regions.
+#
+# K-means clustering with four groups is applied on the correlation normalized matrix
+# and the four row subclusters are ordered by mean correlation.
+#
+# There are also general statistic plots generated.
+#
+# == value
+# An updated ``cr`` that includes the partitioning.
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation) {
 
 	cr_param = metadata(cr)$cr_param
@@ -261,6 +307,25 @@ cr_enrichedheatmap = function(cr, txdb, expr, expr_annotation) {
 	return(invisible(cr))
 }
 
+
+# == title
+# Visualize significant correlated regions
+#
+# == param
+# -cr correlated regions, should be returned by `cr_enrichedheatmap`.
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -fdr_cutoff cutoff for fdr
+# -meth_diff_cutoff cutoff for methylation difference
+#
+# == details
+# There are two heatmaps which corresponds to negative correlated regions and positive
+# correlated regions.
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff = 0.1) {
 
 	cr_param = metadata(cr)$cr_param
@@ -308,9 +373,30 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 	for(i in 1:4) {
 		decorate_heatmap_body("cluster", slice = i, {grid.text(i, rot = 90)})
 	}
- }
+}
 
- sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01), meth_diff_cutoff = c(0, 0.1, 0.2, 0.3)) {
+
+# == title
+# Compare cutoff for determing significant correlated regions
+#
+# == param
+# -cr correlated regions, should be returned by `cr_enrichedheatmap`
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -fdr_cutoff a list of cutoffs to compare
+# -meth_diff_cutoff  a list of cutoffs to compare
+#
+# == details
+# It simply plot how correlated signals are enriched at extended gene regions for
+# negative correlated regions and positive correlated regions under different combination
+# of cutoffs.
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01), 
+	meth_diff_cutoff = c(0, 0.1, 0.2, 0.3)) {
 
  	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
@@ -442,7 +528,25 @@ sig_cr_enrichedheatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff 
 	upViewport()
 }
 
-gtrellis_cr_genes = function(cr, txdb, expr, species = "hg19", highlight_cytoband = TRUE) {
+# == title
+# Visualize CR genes in gtrellis layout
+#
+# == param
+# -cr correlated regions, should be returned by `cr_enrichedheatmap`
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -expr expression matrix which was used in `correlated_regions`
+# -species species
+#
+# == details
+# CR genes in k-means group 1 and 4 are visualized in gtrellis layout. Cytobands
+# which are significantly overlapped by CR genes are highlighted.
+#
+# == value
+# A list of two elements which shows how each cytoband are overlapped by CR genes
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+gtrellis_cr_genes = function(cr, txdb, expr, species = "hg19") {
 	
 	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
@@ -565,8 +669,27 @@ gtrellis_cr_genes = function(cr, txdb, expr, species = "hg19", highlight_cytoban
 	return(invisible(cytoband_list))
 }
 
-
-
+# == title
+# Visualize correlations in cytoband
+#
+# == param
+# -cr correlated regions returned from `cr_enrichedheatmap`
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -cytoband_list a list of cytoband returned by `gtrellis_cr_genes`
+# -color_head internal use
+#
+# == details
+# For each cytoband, there are several tracks:
+#
+# - points showing correlations
+# - mean correlation in 50kb window
+# - genes
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 gtrellis_sig_cytoband = function(cr, txdb, cytoband_list, color_head = TRUE) {
 	
 	cr_param = metadata(cr)$cr_param
@@ -644,6 +767,22 @@ gtrellis_sig_cytoband = function(cr, txdb, cytoband_list, color_head = TRUE) {
 	}
 }
 
+# == title
+# DAVID analysis for CR genes
+#
+# == param
+# -cr correlated regions returned by `cr_enrichedheatmap`
+# -david_user username for DAVID API (https://david.ncifcrf.gov/content.jsp?file=WS.html)
+#
+# == details
+# Genes in k-means group 1 and 4 are sent to DAVID web server. The significant functions are visualized
+# as a heatmap.
+#
+# == value
+# a list of function enrichments
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_genes_david = function(cr, david_user) {
 	
 	cr_param = metadata(cr)$cr_param
@@ -810,4 +949,6 @@ cr_genes_david = function(cr, david_user) {
 	decorate_heatmap_body("cluster", slice = 3, {grid.text("4", rot = 90)})
 	decorate_heatmap_body("cluster", slice = 4, {grid.text("4", rot = 90)})
 	draw(ht_list, main_heatmap = "GO")
+
+	return(invisible(res_list))
 }

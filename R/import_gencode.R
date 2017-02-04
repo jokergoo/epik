@@ -1,5 +1,21 @@
 
-
+# == title
+# Import gencode
+#
+# == param
+# -gtf path of the gtf file
+# -filter code which filter the gtf records
+#
+# == details
+# For example, you can build a `TxDb-class` object only for protein coding genes by defining
+# ``filter = gene_type == "protein_coding" & transcript_type == "protein_coding"``
+#
+# == value
+# a `TxDb-class` object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 import_gencode_as_txdb = function(gtf, filter = NULL) {
 
 	message(qq("import @{gtf} as a GRanges object."))
@@ -39,6 +55,26 @@ import_gencode_as_txdb = function(gtf, filter = NULL) {
 	}
 }
 
+# == title
+# Filter one GTF annotation by another
+#
+# == param
+# -gtf1 path for gtf1
+# -gtf2 path for gtf2
+# -filter code which filter the gtf1 records
+#
+# == details
+# In some senarios, the analysis is done with an old version of Gencode and it is impossible to redo it
+# with a new version of Gencode. The only way is to remove those gene/transcript annotations which are not
+# consistent in the two version. This `match_by_gencode` function only keeps genes/transcripts that have
+# same gene ids and positions in the two versions.
+#
+# == value
+# a `TxDb-class` object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 match_by_gencode = function(gtf1, gtf2, filter = NULL) {
 
 	message(qq("import @{gtf1} as a GRanges object."))
@@ -60,7 +96,6 @@ match_by_gencode = function(gtf1, gtf2, filter = NULL) {
 	if(!is.null(l)) {
 		gencode2 = gencode2[l]
 	}
-	
 	
 	message("construct a full gene bases on its transcripts")
 	l = gencode1$type == "transcript"
@@ -108,7 +143,7 @@ match_by_gencode = function(gtf1, gtf2, filter = NULL) {
 # -field field to be retrieved
 #
 # == details
-# Although GTF file can be imported by `GenomicFeatures::makeTranscriptDbFromGFF`, some information
+# Although GTF file can be imported by e.g. `GenomicFeatures::makeTranscriptDbFromGFF`, some information
 # in the original GTF file will not be imported. This function aims to extract additionally information
 # from GTF file.
 #

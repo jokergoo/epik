@@ -7,12 +7,12 @@ Jaccard coefficient between two sets of genomic regions
 Jaccard coefficient between two sets of genomic regions
 }
 \usage{
-genomic_corr_jaccard(query, reference, background = NULL)
+genomic_corr_jaccard(gr1, gr2, background = NULL)
 }
 \arguments{
 
-  \item{query}{genomic region 1, a \code{\link[GenomicRanges]{GRanges}} object}
-  \item{reference}{genomic region 2, a \code{\link[GenomicRanges]{GRanges}} object}
+  \item{gr1}{genomic region 1, a \code{\link[GenomicRanges]{GRanges}} object}
+  \item{gr2}{genomic region 2, a \code{\link[GenomicRanges]{GRanges}} object}
   \item{background}{background regions that should be only looked in, a \code{\link[GenomicRanges]{GRanges}} object}
 
 }
@@ -21,7 +21,7 @@ Jaccard coefficient is defined as the total length of intersection divided by to
 length of union of two sets of genomic regions.
 
 You can set the background when calculating Jaccard coefficient. For example,
-if the interest is the Jaccard coefficient between CpG sites in \code{query} and in \code{reference}
+if the interest is the Jaccard coefficient between CpG sites in \code{gr1} and in \code{gr2}
 \code{background} can be set with a \code{\link[GenomicRanges]{GRanges}} object which contains positions of CpG sites.
 
 Be careful with the \code{strand} in your \code{\link[GenomicRanges]{GRanges}} object!

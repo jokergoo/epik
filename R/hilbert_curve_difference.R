@@ -7,16 +7,22 @@
 #      The value can be a vector with same length as sample IDs or a named vector that names are sample IDs.
 # -comparison if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference
 #        The value is a vector of length of two and the difference is calculated as subgroup[1] - subgroup[2]
-# -chromosome a vector fo chromosome
+# -chromosome a vector of chromosome
 # -species species
 # -type Three types of visualization supported, see "details" section
 # 
 # == details
+# Genome is segmented by 1kb window and mean methylation for each 1kb window is calculated, later visualized
+# by Hilbert curve.
+#
 # There are three types of visualization methods:
 #
 # -global_mean the mean methylation averaged from all samples
 # -subgroup_mean the mean methylation averaged in every subgroup
 # -difference the difference of methylation in two subgroups
+#
+# == value
+# a `GenomicRanges::GRanges` object which contains mean methylation for the 1kb segmentation and other statistics.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -95,6 +101,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 	}
 
 	if("difference" %in% type) {
+		if(missing(comparison)) comparison = le[1:2]
 		message(qq("making hilbert curve for the methylation difference between @{comparison[1]} and @{comparison[2]}"))
 		diff = mcols(gr_meth)[l, qq("mean_@{comparison[1]}")] - mcols(gr_meth)[l, qq("mean_@{comparison[2]}")]
 		col_fun = generate_diff_color_fun(diff)
@@ -150,12 +157,18 @@ average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(a
 # -density_column the column name of the signal defined in `chipseq_hook`$peak
 # 
 # == details
+# Genome is segmented by 1kb window and mean signal for each 1kb window is calculated, later visualized
+# by Hilbert curve.
+#
 # There are four types of visualization methods:
 #
 # -global_mean the mean signal averaged from all samples
 # -subgroup_mean the mean signal averaged in every subgroup
 # -abs_difference the absolute difference of signal in two subgroups
 # -rel_difference the relative difference in two subgroups. The value is calculated as absolute difference divided by mean singal.
+#
+# == value
+# a `GenomicRanges::GRanges` object which contains mean signal for the 1kb segmentation and other statistics.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -228,6 +241,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	}
 
 	if("abs_difference" %in% type) {
+		if(missing(comparison)) comparison = le[1:2]
 		message(qq("making hilbert curve for the absolute signal difference between @{comparison[1]} and @{comparison[2]}"))
 		diff = mcols(gr)[, qq("mean_@{comparison[1]}")] - mcols(gr)[, qq("mean_@{comparison[2]}")]
 		col_fun = generate_diff_color_fun(diff)
@@ -243,6 +257,7 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	}
 
 	if("rel_difference" %in% type) {
+		if(missing(comparison)) comparison = le[1:2]
 		message(qq("making hilbert curve for the relative signal difference between @{comparison[1]} and @{comparison[2]}"))
 		diff = mcols(gr)[, qq("mean_@{comparison[1]}")] - mcols(gr)[, qq("mean_@{comparison[2]}")]
 		mean = (mcols(gr)[, qq("mean_@{comparison[1]}")] + mcols(gr)[, qq("mean_@{comparison[2]}")])/2
@@ -339,6 +354,23 @@ if(!is.memoized(get_chipseq_association_stat)) {
 	get_chipseq_association_stat = memoise(get_chipseq_association_stat)
 }
 
+# == title
+# General association between histome marks
+#
+# == param
+# -gr_list a list of `GenomicRanges::GRanges` objects which show signal difference in two groups.
+#          Each `GenomicRanges::GRanges` object must have a ``diff`` column. The object is usually from `hilbert_curve_chipseq_difference`.
+# -q quantile of difference
+#
+# == details
+# For each pair of histome marks, the Jaccard coefficient for the regions which show higher difference
+# than ``q`` is calcualted and visualized.
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 general_chipseq_association = function(gr_list, q = 0.9) {
 	
 	q_cutoff = seq(0.1, 0.9, by = 0.1)
@@ -459,6 +491,24 @@ general_chipseq_association = function(gr_list, q = 0.9) {
 	}
 }
 
+# == title
+# General association between histone modifications and methylations
+#
+# == param
+# -gr_list a list of `GenomicRanges::GRanges` objects which show signal difference in two groups.
+#          Each `GenomicRanges::GRanges` object must have a ``diff`` column. The object is usually from `hilbert_curve_chipseq_difference`.
+# -gr_meth a `GenomicRanges::GRanges` object which shows methylation difference in two groups.
+#          The object is usually from `hilbert_curve_methylation_difference`
+#
+# == details
+# For each histone mark, the distribution of methylation difference in regions which show
+# high histome modification signal difference is visualized.
+#
+# == value
+# no value is returned
+# 
+# == author
+# Zuguang Gu <z.gu@dkfz.de> 
 general_chipseq_association_to_methylation = function(gr_list, gr_meth) {
 	
 	gr_name = names(gr_list)

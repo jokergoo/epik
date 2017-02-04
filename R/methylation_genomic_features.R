@@ -9,7 +9,7 @@
 # -subgroup subgroup information
 # -ha column annotations, a `ComplexHeatmap::HeatmapAnnotation` object
 # -genomic_features a single or a list of `GenomicRanges::GRanges` ojects
-# -min_mean_range minimal range between mean value in classifications
+# -meth_diff minimal range between mean value in subgroups
 # -cutoff if classification information is provided, p-value for the oneway ANOVA test
 # -adj_method how to calculate adjusted p-values
 # -cluster_cols how to cluster columns
@@ -27,7 +27,7 @@
 heatmap_diff_methylation_in_genomic_features = function(gr, subgroup, 
 	ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE),
 	genomic_features = NULL, 
-	min_mean_range = 0, cutoff = 0.05, adj_method = "BH", 
+	meth_diff = 0, cutoff = 0.05, adj_method = "BH", 
 	cluster_columns = c("subgroup", "all", "none"), ...) {
 		
 	cluster_columns = match.arg(cluster_columns)[1]
@@ -46,15 +46,18 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 		mat = mat[!l, , drop = FALSE]
 	}
 
-	if(min_mean_range > 0) {
+	if(meth_diff > 0) {
 		x = tapply(seq_len(ncol(mat)), subgroup, function(ind) {
 				rowMeans(mat[, ind, drop = FALSE], na.rm = TRUE)
 			})
 		dim(x) = NULL
 		x = as.matrix(data.frame(x))
-		l = apply(x, 1, function(y) max(y, na.rm = TRUE) - min(y, na.rm = TRUE)) > min_mean_range
+		v = apply(x, 1, function(y) max(y, na.rm = TRUE) - min(y, na.rm = TRUE))
+		l = v > meth_diff
 
-		message(qq("remove @{sum(!l)}/@{length(l)} rows by filtering `min_mean_range > @{min_mean_range}`"))
+		gr$meth_diff = v
+
+		message(qq("remove @{sum(!l)}/@{length(l)} rows by filtering `meth_diff > @{meth_diff}`"))
 		gr = gr[l]
 		mat = mat[l, , drop = FALSE]
 	}
@@ -68,8 +71,11 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 			df = data.frame(data = data, group = group)
 			p[j] = oneway.test(data ~ group, data = df)$p.value
 		}
-		p = p.adjust(p, method = adj_method)
-		l = p < cutoff
+		adjp = p.adjust(p, method = adj_method)
+		l = adjp < cutoff
+
+		gr$p_value = p
+		gr$adjp = adjp
 
 		gr = gr[l]
 		mat = mat[l, , drop = FALSE]
@@ -159,7 +165,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 # A list of `GenomicRanges::GRanges` objects in which mean methylation matrix and number of CpG in each region
 # are attached. The variable can be sent to `heatmap_diff_methylation_in_genomic_features` to visualize.
 #
-# Note sometimes it doesn't make any sense to calculate mean methylation in long regions where
+# Note it should keep in mind that it doesn't make any sense to calculate mean methylation in long regions where
 # there are hetergenuous methylation patterns.
 #
 # == author

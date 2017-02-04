@@ -7,26 +7,22 @@ Heatmap for differential methylation in genomic features
 Heatmap for differential methylation in genomic features
 }
 \usage{
-heatmap_diff_methylation_in_genomic_features(gr, annotation,
-    annotation_color = structure(seq_along(unique(annotation)), names = unique(annotation)),
-    txdb = NULL, gf_list = NULL, gf_type = "percent",
-    min_mean_range = 0.2, cutoff = 0.05, adj_method = "BH", title = NULL,
-    cluster_cols = c("subgroup", "all", "none"), ha = NULL, ...)
+heatmap_diff_methylation_in_genomic_features(gr, subgroup,
+    ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE),
+    genomic_features = NULL,
+    meth_diff = 0, cutoff = 0.05, adj_method = "BH",
+    cluster_columns = c("subgroup", "all", "none"), ...)
 }
 \arguments{
 
-  \item{gr}{a \code{\link[GenomicRanges]{GRanges}} object returned by \code{\link{get_mean_methylation_in_genomic_features}}}
-  \item{annotation}{classification of samples}
-  \item{annotation_color}{colors of classifications}
-  \item{txdb}{A \code{\link[GenomicFeatures]{TxDb}} object}
-  \item{gf_list}{a list of genomic features in \code{\link[GenomicRanges]{GRanges}} which are used as row annotations}
-  \item{gf_type}{how to overlap genomic features, pass to \code{\link{annotate_to_genomic_features}}}
-  \item{min_mean_range}{minimal range between mean value in classifications}
+  \item{gr}{a \code{\link[GenomicRanges]{GRanges}} object returned from \code{\link{get_mean_methylation_in_genomic_features}}}
+  \item{subgroup}{subgroup information}
+  \item{ha}{column annotations, a \code{\link[ComplexHeatmap]{HeatmapAnnotation}} object}
+  \item{genomic_features}{a single or a list of \code{\link[GenomicRanges]{GRanges}} ojects}
+  \item{meth_diff}{minimal range between mean value in subgroups}
   \item{cutoff}{if classification information is provided, p-value for the oneway ANOVA test}
   \item{adj_method}{how to calculate adjusted p-values}
-  \item{title}{title of the plot}
   \item{cluster_cols}{how to cluster columns}
-  \item{ha}{column annotations added to the heatmap}
   \item{...}{pass to \code{\link[ComplexHeatmap]{Heatmap}}}
 
 }
@@ -42,5 +38,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

@@ -1,10 +1,10 @@
 \name{mb}
 \alias{mb}
 \title{
-Mark that the numbers represent number of mega bases
+Add unit "mb" to the number
 }
 \description{
-Mark that the numbers represent number of mega bases
+Add unit "mb" to the number
 }
 \usage{
 mb(x)

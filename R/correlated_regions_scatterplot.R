@@ -1,17 +1,18 @@
 
 # == title
-# Scatter plot between methylation and expression in a correlated region
+# Scatter plot between methylation and expression in one correlated region
 #
 # == param
-# -cr correlated regions from `correlated_regions` or `filter_correlated_regions`
-# -expr the expression matrix which is same as in `correlated_regions`
+# -cr correlated regions
+# -expr the expression matrix which was used in `correlated_regions`
 # -gi gene id
-# -text_column which column in ``cr`` should be put as annotation text in the plot
+# -text_column the column name in ``cr`` which will be plotted as text annotations.
 # -xlab xlab in the plot
 # -ylab ylab in the plot
 #
 # == details
-# Scatterplot for all CRs corresponding to the gene will be made.
+# Scatterplot for all CRs corresponding to the gene will be made. If you want to make
+# a subset of CRs, directly subset ``cr``.
 #
 # == value
 # No value is returned
@@ -24,10 +25,6 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column,
 
 	cr_param = metadata(cr)$cr_param
 	
-	annotation = attr(cr, "factor")
-	annotation_color = attr(cr, "col")
-	sample_id = attr(cr, "sample_id")
-
 	subgroup = cr_param$subgroup
 	subgroup_col = cr_param$col
 	sample_id = cr_param$sample_id

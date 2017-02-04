@@ -1,7 +1,30 @@
 
-# mean signal across samples
-enrich_with_histone_mark = function(target, mark, sample_id, target_ratio = 0.1, return_arr = FALSE, 
-	value_column = "density", extend = 5000, mean_mode = "w0", w = 50, ...) {
+# == title
+# Normalize histome modification signals to target
+#
+# == param
+# -target target regions
+# -mark histome mark name
+# -sample_id a vector of sample ids
+# -mode how to summarize methylation among samples, by defualt is the cross-sample mean signal
+# -return_arr whether also return the three dimension array itself
+# -... pass to `EnrichedHeatmap::normalizeToMatrix`
+#
+# == details
+# For each sample, the signal is normalized to a matrix, which results an array in which the third
+# dimension is the samples. The final normalized matrix which shows e.g. mean signal matrix is calcualted
+# by ``mode``.
+#
+# == values
+# If ``return_arr`` is set to ``FALSE``, the funtion returns a matrix which can be directly sent to 
+# `EnrichedHeatmap::EnrichedHeatmap`. If ``return_arr`` is ``TRUE``, the returned value is a list in which
+# the first element is the original array that each slice in the third dimension is the normalize matrix
+# in each sample.
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+# 
+enrich_with_histone_mark = function(target, mark, sample_id, mode = mean, return_arr = FALSE, ...) {
 
 	target_name = deparse(substitute(target))
 	# 200 is number of windows (5000 + 5000)/50
@@ -13,8 +36,7 @@ enrich_with_histone_mark = function(target, mark, sample_id, target_ratio = 0.1,
 	flag = 0
 	for(i in seq_along(sample)) {
 		message(qq("@{sample[i]}: normalize @{mark} signal to @{target_name}."))
-	    tm = normalizeToMatrix(hm_list[[i]], target, target_ratio = target_ratio, 
-	    	value_column = value_column, extend = extend, mean_mode = mean_mode, w = w, trim = c(0, 0.01), ...)
+	    tm = normalizeToMatrix(hm_list[[i]], target, trim = c(0, 0.01), ...)
 	    if(!flag) {
 	    	arr = array(dim = c(length(target), dim(tm)[2], length(hm_list)))
 	    	dimnames(arr) = list(rownames(tm), colnames(tm), names(hm_list))
@@ -23,7 +45,7 @@ enrich_with_histone_mark = function(target, mark, sample_id, target_ratio = 0.1,
 	    arr[, , i] = tm
 	}
 
-	mat = apply(arr, c(1, 2), mean, na.rm = TRUE)
+	mat = apply(arr, c(1, 2), mode, na.rm = TRUE)
 	mat = copyAttr(tm, mat)
 
 	if(return_arr) {
@@ -33,9 +55,21 @@ enrich_with_histone_mark = function(target, mark, sample_id, target_ratio = 0.1,
 	}
 }
 
-# mean methylation across samples
-enrich_with_methylation = function(target, sample_id, target_ratio = 0.1, mode = rowMeans,
-	extend = 5000, w = 50, mean_mode = "absolute", empty_value = NA, smooth = TRUE, ...) {
+# == title
+# Normalize methylation to target
+#
+# == param
+# -target target regions
+# -sample_id a vector of sample ids
+# -mode how to summarize methylation among samples, by defualt is the cross-sample mean methylation
+# -... pass to `EnrichedHeatmap::normalizeToMatrix`
+#
+# == value
+# A matrix which can be directly visualized by `EnrichedHeatmap::EnrichedHeatmap`
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+enrich_with_methylation = function(target, sample_id, mode = rowMeans, ...) {
 
 	target_name = deparse(substitute(target))
 
@@ -57,8 +91,7 @@ enrich_with_methylation = function(target, sample_id, target_ratio = 0.1, mode =
 	}
 	colnames(mcols(meth_gr)) = "mean_meth"
 	message(qq("normalize methylation signals to @{target_name}..."))
-	mat = normalizeToMatrix(meth_gr, target, value_column = "mean_meth", target_ratio = target_ratio, extend = extend, 
-		w = w, mean_mode = mean_mode, empty_value = empty_value, smooth = smooth, ...)
+	mat = normalizeToMatrix(meth_gr, target, value_column = "mean_meth", ...)
 	return(mat)
 }
 

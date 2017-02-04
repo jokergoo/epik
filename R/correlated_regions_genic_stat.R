@@ -1,4 +1,25 @@
 
+# == title
+# Plot general statistics for the annotation to genes
+#
+# == param
+# -cr_reduced significant CRs which have been reduced by `reduce_cr`
+# -txdb the transcriptome annotation which is same as the one used in `correlated_regions`
+#
+# == details
+# There are five plots which are:
+# 
+# - mean methylation difference for negative/positive CRs in promoters/gene body/intergenic regions
+# - length of negative/positive CRs in promoters/gene body/intergenic regions
+# - genes for which promoters/gene body/intergenic regions are affected by negative/positive CRs
+# - sum of length of negative/positive CRs in promoters/gene body/intergenic regions
+# - Number of CpG per 1kb window for negative/positive CRs in promoters/gene body/intergenic regions
+#
+# == value
+# No value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 cr_genic_stat = function(cr_reduced, txdb) {
 
 	gm = genes(txdb)

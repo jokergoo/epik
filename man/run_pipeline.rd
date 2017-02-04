@@ -1,7 +1,7 @@
 \name{run_pipeline}
 \alias{run_pipeline}
 \title{
-run pipeline through qsub system
+run pipeline in HPC through job scheduling system
 }
 \description{
 run pipeline in HPC through job scheduling system

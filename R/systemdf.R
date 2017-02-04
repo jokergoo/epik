@@ -1,40 +1,42 @@
 
-#' Wrapper of system calls in which input and output are all table-like files
-#' 
-#' @param cmd     shell command
-#' @param envir   environment where to look for variables encoded in `cmd`
-#' @param verbose whether print messages
-#'
-#' @details
-#' This function (system + data frame) provides a convinient way to invoke
-#' system calls in R. Since most of system calls expect tables as inputs and outputs, 
-#' [systemdf()] does following things step by step:
-#'
-#' - use backtick to mark variables which are data frames or other variables which can be converted
-#'    to data frames by [base::as.data.frame()]
-#' - extract data frames
-#' - write data frames into temporary files 
-#' - replace variables names with paths that correspond to temporary files
-#' - make the system call 
-#' - finally send back the output by piping back to R
-#'
-#' A simple example is as follows:
-#'
-#' ```
-#' bed1 = circlize::generateRandomBed(nr = 1000)
-#'     bed2 = circlize::generateRandomBed(nr = 1000)
-#'     df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")
-#' ```
-#'
-#' @value A data frame. Sometimes column names may be lost.
-#'
-# @author Zuguang Gu <z.gu@dkfz.de>
-#'
-#' @example
-#' if(Sys.info()["sysname"] \%in\% c("Linux", "Darwin")) {
-#'     df = data.frame(x = sample(1:10, 10), y = sample(11:20, 10))
-#'     systemdf("sort -k1,1n `df`")
-#' }
+# == title
+# Wrapper of system calls in which input and output are all tables
+#
+# == param
+# -cmd     shell command
+# -param envir   environment where to look for variables encoded in `cmd`
+# -param verbose whether print messages
+#
+# == details
+# This function (system + data frame) provides a convinient way to invoke
+# system calls in R. Since most of system calls expect tables as inputs and outputs, 
+# ``systemdf()`` does following step by step:
+#
+# - use backtick to mark variables which are data frames or other variables which can be converted
+#    to data frames by `base::as.data.frame`
+# - extract data frames
+# - write data frames into temporary files 
+# - replace variables names with paths that correspond to temporary files
+# - make the system call 
+# - finally send back the output by piping back to R
+#
+# A simple example is as follows:
+#
+#     bed1 = circlize::generateRandomBed(nr = 1000)
+#         bed2 = circlize::generateRandomBed(nr = 1000)
+#         df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")
+#
+# == value 
+# A data frame. Column names may be lost.
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+# 
+# == example
+# if(Sys.info()["sysname"] \%in\% c("Linux", "Darwin")) {
+#     df = data.frame(x = sample(1:10, 10), y = sample(11:20, 10))
+#     systemdf("sort -k1,1n `df`")
+# }
 systemdf = function(cmd, envir = parent.frame(), verbose = FALSE) {
 	
 	op = qq.options(READ.ONLY = FALSE)

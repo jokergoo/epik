@@ -1,24 +1,31 @@
 
 # title
-# correlated regions in a specified regio
+# correlated regions in a specified region
 #
 # == param
 # -site position of CpG sites, should be sorted
 # -meth methylation matrix corresponding to ``site``
 # -expr expression for the associated gene
 # -chr chromosome, used to construct the `GenomicRanges::GRanges` object
-# -cov CpG coverage matrix
-# -cov_cutoff cutoff for coverage
-# -min_dp minimal number of non-NA values for calculating correlations
+# -cov CpG coverage matrix. CpG coverage is important when ``meth`` is the raw methylation which means
+#      CpG sites with extremely low coverage should be removed when calculating correlations
+# -cov_cutoff cutoff for the CpG coverage
+# -min_dp minimal number of non-NA values for calculating correlations. When ``meth`` is the raw methylation
+#          the ones for which CpG coverage is too low will be replaced with ``NA``, and we only use non-NA values
+#          to calculate correlations.
 # -cor_method method for calcualting correlations
 # -window_size how many CpG sites in a window
+# -window_step step of the sliding window, measured in number of CpG sites
 # -subgroup subgroup information
 # -max_width maximum width of a window
 #
 # == details
 # ``cov`` and ``cov_cutoff`` should be set when the methylation is unsmoothed, because
 # for the unsmoothed data, the methylation rate is not unreliable when the CpG coverage is low.
-# 
+#
+# == value
+# a `GenomicRanges::GRanges` object
+#
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
@@ -128,55 +135,53 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 #
 # == param
 # -sample_id a vector of sample id
-# -expr expression matrix in which columns correspond to sample ids
-# -txdb a ``GenomicFeatures::GRanges`` object. Gene names should be same type as row names in ``expr``
+# -expr expression matrix
+# -txdb a `TxDb-class` object.
 # -chr a single chromosome
 # -extend extension of gene model, both upstream and downstream
 # -cov_filter if ``coverage`` hook is set in `methylation_hooks`, this option can be set to filter out CpG sites with low coverage across samples.
 #          the value for this option is a function for which the argument is a vector of coverage values for current CpG in all samples.
-# -cor_method method to calculate correlation
-# -factor classes of samples
-# -window_size number of CpGs in a window
+# -cor_method method for calcualting correlations
+# -subgroup subgroup information
+# -window_size how many CpG sites in a window
+# -window_step step of the sliding window, measured in number of CpG sites
 # -max_width maximum width of a window
 # -raw_meth whether use raw methylation value (values from ``raw`` hook set in `methylation_hooks`)
-# -cov_cutoff cutoff for coverage
-# -min_dp minimal non-NA values for calculating correlations
-# -col color for classes
+# -cov_cutoff cutoff for CpG coverage
+# -min_dp minimal number of non-NA values for calculating correlations. When ``meth`` is the raw methylation
+#          the ones for which CpG coverage is too low will be replaced with ``NA``, and we only use non-NA values
+#          to calculate correlations.
+# -col color for subgroups. This setting will be saved in the returned object and will be used in downstream analysis.
+#      If not set, random colors are assigned.
 #
 # == details
 # The detection for correlated regions is gene-centric. For every gene, the process are as follows:
 #
 # - extend to both upstream and downstream
-# - from the most upstream, use a sliding window which contains ``windows_size`` CpG sites
-# - filter each window by CpG coverage (by ``cov_filter`` and ``cov_cutoff``)
+# - from the most upstream, use a sliding window which contains ``windows_size`` CpG sites, moving step of ``window_step`` CpG sites;
+# - filter each window by CpG coverage (by ``cov_filter`` and ``cov_cutoff``);
 # - calculate correlation between methylation and gene expression for this window
+# - calculate other statistics
 #
-# Following meth columns are attached to the `GenomicRanges::GRanges` objects:
+# Following meta columns are attached to the `GenomicRanges::GRanges` objects:
 #
-# -n number of CpG sites
+# -ncpg number of CpG sites
 # -mean_meth_* mean methylation in each window in every sample.
-# -corr correlation
+# -corr correlation between methylation and expression
 # -corr_p p-value for the correlation test
-# -meth_IQR IQR of mean methylation if ``factor`` is not set
-# -meth_anova p-value from oneway ANOVA test if ``factor`` is set
-# -meth_diameter range between maximum mean and minimal mean in all subgroups if ``factor`` is set
+# -meth_IQR IQR of mean methylation if ``subgroup`` is not set
+# -meth_anova p-value from oneway ANOVA test if ``subgroup`` is set
+# -meth_diameter range between maximum mean and minimal mean in all subgroups if ``subgroup`` is set
+# -meth_diff when there are two subgroups, the mean methylation in subgroup 1 substracting mean methylation in subgroup 2.
 # -gene_id gene id
 # -gene_tss_dist distance to tss of genes
 # -tx_tss_dist if genes have multiple transcripts, this is the distance to the nearest transcript
 # -nearest_txx_tss transcript id of the nearest transcript
 #
-# This function keeps all the information for all CpG windows. Users can get `filter_correlated_regions` to get correlated regions
-# with significant correlations and use `reduce_cr` to merge neighbouring windows.
-#
-# Since information for all CpG windows are kept, the size of the object is always very huge, thus, it is reasonable
-# to analyze each chromosome separately and save each object as a single file. Some downstream functions expect a formatted
-# path of the cr file.
+# This function keeps all the information for all CpG windows. Users can use `reduce_cr` to merge neighbouring windows.
 #
 # == value
 # A `GenomicRanges::GRanges` object which contains associated statistics for every CpG windows.
-#
-# == seealso
-# `filter_correlated_regions`, `reduce_cr`
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -336,6 +341,26 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	return(res)
 }
 
+
+# == title
+# Calcualte FDRs for CRs
+#
+# == param
+# -cr correlated regions 
+# -fdr_method method to calculate FDR
+#
+# == details
+# Since correlated region detection is per-chromosome, after merging CRs from all chromosomes, FDR
+# can be calcualted based on ``corr_p`` and/or ``meth_anno`` column.
+#
+# Please note, FDRs are calculated for negative CRs and positive CRs separatedly.
+#
+# == value
+# CR with two/one columns (``corr_fdr``, ``meth_anova_fdr``)
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 cr_add_fdr_column = function(cr, fdr_method = "BH") {
 
 	# separate neg and pos
@@ -385,6 +410,28 @@ reduce_cr_by_gene = function(gr, gap = 1) {
 	return(gr2)
 }
 
+# == title
+# Merge correlated regions
+#
+# == param
+# -cr correlated regions from `correlated_regions`. It should be CRs with significant correlations.
+# -txdb the transcriptome annotation which is same as the one used in `correlated_regions`
+# -expr the expression matrix which is same as the one used in `correlated_regions`. If it is set
+#        the correlation will be re-calculated for the merged regions.
+# -gap gap for the merging, pass to `reduce2`
+# -mc.cores cores for parallel computing. It is paralleled by gene
+#
+# == details
+# As there are overlaps between two neighbouring correlated regions, it is possible to merge them into
+# large regions. The mering is gene-wise, and all statistics (e.g. mean methylation, correlation) will be
+# re-calculated.
+#
+# == value
+# A `GenomicRanges::GRanges` object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 reduce_cr = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 
 	cr_param = metadata(cr)$cr_param

@@ -1,10 +1,10 @@
 \name{systemdf}
 \alias{systemdf}
 \title{
-Wrapper of system calls in which input and output are all table-like files
+Wrapper of system calls in which input and output are all tables
 }
 \description{
-Wrapper of system calls in which input and output are all table-like files
+Wrapper of system calls in which input and output are all tables
 }
 \usage{
 systemdf(cmd, envir = parent.frame(), verbose = FALSE)
@@ -12,14 +12,14 @@ systemdf(cmd, envir = parent.frame(), verbose = FALSE)
 \arguments{
 
   \item{cmd}{shell command}
-  \item{envir}{environment where to look for variables encoded in \code{cmd}}
-  \item{verbose}{whether print messages}
+  \item{param}{envir   environment where to look for variables encoded in \code{\link{cmd}}}
+  \item{param}{verbose whether print messages}
 
 }
 \details{
 This function (system + data frame) provides a convinient way to invoke
 system calls in R. Since most of system calls expect tables as inputs and outputs, 
-\code{\link{systemdf}} does following things step by step:
+\code{systemdf()} does following step by step:
 
 \itemize{
   \item use backtick to mark variables which are data frames or other variables which can be converted to data frames by \code{\link[base]{as.data.frame}}
@@ -34,11 +34,11 @@ A simple example is as follows:
 
   \preformatted{
     bed1 = circlize::generateRandomBed(nr = 1000)
-    bed2 = circlize::generateRandomBed(nr = 1000)
-    df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")  }
+        bed2 = circlize::generateRandomBed(nr = 1000)
+        df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")  }
 }
 \value{
-A data frame. Sometimes column names may be lost.
+A data frame. Column names may be lost.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>

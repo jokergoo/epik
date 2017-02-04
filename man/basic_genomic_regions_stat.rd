@@ -8,17 +8,19 @@ Basic statistics on genomic regions
 }
 \usage{
 basic_genomic_regions_stat(gr_list, annotation = NULL, annotation_color = NULL,
-    main = NULL, species = "hg19", type = c("proportion", "number", "median_width"),
-    by_chr = FALSE)
+    title = paste0("Basic statistics for genomic regions"), species = "hg19",
+    type = c("proportion", "number", "median_width"),
+    chromosome = paste0("chr", c(1:22, "X", "Y")), by_chr = FALSE)
 }
 \arguments{
 
   \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}}.}
   \item{annotation}{a vector which contains class of samples. If it has names which correspond to \code{gr_list}, the order of this vector is automatically adjusted.}
   \item{annotation_color}{colors corresponding to classes of annotations}
-  \item{main}{title of the plot}
+  \item{title}{title of the plot}
   \item{species}{species, necessary if \code{type} is set to \code{proportion}.}
   \item{type}{type of statistics}
+  \item{chromosome}{subset of chromosomes}
   \item{by_chr}{take all chromosomes as a whole or calculate statistics for every chromosome}
 
 }
@@ -46,6 +48,7 @@ gr_list = lapply(1:10, function(i) {
 	df = generateRandomBed(1000)[1:sample(100:1000, 1), ]
 	GRanges(df[[1]], ranges = IRanges(df[[2]], df[[3]]))
 })
+names(gr_list) = paste0("sample_", 1:10)
 basic_genomic_regions_stat(gr_list)
 basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
     annotation_color = c("a" = "red", "b" = "blue"))

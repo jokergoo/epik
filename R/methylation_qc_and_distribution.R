@@ -8,18 +8,19 @@
 # Basic qc plot for distribution of methylation and CpG coverage
 #
 # == param
-# -sample_id a vector of sample ids
+# -sample_id a vector of sample ids. You can generate plots for a list of samples in a same time
+#            while is faster than make it one by one.
 # -chromosome a vector of chromosome names
 # -background background regions
 #
 # == detail
 # For each sample id, it will produce five plots:
 #
-# - mean/median CpG coverage per chromosome
+# - mean/median CpG coverage per chromosome, red area corresponds to the 25th and 75th percential.
 # - histogram of CpG coverage
-# - mean/median methylation per chromosome 
+# - mean/median methylation per chromosome, red area corresponds to the 25th and 75th percential.
 # - histogram of methylation
-# - mean/median Methylation at each CpG coverage 
+# - mean/median Methylation at each CpG coverage , red area corresponds to the 25th and 75th percential at each CpG coverage.
 #
 # == value
 # A list of corresponding statistics

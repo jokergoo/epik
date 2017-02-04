@@ -1,28 +1,56 @@
 
-compare_meth = function(g, cr_smoothed) {
-	g = sort(g)
-	g = g[g$gene_id %in% cr_smoothed$gene_id]
+# == title
+# Compare raw and smoothed methylations
+#
+# == param
+# -gi gene id
+# -cr_smoothed correlated regions using smoothed methylations
+# -txdb transcriptome annotation if ``start`` and ``end`` are not set
+# -start start position of the region of interested
+# -end end position of the region of interested
+#
+# == details
+# If ``start`` and ``end`` are not set, the whole extended gene will be plotted.
+#
+# The aim of this function is see whether smoothing can improve the methylatio dataset.
+#
+# There will be six tracks:
+#
+# - smoothed methylation
+# - correlation between methylation and gene expression
+# - raw methylation
+# - raw methylation for those CpG sites with coverage larger than 25th percential of all CpG coverage
+# - raw methylation for those CpG sites with coverage larger than 50th percential of all CpG coverage
+# - CpG coverage, the bottom, middle and top lines correspond to 25th, 50th and 75th percential from all samples
+#
+# == value
+# No value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+# 
+compare_meth = function(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL) {
 
-	cr_param = metadata(cr_smoothed)$cr_param
+	cr_param = metadata(cr)$cr_param
+	extend = cr_param$extend
 	sample_id = cr_param$sample_id
 	subgroup = cr_param$cr_subgroup
 	col = cr_param$col
 	if(!is.null(subgroup)) col = col[subgroup]
-	for(i in seq_len(length(g))) {
-		message(qq("compare smoothed and raw methylation for @{g[i]$gene_id}"))
-		compare_meth_in_one_gene(g[i], cr_smoothed[cr_smoothed$gene_id == g[i]$gene_id], sample_id, col)
+
+	cr_smoothed = cr_smoothed[cr_smoothed$gene_id == di]
+
+	if(is.not.null(start) && is.not.null(end)) {
+		chr = as.vector(seqnames(cr_smoothed))[1]
+		s = start
+		e = end
+		cr_smoothed = cr_smoothed[start(cr_smoothed) >= s & end(cr_smoothed) <= e]
+	} else {
+		g = genes(txdb)
+		chr = as.vector(seqnames(g))
+		s = start(g) - extend
+		e = end(g) + extend
 	}
-}
-
-compare_meth_in_one_gene = function(g, cr_smoothed, sample_id, col) {
-
-	cr_param = metadata(cr)$cr_param
-	extend = cr_param$extend
-
-	chr = as.vector(seqnames(g))
-	s = start(g) - extend
-	e = end(g) + extend
-	xrange = c(s, e)
 
 	col = add_transparency(col, 0.2)
 
@@ -39,10 +67,16 @@ compare_meth_in_one_gene = function(g, cr_smoothed, sample_id, col) {
 	cov_cutoff_1 = round(quantile(cov, 0.25))
 	cov_cutoff_2 = round(quantile(cov, 0.5))
 
+	if(is.not.null(start) && is.not.null(end)) {
+		title = qq("@{chr}:@{start}-@{end}, @{length(site)} CpG sites")
+	} else {
+		title = qq("@{gi}, extend @{extend} bp to both side, @{length(site)} CpG sites")
+	}
+
 	gtrellis_layout(GRanges(seqnames = chr, ranges = IRanges(s, e)),
 		n_track = 6, track_ylab = c("smoothed meth", "corr", "raw meth", qq("raw meth\n(cov >= @{cov_cutoff_1})(q25)"), qq("raw meth\n(cov >= @{cov_cutoff_2})(q50)"), "median cpg cov"),
 		track_ylim = c(0, 1, -1, 1, 0, 1, 0, 1, 0, 1, c(0, max(rowMedians(cov)))),
-		title = qq("@{g$gene_id}, extend @{extend} bp to both side, @{length(site)} CpG sites"))
+		title = title)
 
 	add_track(NULL, panel_fun = function(gr) {
 		for(i in seq_len(ncol(meth))) {

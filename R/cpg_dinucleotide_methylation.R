@@ -13,10 +13,6 @@ weighted_mean = function(x1, x2, w1, w2) {
 # -pos positions of CpG sites, must be sorted
 # -meth methylation matrix
 # -cov CpG coverage matrix
-# -meth_diff normally methylation for the two Cs in a CpG dinucleotide is very similar.
-#    This cutoff helps to find whether two neighbouring Cs belong to a CpG dinucleotide.
-# -p for a CpG dinucleotide, the minimal proportion of samples that the two Cs have methylation difference
-#     less than ``meth_diff`
 #
 # == details
 # normally methylation for the two Cs in a CpG dinucleotide is very similar. This function
