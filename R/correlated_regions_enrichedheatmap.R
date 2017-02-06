@@ -174,18 +174,26 @@ add_boxplot_as_column_annotation = function(ht_list, width, anno_name, anno_titl
 # Visualizing enrichment for epigenomic signals at TSS-CGIs
 #
 # == param
-# -cr
-# -txdb
-# -expr
-# -cgi
-# -fdr_cutoff
-# -meth_diff_cutoff
-# -marks
-# -type
-# -extend
-# -expr_annotation 
+# -cr correalted regions
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -expr expression matrix which was used in `correlated_regions`
+# -cgi CpG island
+# -fdr_cutoff cutoff for fdr of correlation p-value and anove p-values
+# -meth_diff_cutoff cutoff for methylation difference
+# -marks names of histone marks
+# -type use negative correlated regions or positive correlated regions
+# -extend base pairs extended to upstream and downstream
+# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object
 #
 # == details
+# There are several heatmaps visualize various signals enriched at TSS-CGIs.
+#
+# - heatmap for gene expression
+# - If ``cr`` is returned form `cr_enrichedheatmap`, there is a one column heatmap which
+#   shows the k-means cluters genes belong to
+# - heatmap for correlated regions
+# - a point plot 
+# 
 #
 # == value
 # no value is returned

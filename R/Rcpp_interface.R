@@ -20,7 +20,7 @@
 # binary_search(site, c(1, 5, 12, 30), FALSE)
 # binary_search(site, c(1, 5, 12, 30), TRUE)
 binary_search = function(breaks, search, left_index = TRUE) {
-    .Call('epic_binary_search', PACKAGE = 'epic', breaks, search, left_index) + 1
+    .Call('epik_binary_search', PACKAGE = 'epik', breaks, search, left_index) + 1
 }
 
 # == title
@@ -37,10 +37,10 @@ binary_search = function(breaks, search, left_index = TRUE) {
 # Providing a huge vector of genomic positions, we want to extract subset of positions which
 # locate in a specific group of regions (e.g. extract CpG sites in DMRs). Normally, we will use:
 #
-# 	site = sort(sample(10000000, 1000000))
-# 	start = 123456
-# 	end = 654321
-# 	subsite = site[site >= start & site <= end]
+#   site = sort(sample(10000000, 1000000))
+#   start = 123456
+#   end = 654321
+#   subsite = site[site >= start & site <= end]
 #
 # Unfortunately, in above code, the whole vector ``site`` will be scanned four times
 # (``>=``, ``<=``, ``&`` and ``[``).
@@ -80,10 +80,14 @@ binary_search = function(breaks, search, left_index = TRUE) {
 # pos = do.call("rbind", lapply(1:10, function(i) sort(sample(max(site), 2))))
 # extract_sites(pos[, 1], pos[, 2], site)
 extract_sites = function(start, end, site, return_index = FALSE, min_sites = 0) {
-    .Call('epic_extract_sites', PACKAGE = 'epic', start, end, site, return_index, min_sites)
+    .Call('epik_extract_sites', PACKAGE = 'epik', start, end, site, return_index, min_sites)
 }
 
 rowWhichMax = function(m) {
-    .Call('epic_rowWhichMax', PACKAGE = 'epic', m)
+    .Call('epik_rowWhichMax', PACKAGE = 'epik', m)
+}
+
+dist_by_closeness <- function(mat) {
+    .Call('epik_dist_by_closeness', PACKAGE = 'epik', mat)
 }
 

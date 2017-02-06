@@ -17,7 +17,7 @@ VignetteBuilder: knitr
 Description: Many functions for analyzing methylome, transcriptome and 
     histone modifications are provided.
 biocViews: Software, Visualization, Sequencing, Epigenetics, Coverage
-URL: https://github.com/jokergoo/epic
+URL: https://github.com/jokergoo/epik
 SystemRequirements: Perl, bedtools
 License: GPL (>= 2)
 Packaged: 2016-4-6 00:00:00 UTC; Administrator
