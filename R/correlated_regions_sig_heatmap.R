@@ -39,8 +39,8 @@ mean_chromHMM_overlap = function(gr, cs_list, state) {
 # == title
 # Heatmaps for significant correlated regions
 #
-# == cr_param
-# -sig_cr significant correlated regions, should be processed by `reduce_cr`
+# == param
+# -sig_cr significant correlated regions, should be processed by `cr_reduce`
 # -txdb transcriptome annotation which was used in `correlated_regions`
 # -expr expression matrix which was used in `correlated_regions`
 # -ha top annotation for the expression heatmap, should be constructed by `ComplexHeatmap::HeatmapAnnotation`
@@ -54,15 +54,15 @@ mean_chromHMM_overlap = function(gr, cs_list, state) {
 # - one column heatmap which shows the methylation difference
 # - heatmap for gene expression
 # - heatmap describing how genomic features overlap to correlated regions
-# - if ``chipseq_hooks$chromHMM`` is set and two subgroups, there is a heamtap showing the difference of
-#   overlapping of different chromatin states
+# - if ``chipseq_hooks$chromHMM`` is set and there are two subgroups, there is a heamtap showing the difference of
+#   overlapping of different chromatin states in the two groups
 # - a point plot showing the distance to nearest TSS
 # - overlap to promoter/gene body/intergenic regions
 #
 # For the list heatmaps, rows are firstly split by negative correlation and positive correlation. In each sub cluster,
 # it is split by k-means clustering (four groups), and in each k-means cluster, hierarchical clustering is applied.
 #
-# There will also be plots showing general statistic plots for each annotations.
+# There will also be plots showing general statistic plots for each annotation.
 #
 # == value
 # No value is returned.

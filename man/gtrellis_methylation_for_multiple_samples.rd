@@ -14,10 +14,10 @@ gtrellis_methylation_for_multiple_samples(sample_id, subgroup,
 \arguments{
 
   \item{sample_id}{a vector of sample ids}
-  \item{subtype}{annotation of samples (e.g. subtypes)}
+  \item{subgroup}{annotation of samples (e.g. subtypes)}
   \item{chromosome}{a vector of chromosome names}
   \item{species}{species}
-  \item{nw}{number of windows}
+  \item{nw}{number of windows to segment the genome}
   \item{title}{title of the plot}
   \item{...}{pass to \code{\link[gtrellis]{gtrellis_layout}}}
 
@@ -34,5 +34,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

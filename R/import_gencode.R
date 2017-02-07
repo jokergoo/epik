@@ -8,7 +8,8 @@
 #
 # == details
 # For example, you can build a `TxDb-class` object only for protein coding genes by defining
-# ``filter = gene_type == "protein_coding" & transcript_type == "protein_coding"``
+# 
+#   import_gencode_as_txdb(gtf, gene_type == "protein_coding" & transcript_type == "protein_coding")
 #
 # == value
 # a `TxDb-class` object
@@ -61,7 +62,7 @@ import_gencode_as_txdb = function(gtf, filter = NULL) {
 # == param
 # -gtf1 path for gtf1
 # -gtf2 path for gtf2
-# -filter code which filter the gtf1 records
+# -filter code which additionally filters lines in gtf1
 #
 # == details
 # In some senarios, the analysis is done with an old version of Gencode and it is impossible to redo it
@@ -138,16 +139,16 @@ match_by_gencode = function(gtf1, gtf2, filter = NULL) {
 #
 # == param
 # -file the input GTF file
-# -level level of the annotation (e.g. gene, transcript, exon, ...)
+# -level level of the annotation (e.g. gene, transcript, exon, the third column in GTF file)
 # -primary_key primary field
 # -field field to be retrieved
 #
 # == details
-# Although GTF file can be imported by e.g. `GenomicFeatures::makeTranscriptDbFromGFF`, some information
+# Although GTF file can be imported by e.g. `GenomicFeatures::makeTxDbFromGFF`, some information
 # in the original GTF file will not be imported. This function aims to extract additionally information
 # from GTF file.
 #
-# The function calls external perl script, so you need to have perl installed.
+# The function calls external Perl script, so you need to have Perl installed.
 #
 # == value
 # A vector in which 'primary_key' corresponds to the name and 'field' corresponds to the value.
@@ -174,11 +175,11 @@ extract_field_from_gencode = function(file, level = "gene",
 }
 
 # == title
-# Returns all supported fields in GTF data
+# Returns all supported fields in GTF file
 #
 # == param
 # -file the input GTF file
-# -level level of the annotation (e.g. gene, transcript, exon, ...)
+# -level level of the annotation (e.g. gene, transcript, exon, the third column in GTF file)
 #
 # == details
 # These fields are stored in the 9th column in the GTF file.

@@ -23,10 +23,10 @@ Providing a huge vector of genomic positions, we want to extract subset of posit
 locate in a specific group of regions (e.g. extract CpG sites in DMRs). Normally, we will use:
 
   \preformatted{
-	site = sort(sample(10000000, 1000000))
-	start = 123456
-	end = 654321
-	subsite = site[site >= start & site <= end]  }
+  site = sort(sample(10000000, 1000000))
+  start = 123456
+  end = 654321
+  subsite = site[site >= start & site <= end]  }
 
 Unfortunately, in above code, the whole vector \code{site} will be scanned four times
 (\code{>=}, \code{<=}, \code{&} and \code{[}).

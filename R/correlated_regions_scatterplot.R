@@ -11,8 +11,8 @@
 # -ylab ylab in the plot
 #
 # == details
-# Scatterplot for all CRs corresponding to the gene will be made. If you want to make
-# a subset of CRs, directly subset ``cr``.
+# Scatterplot for all correlated regions corresponding to the gene will be made. If you want to make
+# a subset of correlated regions, directly subset ``cr``.
 #
 # == value
 # No value is returned
@@ -20,8 +20,7 @@
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-cr_scatterplot = function(cr, expr, gi = NULL, text_column,
-	xlab = "Methylation", ylab = "Expression") {
+cr_scatterplot = function(cr, expr, gi = NULL, text_column, xlab = "Methylation", ylab = "Expression") {
 
 	cr_param = metadata(cr)$cr_param
 	
@@ -67,8 +66,8 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column,
 # == param
 # -x values on x-axis
 # -y values on y-axis
-# -annotation annotations which show groups of data points
-# -annotation_color colors for annotation
+# -annotation groups of data points
+# -annotation_color colors for groups
 # -main title for the plot
 # -xlab labels on x-axis
 # -ylab labels on y-axis
@@ -77,13 +76,16 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column,
 # -text_list additional text which is a named vector or list (if the text is mixed with character and numbers)
 #
 # == details
-# On the left and bottom, there are boxplots and on the top right, there is the scatter plot.
+# Boxplots are on the left and bottom, the scatter plot is on the top right.
 #
 # == value
 # No value is returned
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
+#
+# == example
+# scatterplot_with_boxplot(rnorm(40), rnorm(40), annotation = sample(letters[1:2], 40, replace = TRUE))
 #
 scatterplot_with_boxplot = function(x, y, annotation = rep("unknown", length(x)), 
 	annotation_color = structure(seq_along(levels(annotation)), names = levels(annotation)),

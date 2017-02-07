@@ -13,7 +13,7 @@ match_by_gencode(gtf1, gtf2, filter = NULL)
 
   \item{gtf1}{path for gtf1}
   \item{gtf2}{path for gtf2}
-  \item{filter}{code which filter the gtf1 records}
+  \item{filter}{code which additionally filters lines in gtf1}
 
 }
 \details{
@@ -31,5 +31,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

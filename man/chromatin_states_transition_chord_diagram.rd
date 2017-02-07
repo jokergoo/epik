@@ -1,10 +1,10 @@
 \name{chromatin_states_transition_chord_diagram}
 \alias{chromatin_states_transition_chord_diagram}
 \title{
-Chord diagram for visualizing chromatin states transistion
+Chord diagram for visualizing chromatin states transitions
 }
 \description{
-Chord diagram for visualizing chromatin states transistion
+Chord diagram for visualizing chromatin states transitions
 }
 \usage{
 chromatin_states_transition_chord_diagram(mat, group_names = NULL, max_mat = mat,

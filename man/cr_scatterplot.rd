@@ -7,8 +7,7 @@ Scatter plot between methylation and expression in one correlated region
 Scatter plot between methylation and expression in one correlated region
 }
 \usage{
-cr_scatterplot(cr, expr, gi = NULL, text_column,
-    xlab = "Methylation", ylab = "Expression")
+cr_scatterplot(cr, expr, gi = NULL, text_column, xlab = "Methylation", ylab = "Expression")
 }
 \arguments{
 
@@ -21,8 +20,8 @@ cr_scatterplot(cr, expr, gi = NULL, text_column,
 
 }
 \details{
-Scatterplot for all CRs corresponding to the gene will be made. If you want to make
-a subset of CRs, directly subset \code{cr}.
+Scatterplot for all correlated regions corresponding to the gene will be made. If you want to make
+a subset of correlated regions, directly subset \code{cr}.
 }
 \value{
 No value is returned
@@ -33,5 +32,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

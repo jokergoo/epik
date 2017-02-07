@@ -11,7 +11,7 @@ get_chromHMM_list(sample_id, ...)
 }
 \arguments{
 
-  \item{sample_id}{a vector of sample IDs. If not defined, it is the total samples that are available for this histome mark.}
+  \item{sample_id}{a vector of sample IDs.}
   \item{...}{more arguments pass to \code{chipseq_hooks$chromHMM()}.}
 
 }
@@ -27,5 +27,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

@@ -62,7 +62,7 @@ The configuration file should provide following variables:
 No value is returned.
 }
 \seealso{
-\code{\link{epic}}
+\code{\link{epik}}
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -70,5 +70,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

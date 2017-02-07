@@ -11,7 +11,7 @@
 # -sample_id a vector of sample ids. You can generate plots for a list of samples in a same time
 #            while is faster than make it one by one.
 # -chromosome a vector of chromosome names
-# -background background regions
+# -background background regions where the CpG sites will only be looked into
 #
 # == detail
 # For each sample id, it will produce five plots:
@@ -205,8 +205,8 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 # -sid a single sample id
 # -chromosome a vector of chromosome names
 # -species species
-# -nw number of windows
-# -pct point type
+# -nw number of windows to segment the genome
+# -pch point type
 # -pt_gp graphic parameters for points (``col`` will be excluded)
 # -transparency transparency of points
 # -title title of the plot
@@ -276,10 +276,10 @@ gp_c = function(gp1, gp2) {
 #
 # == param
 # -sample_id a vector of sample ids
-# -subtype annotation of samples (e.g. subtypes)
+# -subgroup annotation of samples (e.g. subtypes)
 # -chromosome a vector of chromosome names
 # -species species
-# -nw number of windows
+# -nw number of windows to segment the genome
 # -title title of the plot
 # -... pass to `gtrellis::gtrellis_layout`
 #
@@ -356,7 +356,8 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 # -subgroup subgroup information
 # -reorder_column if it is true, samples are first ordered by subgroups and in each subgroup, samples are
 #        ordered by median values
-# -ha additional annotation can be specified as a `ComplexHeatmap::HeatmapAnnotation` object
+# -od order of columns
+# -ha additional annotation can be specified as a `ComplexHeatmap::HeatmapAnnotation-class` object
 # -type three types of plots are supported, see details
 # -title title for the plot
 # -... pass to `ComplexHeatmap::densityHeatmap`
@@ -364,9 +365,12 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 # == details
 # Three types of plots for visualizing distributions are supported:
 #
-# -densityHeatmap: distribution is visualized as heatmaps, use `ComplexHeatmap::densityHeatmap`
+# -densityHeatmap: density of distribution is visualized as heatmaps, use `ComplexHeatmap::densityHeatmap`
 # -lineplot: distribution is visualized as normal line plot, use `graphics::matplot`
 # -MDS: multiple dimension scaling
+#
+# == value
+# Order of columns in density heatmap
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -374,6 +378,14 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix(x)) seq_len(ncol(x)) else seq_along(x), 
 	ha = if(is.null(subgroup)) NULL else HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE), 
 	type = c("densityHeatmap", "MDS"), title = title, ...) {
+
+	if(is.null(ha)) {
+		col = structure(seq_along(unique(subgroup)), names = unique(subgroup))
+		col_v = col[subgroup]
+	} else {
+		col = ha@anno_list$subgroup@color_mapping@colors
+		col_v = col[subgroup]
+	}
 
 	if("densityHeatmap" %in% type) {
 		if(reorder_column) {
@@ -407,7 +419,7 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 				den_y[, i] = den$y
 			}
 		}
-		matplot(den_x, den_y, type = "l", col = col[anno], xlab = "value", ylab = "density", main = qq("density distribution: @{title}"))
+		matplot(den_x, den_y, type = "l", col = col_v, xlab = "value", ylab = "density", main = qq("density distribution: @{title}"))
 	}
 
 	if("MDS" %in% type) {
@@ -416,13 +428,6 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 			mat = as.matrix(x)
 			loc = cmdscale(dist2(t(mat), pairwise_fun = function(x, y) {l = is.na(x) | is.na(y); x = x[!l]; y = y[!l]; sqrt(sum((x-y)^2))}))
 			
-			if(is.null(ha)) {
-				col = structure(seq_along(unique(subgroup)), names = unique(subgroup))
-				col_v = col[subgroup]
-			} else {
-				col = ha@anno_list$subgroup@color_mapping@colors
-				col_v = col[subgroup]
-			}
 			plot(loc[, 1], loc[, 2], pch = 16, cex = 1, col = col_v, main = qq("MDS:@{title}"), xlab = "dimension 1", ylab = "dimension 2")
 			legend("bottomleft", pch = 16, legend = names(col), col = col)
 
@@ -442,18 +447,24 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 # -subgroup subgroup information
 # -reorder_column if it is true, samples are first ordered by subgroups and in each subgroup, samples are
 #        ordered by median values
-# -ha additional annotation can be specified as a `ComplexHeatmap::HeatmapAnnotation` object
-# -chromosome chromosomes
+# -ha additional annotation can be specified as a `ComplexHeatmap::HeatmapAnnotation-class` object
+# -chromosome chromosome names
 # -by_chr whether make the plot by chromosome
 # -background background to look into. The value can be a single `GenomicRanges::GRanges` object or a list of `GenomicRanges::GRanges` objects.
 # -p probability to randomly sample CpG sites
 # -meth_range the range of methylation on the plot
 #
 # == details
-# The distribution density is visualized as heatmaps.
+# There are two plots:
+#
+# - a heatmap showing the distribution density of methylation in all samples
+# - a MDS plot
 #
 # == value
 # If ``by_chr`` is set to ``FALSE``, it returns a vector of column order.
+#
+# == seealso
+# It uses `mat_dist` to make the plots
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -462,7 +473,6 @@ global_methylation_distribution = function(sample_id, subgroup,
 	reorder_column = TRUE, 
 	ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE), 
 	chromosome = paste0("chr", 1:22), by_chr = FALSE, 
-	# max_cov = 100,
 	background = NULL, p = NULL, meth_range = c(0, 1)) {
 	
 	###############################################

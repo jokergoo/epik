@@ -19,7 +19,7 @@ heatmap_subgroup_specificity(gr_list, genomic_features = NULL,
 
 }
 \details{
-Columns are clustered within each subgroup and rows are clustered for each type of specificity
+Columns are clustered within each subgroup and rows are clustered for each type of specificity.
 }
 \value{
 A \code{\link[ComplexHeatmap]{HeatmapList-class}} object
@@ -30,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

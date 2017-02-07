@@ -15,7 +15,7 @@ basic_genomic_regions_stat(gr_list, annotation = NULL, annotation_color = NULL,
 \arguments{
 
   \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}}.}
-  \item{annotation}{a vector which contains class of samples. If it has names which correspond to \code{gr_list}, the order of this vector is automatically adjusted.}
+  \item{annotation}{a vector which contains groups of samples. If it has names which correspond to \code{gr_list}, the order of this vector is automatically adjusted.}
   \item{annotation_color}{colors corresponding to classes of annotations}
   \item{title}{title of the plot}
   \item{species}{species, necessary if \code{type} is set to \code{proportion}.}

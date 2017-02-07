@@ -4,8 +4,8 @@
 #
 # == param
 # -cmd     shell command
-# -param envir   environment where to look for variables encoded in `cmd`
-# -param verbose whether print messages
+# -envir   environment where to look for variables encoded in ``cmd``
+# -verbose whether print messages
 #
 # == details
 # This function (system + data frame) provides a convinient way to invoke
@@ -22,9 +22,9 @@
 #
 # A simple example is as follows:
 #
-#     bed1 = circlize::generateRandomBed(nr = 1000)
-#         bed2 = circlize::generateRandomBed(nr = 1000)
-#         df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")
+#   bed1 = circlize::generateRandomBed(nr = 1000)
+#   bed2 = circlize::generateRandomBed(nr = 1000)
+#   df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")
 #
 # == value 
 # A data frame. Column names may be lost.
@@ -59,16 +59,17 @@ systemdf = function(cmd, envir = parent.frame(), verbose = FALSE) {
 			file[i] = paste(tempfile(fileext = ".bed", tmpdir = tmpdir), sep = "/")
 			# just in case `grv` is a GRanges object
 			write.table(as.data.frame(grv), file = file[i], sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-			if(verbose) message(qq("writing @{gr[i]} into temporary file: @{file[i]}\n"))
+			if(verbose) message(qq("writing `@{gr[i]}` into temporary file: @{file[i]}\n"))
 			cmd2 = gsub(qq("`@{gr[i]}`"), file[i], cmd2, fixed = TRUE)
 		}
-		if(verbose) message(qq("Command: @{cmd2}\n"))
+		if(verbose) message(qq("Command: @{cmd2}"))
 		eo = try(tb <- read.table(pipe(cmd2), sep = "\t", stringsAsFactors = FALSE, flush = TRUE, comment.char = ""))
 		file = file[!is.null(file)]
 		file = file[file != ""]
 		file.remove(file)
 
 		if(class(eo) == "try-error") {
+			message("You have an error when executing the command:")
 			stop(eo)
 		}
 	} else {

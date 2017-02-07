@@ -8,25 +8,29 @@ Generate transition matrix from chromHMM results
 }
 \usage{
 make_transition_matrix_from_chromHMM(gr_list_1, gr_list_2, window = NULL,
-    min_1 = floor(length(gr_list_1)/2), min_2 = floor(length(gr_list_2)/2), methylation_diff = 0,
-    chromosome = paste0("chr", 1:22))
+    min_1 = floor(length(gr_list_1)/2), min_2 = floor(length(gr_list_2)/2),
+    meth_diff = 0, chromosome = paste0("chr", 1:22))
 }
 \arguments{
 
-  \item{gr_list_1}{a list of \code{\link[GenomicRanges]{GRanges}} objects which contain chromatin states in group 1. The first column in meta columns should be the states. Be careful when importing bed files to  \code{\link[GenomicRanges]{GRanges}} objects (start positions in bed files are 0-based while 1-based in \code{GRanges} objects.}
+  \item{gr_list_1}{a list of \code{\link[GenomicRanges]{GRanges}} objects which contain chromatin states in group 1. The first column in meta columns should be the states. Be careful when importing bed files to  \code{\link[GenomicRanges]{GRanges}} objects (start positions in bed files are 0-based while 1-based in \code{GRanges} objects).}
   \item{gr_list_2}{a list of \code{\link[GenomicRanges]{GRanges}} objects which contains chromatin states in group 2.}
   \item{window}{window size which was used to do chromHMM states segmentation If it is not specified, the greatest common divisor of the width of all regions is used.}
   \item{min_1}{If there are multiple samples in the group, it is possible that a segment has more than one states asigned to it. If the recurrency of each state is relatively low, it means there is no one dominant state for this segment and it should  be removed. This argument controls the minimal value for the recurrency of states in a given segment.}
   \item{min_2}{same as \code{min_1}, but for samples in group 2.}
-  \item{methylation_diff}{If methylation dataset is provided, the segments for which the methylation difference between two groups is less than this value are removed.}
+  \item{meth_diff}{If methylation dataset is provided, the segments for which the methylation difference between two groups is less than this value are removed.}
   \item{chromosome}{subset of chromosomes}
 
 }
 \details{
-The whole genome is segmentated by size of \code{window} and states with highest occurence among samples are assigned to segments.
+For a segment in the genome, the chromatin state may be different in different subgroups. This is called chromatin state transistion.
+This function visualize such kind of genome-wide transitions.
+
+The whole genome is segmentated by \code{window} and states with highest occurence among samples are assigned to segments.
 
 To make the function run successfully, number of segments (after binned by \code{window}) in all samples 
-should be all the same and there should not be gaps between segments
+should be all the same and there should be no gaps between segments. If the segmentation data is directly imported from
+chromHMM results, you dont need to worry.
 }
 \value{
 A transition matrix in which values represent total width of segments that transite from one state to the other in the two groups. Rows correspond

@@ -54,7 +54,7 @@
 # No value is returned.
 # 
 # == seealso
-# `epic`
+# `epik`
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>

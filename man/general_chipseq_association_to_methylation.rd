@@ -11,13 +11,13 @@ general_chipseq_association_to_methylation(gr_list, gr_meth)
 }
 \arguments{
 
-  \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}} objects which show signal difference in two groups. Each \code{\link[GenomicRanges]{GRanges}} object must have a \code{diff} column. The object is usually from \code{\link{hilbert_curve_chipseq_difference}}.}
+  \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}} objects that each one corresponds to one histone modification Each \code{\link[GenomicRanges]{GRanges}} object must have a \code{diff} column which is the signal difference in two groups. The object is usually from \code{\link{hilbert_curve_chipseq_difference}}.}
   \item{gr_meth}{a \code{\link[GenomicRanges]{GRanges}} object which shows methylation difference in two groups. The object is usually from \code{\link{hilbert_curve_methylation_difference}}}
 
 }
 \details{
 For each histone mark, the distribution of methylation difference in regions which show
-high histome modification signal difference is visualized.
+higher histone modification signal difference is visualized.
 }
 \value{
 no value is returned
@@ -28,5 +28,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

@@ -7,14 +7,13 @@ Visualize global correlation by Hilbert curve
 Visualize global correlation by Hilbert curve
 }
 \usage{
-cr_hilbert_curve(cr, species = "hg19", chromosome = paste0("chr", 1:22),
+cr_hilbert_curve(cr, chromosome = paste0("chr", 1:22),
     merge_chr = TRUE, add_chr_name = TRUE, title = "cr", legend = lgd, ...)
 }
 \arguments{
 
   \item{cr}{correlated regions}
-  \item{species}{species}
-  \item{chromosome}{chromosomes}
+  \item{chromosome}{a vector of chromosome names}
   \item{merge_chr}{whether to merge all chromosomes in one plot}
   \item{add_chr_name}{whether add chromosome names to the plot}
   \item{title}{title of the plot}
@@ -31,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

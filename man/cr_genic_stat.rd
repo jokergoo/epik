@@ -11,7 +11,7 @@ cr_genic_stat(cr_reduced, txdb)
 }
 \arguments{
 
-  \item{cr_reduced}{significant CRs which have been reduced by \code{\link{reduce_cr}}}
+  \item{cr_reduced}{significant correlated regions which have been reduced by \code{\link{cr_reduce}}}
   \item{txdb}{the transcriptome annotation which is same as the one used in \code{\link{correlated_regions}}}
 
 }
@@ -35,5 +35,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

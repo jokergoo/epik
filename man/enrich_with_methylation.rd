@@ -13,7 +13,7 @@ enrich_with_methylation(target, sample_id, mode = rowMeans, ...)
 
   \item{target}{target regions}
   \item{sample_id}{a vector of sample ids}
-  \item{mode}{how to summarize methylation among samples, by defualt is the cross-sample mean methylation}
+  \item{mode}{how to summarize methylation among samples, by default it is the cross-sample mean methylation.  Since methylation is represented as matrix, here we use \code{row*}-family functions (e.g. \code{\link{rowMeans}}, \code{\link[matrixStats]{rowMedians}})}
   \item{...}{pass to \code{\link[EnrichedHeatmap]{normalizeToMatrix}}}
 
 }
@@ -26,5 +26,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

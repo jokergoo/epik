@@ -1,19 +1,19 @@
 
 # == title
-# Normalize histome modification signals to target
+# Normalize histone modification signals to target
 #
 # == param
 # -target target regions
-# -mark histome mark name
+# -mark histone mark name
 # -sample_id a vector of sample ids
-# -mode how to summarize methylation among samples, by defualt is the cross-sample mean signal
+# -mode how to summarize histone modification signals among samples, by defualt is the cross-sample mean signal
 # -return_arr whether also return the three dimension array itself
 # -... pass to `EnrichedHeatmap::normalizeToMatrix`
 #
 # == details
-# For each sample, the signal is normalized to a matrix, which results an array in which the third
-# dimension is the samples. The final normalized matrix which shows e.g. mean signal matrix is calcualted
-# by ``mode``.
+# For each sample, the signal is normalized as a matrix, which results an array in which the third
+# dimension corresponds to samples. The final normalized matrix which shows e.g. mean signal matrix is calcualted
+# by ``apply(array, c(1, 2), mode)``.
 #
 # == values
 # If ``return_arr`` is set to ``FALSE``, the funtion returns a matrix which can be directly sent to 
@@ -61,7 +61,8 @@ enrich_with_histone_mark = function(target, mark, sample_id, mode = mean, return
 # == param
 # -target target regions
 # -sample_id a vector of sample ids
-# -mode how to summarize methylation among samples, by defualt is the cross-sample mean methylation
+# -mode how to summarize methylation among samples, by default it is the cross-sample mean methylation. 
+#       Since methylation is represented as matrix, here we use ``row*``-family functions (e.g. `rowMeans`, `matrixStats::rowMedians`)
 # -... pass to `EnrichedHeatmap::normalizeToMatrix`
 #
 # == value
@@ -98,85 +99,5 @@ enrich_with_methylation = function(target, sample_id, mode = rowMeans, ...) {
 
 dist_by_closeness2 = function(...) {
 	as.dist(dist_by_closeness(...))
-}
-
-
-anno_enriched_by_sign = function(gp = gpar(col = "red"), pos_line = TRUE, pos_line_gp = gpar(lty = 2),
-	yaxis = TRUE, ylim = NULL, value = c("mean", "sum", "abs_mean", "abs_sum"), yaxis_side = "right", 
-	yaxis_gp = gpar(fontsize = 8), pos_col = "red", neg_col = "green") {
-
-	# in case of lazy loading
-	gp = gp
-	pos_line = pos_line
-	pos_line_gp = pos_line_gp
-	yaxis = yaxis
-	ylim = ylim
-	yaxis_side = yaxis_side
-	yaxis_gp = yaxis_gp
-
-	value = match.arg(value)[1]
-	function(index) {
-
-		ht = get("object", envir = parent.frame(n = 5))
-		mat = ht@matrix
-		mat_pos = mat
-		mat_pos[mat_pos < 0] = 0
-		mat_neg = mat
-		mat_neg[mat_neg > 0] = 0
-		mat_pos = abs(mat_pos)
-		mat_neg = abs(mat_neg)
-
-		upstream_index = attr(mat, "upstream_index")
-		downstream_index = attr(mat, "downstream_index")
-		target_index = attr(mat, "target_index")
-
-		n1 = length(upstream_index)
-		n2 = length(target_index)
-		n3 = length(downstream_index)
-		n = n1 + n2 + n3
-		
-		y_pos = sapply(ht@row_order_list, function(i) {
-			colMeans(mat_pos[i, , drop = FALSE], na.rm = TRUE)
-		})
-		y_neg = sapply(ht@row_order_list, function(i) {
-			colMeans(mat_neg[i, , drop = FALSE], na.rm = TRUE)
-		})
-
-		if(is.null(ylim)) {
-			ylim = range(c(y_neg, y_pos), na.rm = TRUE)
-			ylim[2] = ylim[2] + (ylim[2] - ylim[1]) * 0.05
-		}
-		
-		gp = EnrichedHeatmap:::recycle_gp(gp, length(ht@row_order_list))
-
-		pushViewport(viewport(xscale = c(0, n), yscale = ylim))
-		grid.rect(gp = gpar(col = "black", fill = NA))
-		for(i in seq_len(ncol(y_pos))) {
-			gp2 = EnrichedHeatmap:::subset_gp(gp, i); gp2$col = pos_col;class(gp2) = "gpar"
-			grid.lines(seq_len(n)-0.5, y_pos[,i], default.units = "native", gp = gp2)
-			gp2 = EnrichedHeatmap:::subset_gp(gp, i); gp2$col = neg_col;class(gp2) = "gpar"
-			grid.lines(seq_len(n)-0.5, y_neg[,i], default.units = "native", gp = gp2)
-		}
-		if(pos_line) {
-		    if(n1 && n2 && n3) {
-                grid.lines(rep((n1-0.5)/n, 2), c(0, 1), gp = pos_line_gp)
-                grid.lines(rep((n1+n2-0.5)/n, 2), c(0, 1), gp = pos_line_gp)
-            } else if(n1 && !n2 && n3) {
-                grid.lines(rep((n1-0.5)/n, 2), c(0, 1), gp = pos_line_gp)
-            } else if(!n1 && n2 && n3) {
-                grid.lines(rep((n1+n2-0.5)/n, 2), c(0, 1), gp = pos_line_gp)
-            } else if(n1 && n2 && !n3) {
-                grid.lines(rep((n1-0.5)/n, 2), c(0, 1), gp = pos_line_gp)
-            }
-		}
-		if(yaxis) {
-			if(yaxis_side == "right") {
-				grid.yaxis(main = FALSE, gp = yaxis_gp)
-			} else {
-				grid.yaxis(gp = yaxis_gp)
-			}
-		}
-	    upViewport()
-	}
 }
 

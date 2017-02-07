@@ -7,21 +7,29 @@ Find common genomic regions across samples
 Find common genomic regions across samples
 }
 \usage{
-common_regions(gr_list, min_coverage = floor(length(gr_list)/4),
+common_regions(gr_list, min_recurrency = floor(length(gr_list)/4),
     gap = bp(1000), max_gap = Inf, min_width = 0)
 }
 \arguments{
 
   \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}}}
-  \item{min_coverage}{minimal cross-sample coverage for the common regions}
+  \item{min_recurrency}{minimal cross-sample recurrency for the common regions}
   \item{gap}{gap to merge common regions, pass to \code{\link{reduce2}}}
   \item{max_gap}{maximum gap for merging common regions, pass to \code{\link{reduce2}}}
   \item{min_width}{minimal width for the common regions. It can be used to remove a lot of  very short regions.}
 
 }
 \details{
-First a list of segments are filtered by the cross-sample coverage (\code{min_coverage}). Then close segments
-are merged by \code{max_gap}.
+A common region is defined as a region which is recurrent in at least k samples. The process of 
+fiding common regions are as follows:
+
+\itemize{
+  \item merge regions in all samples into one object
+  \item calculate coverage which is the recurrency, removed regions with recurrency less than the cutoff
+  \item merge the segments and remove regions which are too short
+}
+
+Please note in each sample, regions should not be overlapped.
 }
 \value{
 A \code{\link[GenomicRanges]{GRanges}} object contains coordinates of common regions. The columns in meta data
@@ -41,6 +49,6 @@ gr_list = list(
     gr4 = GRanges(seqnames = "chr1", ranges = IRanges(c(1, 6), c(4, 10))),
     gr5 = GRanges(seqnames = "chr1", ranges = IRanges(c(1, 9), c(3, 10)))
 )
-common_regions(gr_list, min_coverage = 4, gap = bp(1))
-common_regions(gr_list, min_coverage = 4, gap = 0.5)
+common_regions(gr_list, min_recurrency = 4, gap = bp(1))
+common_regions(gr_list, min_recurrency = 4, gap = 0.5)
 }

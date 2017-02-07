@@ -8,7 +8,7 @@
 #
 # == param
 # -gr_list a list of `GenomicRanges::GRanges`.
-# -annotation a vector which contains class of samples. If it has names which correspond to ``gr_list``, the order of this vector is automatically adjusted.
+# -annotation a vector which contains groups of samples. If it has names which correspond to ``gr_list``, the order of this vector is automatically adjusted.
 # -annotation_color colors corresponding to classes of annotations
 # -title title of the plot
 # -species species, necessary if ``type`` is set to ``proportion``.

@@ -3,7 +3,7 @@
 # Plot general statistics for the annotation to genes
 #
 # == param
-# -cr_reduced significant CRs which have been reduced by `reduce_cr`
+# -cr_reduced significant correlated regions which have been reduced by `cr_reduce`
 # -txdb the transcriptome annotation which is same as the one used in `correlated_regions`
 #
 # == details

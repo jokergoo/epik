@@ -1,10 +1,10 @@
 \name{annotate_to_gene_models}
 \alias{annotate_to_gene_models}
 \title{
-Annotate to gene models
+Annotate genomic regions to gene models
 }
 \description{
-Annotate to gene models
+Annotate genomic regions to gene models
 }
 \usage{
 annotate_to_gene_models(gr, txdb, gene_model =c("gene", "tx"),
@@ -15,7 +15,7 @@ annotate_to_gene_models(gr, txdb, gene_model =c("gene", "tx"),
 \arguments{
 
   \item{gr}{a \code{\link[GenomicRanges]{GRanges}} object}
-  \item{txdb}{a \code{\link[GenomicFeatures]{TxDb}} object.}
+  \item{txdb}{a \code{\link[GenomicFeatures]{TxDb-class}} object.}
   \item{gene_model}{type of gene model, by transcript or by genes}
   \item{species}{We need this information to find out proper intergenic regions}
   \item{promoters_upstream}{length of upstream promoter from TSS, pass to \code{\link[GenomicRanges]{promoters}}}
@@ -46,5 +46,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

@@ -16,8 +16,8 @@ gtrellis_coverage_and_methylation(sid, chromosome = paste0("chr", 1:22),
   \item{sid}{a single sample id}
   \item{chromosome}{a vector of chromosome names}
   \item{species}{species}
-  \item{nw}{number of windows}
-  \item{pct}{point type}
+  \item{nw}{number of windows to segment the genome}
+  \item{pch}{point type}
   \item{pt_gp}{graphic parameters for points (\code{col} will be excluded)}
   \item{transparency}{transparency of points}
   \item{title}{title of the plot}
@@ -37,5 +37,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

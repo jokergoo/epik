@@ -1,5 +1,5 @@
-\name{reduce_cr}
-\alias{reduce_cr}
+\name{cr_reduce}
+\alias{cr_reduce}
 \title{
 Merge correlated regions
 }
@@ -7,11 +7,11 @@ Merge correlated regions
 Merge correlated regions
 }
 \usage{
-reduce_cr(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1)
+cr_reduce(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1)
 }
 \arguments{
 
-  \item{cr}{correlated regions from \code{\link{correlated_regions}}. It should be CRs with significant correlations.}
+  \item{cr}{correlated regions from \code{\link{correlated_regions}}. In most cases, it is correlated regions with significant correlations.}
   \item{txdb}{the transcriptome annotation which is same as the one used in \code{\link{correlated_regions}}}
   \item{expr}{the expression matrix which is same as the one used in \code{\link{correlated_regions}}. If it is set the correlation will be re-calculated for the merged regions.}
   \item{gap}{gap for the merging, pass to \code{\link{reduce2}}}
@@ -19,7 +19,7 @@ reduce_cr(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1)
 
 }
 \details{
-As there are overlaps between two neighbouring correlated regions, it is possible to merge them into
+As there are overlaps between two neighbouring correlated regions with the default settings, it is possible to merge them into
 large regions. The mering is gene-wise, and all statistics (e.g. mean methylation, correlation) will be
 re-calculated.
 }
@@ -32,5 +32,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

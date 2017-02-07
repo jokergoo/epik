@@ -1,16 +1,12 @@
-# check version of Gviz
-if(compareVersion(as.character(packageVersion("Gviz")), "9.9.0") < 0) {
-	stop("please use a modified Gviz from 'https://github.com/jokergoo/Gviz'.")
-}
 
 if(!exists(".boxes")) {
-	.boxes = Gviz:::.boxes
+	.boxes = Gviz.epik:::.boxes
 }
 if(!exists(".arrowBar")) {
-	.arrowBar = Gviz:::.arrowBar
+	.arrowBar = Gviz.epik:::.arrowBar
 }
 if(!exists(".fontGp")) {
-	.fontGp = Gviz:::.fontGp
+	.fontGp = Gviz.epik:::.fontGp
 }
 
 elementNROWS = function (x) {
@@ -29,11 +25,10 @@ elementNROWS = function (x) {
 # Customized Gviz plot for a single gene
 #
 # == param
-# -cr correlated regions which show significant correlations
+# -sig_cr correlated regions which show significant correlations
 # -gi gene id
-# -expr the expression matrix which was used in `correlation_regions`
-# -txdb the transcriptome annotation which was used in `correlation_regions`
-# -species species
+# -expr the expression matrix which was used in `correlated_regions`
+# -txdb the transcriptome annotation which was used in `correlated_regions`
 # -gf_list a list of `GenomicRanges::GRanges` objects which contains additional genomic annotations
 # -hm_list a list of `GenomicRanges::GRanges` objects which contains histome modification peaks. The value is a two-layer
 #    list. The first layer is histome modifications and the second layer is the peaks in each sample which has current histome
@@ -51,14 +46,15 @@ elementNROWS = function (x) {
 # - annotation to other genomic features, if provided
 # - histome modification data, if provided
 #
+# A modified version of Gviz (https://github.com/jokergoo/Gviz.epik ) is used to make the plot.
+#
 # == value
 # No value is returned.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL, 
-	hm_list = NULL, title = gi) {
+cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title = gi) {
 
 	cr_param = metadata(sig_cr)$cr_param
 	sample_id = cr_param$sample_id
@@ -72,6 +68,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL,
 	raw_meth = cr_param$raw_meth
 	cov_cutoff = cr_param$cov_cutoff
 	min_dp = cr_param$min_dp
+	species = cr_param$species
 
 	if(is.null(raw_meth)) raw_meth = FALSE
 	if(is.null(cov_cutoff)) cov_cutoff = 0
@@ -133,7 +130,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL,
 		df$fill[!l] = paste0(df$fill[!l], "40")
 		df
 	}
-	assignInNamespace(".boxes", .boxes_wrap, "Gviz")
+	assignInNamespace(".boxes", .boxes_wrap, "Gviz.epik")
 	
 
 	tx_gene_mapping = structure(grtrack@range$gene, names = grtrack@range$transcript)
@@ -148,7 +145,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL,
 		.arrowBar(xx1 = xx1, xx2 = xx2, strand = strand, coords = coords, y=y, W=W, D=D, H, col = arrow_col, lwd = lwd, lty = lty, alpha = alpha, barOnly=barOnly,
         	diff=diff, min.height=min.height)
 	}
-	assignInNamespace(".arrowBar", .arrowBar_wrap, "Gviz")
+	assignInNamespace(".arrowBar", .arrowBar_wrap, "Gviz.epik")
 	
 	.fontGp_wrap = function(GdObject, subtype = NULL, ...) {
 		gp = .fontGp(GdObject, subtype, ...)
@@ -165,7 +162,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL,
 		}
 		return(gp)
 	}
-	assignInNamespace(".fontGp", .fontGp_wrap, "Gviz")
+	assignInNamespace(".fontGp", .fontGp_wrap, "Gviz.epik")
 	
 
 	trackList = pushTrackList(trackList, grtrack)
@@ -344,7 +341,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL,
 
 	message("draw gviz plot...")
 	# convert fontsize to cex
-	Gviz::plotTracks(trackList, from = gene_start, to = gene_end, chromosome = chr, main = title, cex.main = 1, showTitle = FALSE)
+	plotTracks(trackList, from = gene_start, to = gene_end, chromosome = chr, main = title, cex.main = 1, showTitle = FALSE)
 
 	n_tx = length(unique(grtrack@range[grtrack@range$gene == gi]$transcript))
 	size1 = length(hm_list)*length(unique(subgroup)) + 0.5*length(gf_list) + 1 + 0.3*length(sample_id) + 0.5 + 0.5 + 1.5
@@ -361,9 +358,9 @@ cr_gviz = function(sig_cr, gi, expr, txdb, species = "hg19", gf_list = NULL,
 
 	message(qq("The suggested height of the image is @{coef}*n_tx + @{num} inches, here n_tx = @{n_tx} and the height is @{hh} inches."))
 	
-	assignInNamespace(".boxes", .boxes, "Gviz")
-	assignInNamespace(".arrowBar", .arrowBar, "Gviz")
-	assignInNamespace(".fontGp", .fontGp, "Gviz")
+	assignInNamespace(".boxes", .boxes, "Gviz.epik")
+	assignInNamespace(".arrowBar", .arrowBar, "Gviz.epik")
+	assignInNamespace(".fontGp", .fontGp, "Gviz.epik")
 
 	return(invisible(NULL))
 }
@@ -394,269 +391,4 @@ constructAnnotationTrack = function(gr, chr, name = NULL, genome = "hg19", start
 		NULL
 	}
 }
-
-plotTracks = function (trackList, from = NULL, to = NULL, ..., sizes = NULL,
-    panel.only = FALSE, extend.right = 0, extend.left = 0, title.width = NULL,
-    add = FALSE, main, cex.main = 2, fontface.main = 2, col.main = "black",
-    margin = 6, chromosome = NULL, innerMargin = 3)
-{
-    done <- FALSE
-    cdev <- dev.cur()
-    on.exit(if (cdev == 1 && !done) dev.off())
-    if (!panel.only && !add)
-        grid.newpage()
-    if (!is.list(trackList))
-        trackList <- list(trackList)
-    dps <- list(...)
-    trackList <- lapply(trackList, function(x) {
-        displayPars(x, recursive = TRUE) <- dps
-        return(x)
-    })
-    trackList <- trackList[!sapply(trackList, function(x) (is(x,
-        "HighlightTrack") || is(x, "OverlayTrack")) && length(x) <
-        1)]
-    isHt <- which(sapply(trackList, is, "HighlightTrack"))
-    isOt <- which(sapply(trackList, is, "OverlayTrack"))
-    strds <- unique(.whichStrand(trackList))
-    if (!is.null(strds) && length(strds) > 1)
-        warning("Plotting a mixture of forward strand and reverse strand tracks.\n Are you sure this is correct?")
-    hasAlpha <- .supportsAlpha()
-    chrms <- unique(unlist(lapply(trackList, .recChromosome)))
-    if (is.null(chromosome)) {
-        chrms <- if (!is.null(chrms))
-            chrms[gsub("^chr", "", chrms) != "NA"]
-        else chrms
-        chromosome <- head(chrms, 1)
-        if (length(chromosome) == 0)
-            chromosome <- "chrNA"
-        if (!is.null(chrms) && length(unique(chrms)) != 1)
-            warning("The track chromosomes in 'trackList' differ. Setting all tracks to chromosome '",
-                chromosome, "'", sep = "")
-    }
-    if (!is.null(from) || !(is.null(to))) {
-        trackList <- lapply(trackList, function(x) {
-            chromosome(x) <- chromosome
-            subset(x, from = from, to = to, chromosome = chromosome,
-                sort = FALSE, stacks = FALSE, use.defaults = FALSE)
-        })
-    }
-    trackList <- lapply(trackList, consolidateTrack, chromosome = chromosome,
-        any(.needsAxis(trackList)), any(.needsTitle(trackList)),
-        title.width, alpha = hasAlpha, ...)
-    ranges <- .defaultRange(trackList, from = from, to = to,
-        extend.left = extend.left, extend.right = extend.right,
-        annotation = TRUE)
-    trackList <- lapply(trackList, subset, from = ranges["from"],
-        to = ranges["to"], chromosome = chromosome)
-    trackList <- lapply(trackList, setStacks, recomputeRanges = FALSE)
-    htList <- list()
-    expandedTrackList <- if (length(isHt)) {
-        j <- 1
-        tlTemp <- list()
-        for (i in seq_along(trackList)) {
-            if (!i %in% isHt) {
-                tlTemp <- c(tlTemp, trackList[[i]])
-                j <- j + 1
-            }
-            else {
-                tlTemp <- c(tlTemp, trackList[[i]]@trackList)
-                htList[[as.character(i)]] <- list(indexes = j:(j +
-                  length(trackList[[i]]@trackList) - 1), track = trackList[[i]])
-                j <- j + length(trackList[[i]]@trackList)
-            }
-        }
-        tlTemp
-    }
-    else trackList
-    isAt <- sapply(expandedTrackList, is, "AlignmentsTrack")
-    isSt <- sapply(expandedTrackList, is, "SequenceTrack")
-    for (ai in which(isAt)) {
-        if (is.null(expandedTrackList[[ai]]@referenceSequence) &&
-            any(isSt))
-            expandedTrackList[[ai]]@referenceSequence <- expandedTrackList[[min(which(isSt))]]
-    }
-    expandedTrackList <- rev(expandedTrackList)
-    map <- vector(mode = "list", length = length(expandedTrackList))
-    titleCoords <- NULL
-    names(map) <- rev(sapply(expandedTrackList, names))
-    if (!panel.only) {
-        borderFacts <- 1 - ((margin * 2)/vpLocation()$size)
-        vpBound <- viewport(width = borderFacts[1], height = borderFacts[2])
-        pushViewport(vpBound)
-        if (!missing(main) && main != "") {
-        	main_height = grobHeight(textGrob(main, gp = gpar(col = col.main, cex = cex.main,
-                fontface = fontface.main))) + 
-        	              grobHeight(textGrob("foo", gp = gpar(col = col.main, cex = cex.main,
-                fontface = fontface.main)))
-            vpHeader <- viewport(width = 1, height = main_height, y = 1,
-                just = c("center", "top"))
-            pushViewport(vpHeader)
-            grid.text(main, gp = gpar(col = col.main, cex = cex.main,
-                fontface = fontface.main))
-            popViewport(1)
-            vpMain <- viewport(width = 1, height = unit(1, "npc") - main_height, y = unit(1, "npc") - main_height,
-                just = c("center", "top"))
-        }
-        else {
-            vpMain <- viewport(width = 1, height = 1)
-        }
-        pushViewport(vpMain)
-        spaceSetup <- .setupTextSize(expandedTrackList, sizes,
-            title.width, spacing = innerMargin)
-    }
-    else {
-        vpBound <- viewport()
-        pushViewport(vpBound)
-        spaceSetup <- .setupTextSize(expandedTrackList, sizes,
-            spacing = innerMargin)
-    }
-    for (i in rev(seq_along(expandedTrackList))) {
-        fontSettings <- .fontGp(expandedTrackList[[i]], cex = NULL)
-        vpTrack <- viewport(x = 0, y = sum(spaceSetup$spaceNeeded[1:i]),
-            just = c(0, 1), width = 1, height = spaceSetup$spaceNeeded[i],
-            gp = fontSettings)
-        pushViewport(vpTrack)
-        vpContent <- if (!panel.only)
-            viewport(x = spaceSetup$title.width + spaceSetup$spacing,
-                width = 1 - spaceSetup$title.width - spaceSetup$spacing *
-                  2, just = 0)
-        else viewport(width = 1)
-        pushViewport(vpContent)
-        expandedTrackList[[i]] <- drawGD(expandedTrackList[[i]],
-            minBase = ranges["from"], maxBase = ranges["to"],
-            prepare = TRUE, subset = FALSE)
-        popViewport(2)
-    }
-    spaceSetup <- .setupTextSize(expandedTrackList, sizes, title.width,
-        spacing = innerMargin)
-    htBoxes <- data.frame(stringsAsFactors = FALSE)
-    for (hlite in htList) {
-        inds <- setdiff(sort(length(expandedTrackList) - hlite$index +
-            1), which(sapply(expandedTrackList, is, "IdeogramTrack")))
-        y <- reduce(IRanges(start = inds, width = 1))
-        yy <- ifelse(start(y) == 1, 0, sum(spaceSetup$spaceNeeded[1:start(y) -
-            1]))
-        ht <- sum(spaceSetup$spaceNeeded[start(y):end(y)])
-        htBoxes <- rbind(htBoxes, data.frame(y = yy, height = ht,
-            x = start(hlite$track), width = width(hlite$track),
-            col = .dpOrDefault(hlite$track, "col", "orange"),
-            fill = .dpOrDefault(hlite$track, "fill", "red"),
-            lwd = .dpOrDefault(hlite$track, "lwd", 1), lty = .dpOrDefault(hlite$track,
-                "lty", 1), alpha = .dpOrDefault(hlite$track,
-                "alpha", 1), inBackground = .dpOrDefault(hlite$track,
-                "inBackground", TRUE), stringsAsFactors = FALSE))
-    }
-    .drawHtBoxes <- function(htBoxes, background = TRUE) {
-        htBoxes <- htBoxes[htBoxes$inBackground == background,
-            , drop = FALSE]
-        if (nrow(htBoxes)) {
-            vpContent <- if (!panel.only)
-                viewport(x = spaceSetup$title.width + spaceSetup$spacing,
-                  xscale = ranges, width = 1 - spaceSetup$title.width -
-                    spaceSetup$spacing * 2, just = 0)
-            else viewport(width = 1, xscale = ranges)
-            pushViewport(vpContent)
-            grid.rect(x = htBoxes$x, just = c(0, 1), width = htBoxes$width,
-                y = htBoxes$y + htBoxes$height, height = htBoxes$height,
-                gp = gpar(col = htBoxes$col, fill = htBoxes$fill,
-                  lwd = htBoxes$lwd, lty = htBoxes$lty, alpha = htBoxes$alpha),
-                default.units = "native")
-            popViewport(1)
-        }
-    }
-    if (nrow(htBoxes))
-        .drawHtBoxes(htBoxes)
-    for (i in rev(seq_along(expandedTrackList))) {
-        vpTrack <- viewport(x = 0, y = sum(spaceSetup$spaceNeeded[1:i]),
-            just = c(0, 1), width = 1, height = spaceSetup$spaceNeeded[i])
-        pushViewport(vpTrack)
-        fill <- .dpOrDefault(expandedTrackList[[i]], "background.title",
-            .DEFAULT_SHADED_COL)
-        thisTrack <- if (is(expandedTrackList[[i]], "OverlayTrack"))
-            expandedTrackList[[i]]@trackList[[1]]
-        else expandedTrackList[[i]]
-        if (!panel.only) {
-            fontSettings <- .fontGp(expandedTrackList[[i]], subtype = "title",
-                cex = NULL)
-            vpTitle <- viewport(x = 0, width = spaceSetup$title.width,
-                just = 0, gp = fontSettings)
-            pushViewport(vpTitle)
-            lwd.border.title <- .dpOrDefault(thisTrack, "lwd.title",
-                1)
-            col.border.title <- .dpOrDefault(thisTrack, "col.border.title",
-                "transparent")
-            grid.rect(gp = gpar(fill = fill, col = col.border.title,
-                lwd = lwd.border.title))
-            needAxis <- .needsAxis(thisTrack)
-            drawAxis(thisTrack, ranges["from"], ranges["to"],
-                subset = FALSE)
-            tit <- spaceSetup$nwrap[i]
-            titleCoords <- rbind(titleCoords, cbind(.getImageMap(cbind(0,
-                0, 1, 1)), title = names(expandedTrackList[[i]])))
-            if (.dpOrDefault(thisTrack, "showTitle", TRUE) &&
-                !is.null(tit) && tit != "") {
-                x <- if (needAxis)
-                  0.075
-                else 0.4
-                just <- if (needAxis)
-                  c("center", "top")
-                else "center"
-                rot <- .dpOrDefault(thisTrack, "rotation.title",
-                  90)
-                gp <- .fontGp(thisTrack, "title", cex = spaceSetup$cex[i])
-                suppressWarnings(grid.text(tit, unit(x, "npc"),
-                  rot = rot, gp = gp, just = just))
-            }
-            popViewport(1)
-        }
-        vpBackground <- if (!panel.only)
-            viewport(x = spaceSetup$title.width, width = 1 -
-                spaceSetup$title.width, just = 0)
-        else viewport(width = 1)
-        pushViewport(vpBackground)
-        grid.rect(gp = gpar(col = "transparent", fill = .dpOrDefault(thisTrack,
-            "background.panel", "transparent")))
-        drawGrid(thisTrack, ranges["from"], ranges["to"])
-        popViewport(1)
-        fontSettings <- .fontGp(expandedTrackList[[i]], cex = NULL)
-        vpContentOuter <- if (!panel.only)
-            viewport(x = spaceSetup$title.width, width = 1 -
-                spaceSetup$title.width, just = 0, gp = fontSettings,
-                clip = TRUE)
-        else viewport(width = 1, gp = fontSettings, clip = TRUE)
-        pushViewport(vpContentOuter)
-        vpContent <- if (!panel.only)
-            viewport(x = spaceSetup$spacing, width = 1 - (spaceSetup$spacing *
-                2), just = 0, gp = fontSettings)
-        else viewport(width = 1, gp = fontSettings)
-        pushViewport(vpContent)
-        tmp <- drawGD(expandedTrackList[[i]], minBase = ranges["from"],
-            maxBase = ranges["to"], subset = FALSE)
-        if (!is.null(tmp))
-            map[[(length(map) + 1) - i]] <- tmp
-        popViewport(2)
-        if (.dpOrDefault(thisTrack, "frame", FALSE))
-            grid.rect(gp = gpar(col = .dpOrDefault(thisTrack,
-                "col.frame", .DEFAULT_SHADED_COL), fill = "transparent"))
-        popViewport(1)
-    }
-    if (nrow(htBoxes))
-        .drawHtBoxes(htBoxes, FALSE)
-    popViewport(if (panel.only)
-        1
-    else 2)
-    tc <- as.character(titleCoords[, 5])
-    tc[which(tc == "" | is.na(tc) | is.null(tc))] = "NA"
-    names(tc) <- tc
-    if (!is.null(titleCoords)) {
-        tcoord <- as.matrix(titleCoords[, 1:4])
-        rownames(tcoord) <- names(tc)
-        map$titles <- ImageMap(coords = tcoord, tags = list(title = tc))
-    }
-    done <- TRUE
-    return(invisible(map))
-}
-environment(plotTracks) = asNamespace("Gviz")
-assignInNamespace("plotTracks", plotTracks, "Gviz")
-
 

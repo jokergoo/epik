@@ -1,18 +1,18 @@
 
 # == title
-# Compare raw and smoothed methylations
+# Compare raw and smoothed methylation
 #
 # == param
-# -gi gene id
-# -cr_smoothed correlated regions using smoothed methylations
+# -gi a single gene id
+# -cr_smoothed correlated regions using smoothed methylation
 # -txdb transcriptome annotation if ``start`` and ``end`` are not set
-# -start start position of the region of interested
-# -end end position of the region of interested
+# -start start position of the region of interested (in the extended gene region)
+# -end end position of the region of interested (in the extended gene region)
 #
 # == details
 # If ``start`` and ``end`` are not set, the whole extended gene will be plotted.
 #
-# The aim of this function is see whether smoothing can improve the methylatio dataset.
+# The aim of this function is see whether smoothing can improve the methylation dataset.
 #
 # There will be six tracks:
 #
@@ -31,14 +31,14 @@
 # 
 compare_meth = function(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL) {
 
-	cr_param = metadata(cr)$cr_param
+	cr_param = metadata(cr_smoothed)$cr_param
 	extend = cr_param$extend
 	sample_id = cr_param$sample_id
 	subgroup = cr_param$cr_subgroup
 	col = cr_param$col
 	if(!is.null(subgroup)) col = col[subgroup]
 
-	cr_smoothed = cr_smoothed[cr_smoothed$gene_id == di]
+	cr_smoothed = cr_smoothed[cr_smoothed$gene_id == gi]
 
 	if(is.not.null(start) && is.not.null(end)) {
 		chr = as.vector(seqnames(cr_smoothed))[1]

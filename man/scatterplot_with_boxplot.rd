@@ -15,8 +15,8 @@ scatterplot_with_boxplot(x, y, annotation = rep("unknown", length(x)),
 
   \item{x}{values on x-axis}
   \item{y}{values on y-axis}
-  \item{annotation}{annotations which show groups of data points}
-  \item{annotation_color}{colors for annotation}
+  \item{annotation}{groups of data points}
+  \item{annotation_color}{colors for groups}
   \item{main}{title for the plot}
   \item{xlab}{labels on x-axis}
   \item{ylab}{labels on y-axis}
@@ -26,7 +26,7 @@ scatterplot_with_boxplot(x, y, annotation = rep("unknown", length(x)),
 
 }
 \details{
-On the left and bottom, there are boxplots and on the top right, there is the scatter plot.
+Boxplots are on the left and bottom, the scatter plot is on the top right.
 }
 \value{
 No value is returned
@@ -35,7 +35,5 @@ No value is returned
 Zuguang Gu <z.gu@dkfz.de>
 }
 \examples{
-# There is no example
-NULL
-
+scatterplot_with_boxplot(rnorm(40), rnorm(40), annotation = sample(letters[1:2], 40, replace = TRUE))
 }

@@ -12,8 +12,8 @@ systemdf(cmd, envir = parent.frame(), verbose = FALSE)
 \arguments{
 
   \item{cmd}{shell command}
-  \item{param}{envir   environment where to look for variables encoded in \code{\link{cmd}}}
-  \item{param}{verbose whether print messages}
+  \item{envir}{environment where to look for variables encoded in \code{cmd}}
+  \item{verbose}{whether print messages}
 
 }
 \details{
@@ -33,9 +33,9 @@ system calls in R. Since most of system calls expect tables as inputs and output
 A simple example is as follows:
 
   \preformatted{
-    bed1 = circlize::generateRandomBed(nr = 1000)
-        bed2 = circlize::generateRandomBed(nr = 1000)
-        df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")  }
+  bed1 = circlize::generateRandomBed(nr = 1000)
+  bed2 = circlize::generateRandomBed(nr = 1000)
+  df = systemdf("bedtools closest -a `bed1` -b `bed2` | awk '$1==\"chr1\"'")  }
 }
 \value{
 A data frame. Column names may be lost.

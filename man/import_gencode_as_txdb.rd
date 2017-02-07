@@ -17,7 +17,9 @@ import_gencode_as_txdb(gtf, filter = NULL)
 }
 \details{
 For example, you can build a \code{\link{TxDb-class}} object only for protein coding genes by defining
-\code{filter = gene_type == "protein_coding" & transcript_type == "protein_coding"}
+
+  \preformatted{
+  import_gencode_as_txdb(gtf, gene_type == "protein_coding" & transcript_type == "protein_coding")  }
 }
 \value{
 a \code{\link{TxDb-class}} object
@@ -28,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

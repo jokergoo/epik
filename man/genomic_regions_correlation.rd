@@ -37,6 +37,8 @@ just switch the first two arguments.
 
 Pleast note random shuffling is done by bedtools, so bedtools should be installed and exists in \code{PATH}
 and should support \code{-i -g -incl} options.
+
+This function is very time-consuming.
 }
 \value{
 A list containing following elements:

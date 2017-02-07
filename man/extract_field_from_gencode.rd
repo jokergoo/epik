@@ -13,17 +13,17 @@ extract_field_from_gencode(file, level = "gene",
 \arguments{
 
   \item{file}{the input GTF file}
-  \item{level}{level of the annotation (e.g. gene, transcript, exon, ...)}
+  \item{level}{level of the annotation (e.g. gene, transcript, exon, the third column in GTF file)}
   \item{primary_key}{primary field}
   \item{field}{field to be retrieved}
 
 }
 \details{
-Although GTF file can be imported by e.g. \code{\link[GenomicFeatures]{makeTranscriptDbFromGFF}}, some information
+Although GTF file can be imported by e.g. \code{\link[GenomicFeatures]{makeTxDbFromGFF}}, some information
 in the original GTF file will not be imported. This function aims to extract additionally information
 from GTF file.
 
-The function calls external perl script, so you need to have perl installed.
+The function calls external Perl script, so you need to have Perl installed.
 }
 \value{
 A vector in which 'primary_key' corresponds to the name and 'field' corresponds to the value.

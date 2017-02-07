@@ -4,7 +4,7 @@
 # == param
 # -gr_list_1 a list of `GenomicRanges::GRanges` objects which contain chromatin states in group 1.
 #            The first column in meta columns should be the states. Be careful when importing bed files to 
-#            `GenomicRanges::GRanges` objects (start positions in bed files are 0-based while 1-based in ``GRanges`` objects.
+#            `GenomicRanges::GRanges` objects (start positions in bed files are 0-based while 1-based in ``GRanges`` objects).
 # -gr_list_2 a list of `GenomicRanges::GRanges` objects which contains chromatin states in group 2.
 # -window window size which was used to do chromHMM states segmentation If it is not specified, the greatest common divisor
 #         of the width of all regions is used.
@@ -12,15 +12,19 @@
 #         If the recurrency of each state is relatively low, it means there is no one dominant state for this segment and it should 
 #         be removed. This argument controls the minimal value for the recurrency of states in a given segment.
 # -min_2 same as ``min_1``, but for samples in group 2.
-# -methylation_diff If methylation dataset is provided, the segments for which the methylation difference between two groups is less than
+# -meth_diff If methylation dataset is provided, the segments for which the methylation difference between two groups is less than
 #             this value are removed.
 # -chromosome subset of chromosomes
 #
 # == detail
-# The whole genome is segmentated by size of ``window`` and states with highest occurence among samples are assigned to segments.
+# For a segment in the genome, the chromatin state may be different in different subgroups. This is called chromatin state transistion.
+# This function visualize such kind of genome-wide transitions.
+#
+# The whole genome is segmentated by ``window`` and states with highest occurence among samples are assigned to segments.
 #
 # To make the function run successfully, number of segments (after binned by ``window``) in all samples 
-# should be all the same and there should not be gaps between segments
+# should be all the same and there should be no gaps between segments. If the segmentation data is directly imported from
+# chromHMM results, you dont need to worry.
 #
 # == value
 # A transition matrix in which values represent total width of segments that transite from one state to the other in the two groups. Rows correspond
@@ -49,8 +53,8 @@
 # })
 # mat = make_transition_matrix_from_chromHMM(gr_list_1, gr_list_2)
 make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = NULL, 
-	min_1 = floor(length(gr_list_1)/2), min_2 = floor(length(gr_list_2)/2), methylation_diff = 0,
-	chromosome = paste0("chr", 1:22)) {
+	min_1 = floor(length(gr_list_1)/2), min_2 = floor(length(gr_list_2)/2), 
+	meth_diff = 0, chromosome = paste0("chr", 1:22)) {
 
 	if(inherits(gr_list_1, "GRanges")) {
 		gr_list_1 = list(gr_list_1)
@@ -142,7 +146,7 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 			n_cpg[which(l_chr)[as.numeric(names(x))]] = tapply(mtch[, 2], mtch[, 1], length)
 		}
 
-		l = abs(sum_meth1/n_cpg - sum_meth2/n_cpg) >= methylation_diff
+		l = abs(sum_meth1/n_cpg - sum_meth2/n_cpg) >= meth_diff
 		l[is.na(l)] = FALSE
 		states1 = states1[l]
 		states2 = states2[l]
@@ -189,6 +193,18 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 	return(mat2)
 }
 
+# == title
+# Print chromatin_states_transition_matrix class object
+#
+# == param
+# -x a ``chromatin_states_transition_matrix`` class object
+# -... additional arguments
+#
+# == value
+# no value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 print.chromatin_states_transition_matrix = function(x, ...) {
 	qqcat("A chromatin states transition matrix defined by @{nrow(x)} states:\n")
 	print(rownames(x))
@@ -198,6 +214,20 @@ print.chromatin_states_transition_matrix = function(x, ...) {
 	}
 }
 
+# == title
+# Subset chromatin_states_transition_matrix class object
+#
+# == param
+# -x a ``chromatin_states_transition_matrix`` class object
+# -i index of rows
+# -j index of columns
+# -drop whether degenerate the matrix
+#
+# == value
+# a ``chromatin_states_transition_matrix`` object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 "[.chromatin_states_transition_matrix" = function(x, i, j, drop = FALSE) {
 	
 	meth_mean_1 = attr(x, "meth_mean_1")
@@ -229,6 +259,17 @@ print.chromatin_states_transition_matrix = function(x, ...) {
 	return(x)
 }
 
+# == title
+# Transpose the chromatin transition matrix
+#
+# == param
+# -x a ``chromatin_states_transition_matrix`` class object
+#
+# == value
+# a ``chromatin_states_transition_matrix`` object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
 t.chromatin_states_transition_matrix = function(x) {
 	meth_mean_1 = attr(x, "meth_mean_1")
 	meth_mean_2 = attr(x, "meth_mean_2")
@@ -248,7 +289,7 @@ t.chromatin_states_transition_matrix = function(x) {
 }
 
 # == title
-# Simply returns names of chromatin states
+# Simply return names of chromatin states
 #
 # == param
 # -x a ``chromatin_states_transition_matrix`` object returned from `make_transition_matrix_from_chromHMM`
@@ -293,7 +334,7 @@ state_names = function(x) {
 }
 
 # == title
-# Chord diagram for visualizing chromatin states transistion
+# Chord diagram for visualizing chromatin states transitions
 #
 # == param
 # -mat the transition matrix. It should be a square matrix in which row names and column names should be all the same.
@@ -504,7 +545,6 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 	text(-1, 1.1, paste0(sum(mat), " bp"), adj = c(0, 0.5))
 
 	if(contain_methylation) {
-		require(gridBase)
 		vps = baseViewports()
 		pushViewport(vps$inner, vps$figure, vps$plot)
 

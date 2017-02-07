@@ -1,10 +1,10 @@
 \name{available_gencode_fields}
 \alias{available_gencode_fields}
 \title{
-Returns all supported fields in GTF data
+Returns all supported fields in GTF file
 }
 \description{
-Returns all supported fields in GTF data
+Returns all supported fields in GTF file
 }
 \usage{
 available_gencode_fields(file, level = "gene")
@@ -12,7 +12,7 @@ available_gencode_fields(file, level = "gene")
 \arguments{
 
   \item{file}{the input GTF file}
-  \item{level}{level of the annotation (e.g. gene, transcript, exon, ...)}
+  \item{level}{level of the annotation (e.g. gene, transcript, exon, the third column in GTF file)}
 
 }
 \details{

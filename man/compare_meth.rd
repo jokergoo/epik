@@ -1,27 +1,27 @@
 \name{compare_meth}
 \alias{compare_meth}
 \title{
-Compare raw and smoothed methylations
+Compare raw and smoothed methylation
 }
 \description{
-Compare raw and smoothed methylations
+Compare raw and smoothed methylation
 }
 \usage{
 compare_meth(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL)
 }
 \arguments{
 
-  \item{gi}{gene id}
-  \item{cr_smoothed}{correlated regions using smoothed methylations}
+  \item{gi}{a single gene id}
+  \item{cr_smoothed}{correlated regions using smoothed methylation}
   \item{txdb}{transcriptome annotation if \code{start} and \code{end} are not set}
-  \item{start}{start position of the region of interested}
-  \item{end}{end position of the region of interested}
+  \item{start}{start position of the region of interested (in the extended gene region)}
+  \item{end}{end position of the region of interested (in the extended gene region)}
 
 }
 \details{
 If \code{start} and \code{end} are not set, the whole extended gene will be plotted.
 
-The aim of this function is see whether smoothing can improve the methylatio dataset.
+The aim of this function is see whether smoothing can improve the methylation dataset.
 
 There will be six tracks:
 
@@ -43,5 +43,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

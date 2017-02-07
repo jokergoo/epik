@@ -15,7 +15,7 @@ weighted_mean = function(x1, x2, w1, w2) {
 # -cov CpG coverage matrix
 #
 # == details
-# normally methylation for the two Cs in a CpG dinucleotide is very similar. This function
+# Normally methylation for the two Cs in a CpG dinucleotide is very similar. This function
 # helps to reduce the redundency of the methylation dataset.
 #
 # For two Cs in a CpG dinucleotide, the merged methylation value is calculated by weighting

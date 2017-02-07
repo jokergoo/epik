@@ -12,12 +12,12 @@ get_mean_methylation_in_genomic_features(sample_id, genomic_features, chromosome
 \arguments{
 
   \item{sample_id}{a vector of sample IDs}
-  \item{genomic_features}{a list or a single genomic features in \code{\link[GenomicRanges]{GRanges}} class}
+  \item{genomic_features}{a list or a single \code{\link[GenomicRanges]{GRanges}} objects}
   \item{chromosome}{a vector of chromosome names}
 
 }
 \value{
-A list of \code{\link[GenomicRanges]{GRanges}} objects in which mean methylation matrix and number of CpG in each region
+A list of or a single \code{\link[GenomicRanges]{GRanges}} objects (according to \code{genomic_features} you specified) in which mean methylation matrix and number of CpG in each region
 are attached. The variable can be sent to \code{\link{heatmap_diff_methylation_in_genomic_features}} to visualize.
 
 Note it should keep in mind that it doesn't make any sense to calculate mean methylation in long regions where
@@ -29,5 +29,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

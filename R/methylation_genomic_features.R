@@ -2,21 +2,21 @@
 
 
 # == title
-# Heatmap for differential methylation in genomic features
+# Heatmap for differential methylated genomic features
 #
 # == param
 # -gr a `GenomicRanges::GRanges` object returned from `get_mean_methylation_in_genomic_features`
 # -subgroup subgroup information
-# -ha column annotations, a `ComplexHeatmap::HeatmapAnnotation` object
-# -genomic_features a single or a list of `GenomicRanges::GRanges` ojects
+# -ha column annotations, a `ComplexHeatmap::HeatmapAnnotation-class` object
+# -genomic_features a single or a list of `GenomicRanges::GRanges` objects that are used to annotate ``gr``
 # -meth_diff minimal range between mean value in subgroups
-# -cutoff if classification information is provided, p-value for the oneway ANOVA test
-# -adj_method how to calculate adjusted p-values
-# -cluster_cols how to cluster columns
+# -cutoff if classification information is provided, cutoff of p-value of the oneway ANOVA test
+# -adj_method method to calculate adjusted p-values
+# -cluster_columns how to cluster columns
 # -... pass to `ComplexHeatmap::Heatmap`
 #
 # == details
-# Regions have differential methylation are only visualized. 
+# Regions having differential methylation are only visualized. 
 #
 # == value
 # A `GenomicRanges::GRanges` object which only contains regions with significant differential methylation.
@@ -108,7 +108,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 		}
 		mat = mm
 		cluster_columns = FALSE
-	} else if(cluster_cols == "all") {
+	} else if(cluster_columns == "all") {
 		cluster_columns = TRUE
 	} else {
 		cluster_columns = FALSE
@@ -158,11 +158,11 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 #
 # == param
 # -sample_id  a vector of sample IDs
-# -genomic_features a list or a single genomic features in `GenomicRanges::GRanges` class
+# -genomic_features a list or a single `GenomicRanges::GRanges` objects
 # -chromosome a vector of chromosome names
 #
 # == value
-# A list of `GenomicRanges::GRanges` objects in which mean methylation matrix and number of CpG in each region
+# A list of or a single `GenomicRanges::GRanges` objects (according to ``genomic_features`` you specified) in which mean methylation matrix and number of CpG in each region
 # are attached. The variable can be sent to `heatmap_diff_methylation_in_genomic_features` to visualize.
 #
 # Note it should keep in mind that it doesn't make any sense to calculate mean methylation in long regions where
@@ -173,11 +173,12 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 #
 get_mean_methylation_in_genomic_features = function(sample_id, genomic_features, chromosome = paste0("chr", 1:22)) {
 	
+	is_single_gf = FALSE
 	if(inherits(genomic_features, "GRanges")) {
 		gf_name = deparse(substitute(genomic_features))
 		genomic_features = list(genomic_features)
 		names(genomic_features) = gf_name
-
+		is_single_gf = TRUE
 	}
 
 	genomic_features = lapply(genomic_features, function(gf) {
@@ -214,6 +215,10 @@ get_mean_methylation_in_genomic_features = function(sample_id, genomic_features,
 
 	for(i in seq_along(genomic_features)) {
 		mcols(genomic_features[[i]]) = cbind(as.data.frame(mcols(genomic_features[[i]])), mean_meth_list[[i]], ncpg = ncpg_list[[i]])
+	}
+
+	if(is_single_gf) {
+		genomic_features = genomic_features[[1]]
 	}
 
 	return(genomic_features)

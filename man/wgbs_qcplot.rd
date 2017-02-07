@@ -13,7 +13,7 @@ wgbs_qcplot(sample_id, chromosome = paste0("chr", 1:22), background = NULL)
 
   \item{sample_id}{a vector of sample ids. You can generate plots for a list of samples in a same time while is faster than make it one by one.}
   \item{chromosome}{a vector of chromosome names}
-  \item{background}{background regions}
+  \item{background}{background regions where the CpG sites will only be looked into}
 
 }
 \details{
@@ -36,5 +36,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

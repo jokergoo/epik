@@ -15,11 +15,11 @@ set_proper_seqlengths = function(gr, species) {
 }
 
 # == title
-# Annotate to gene models
+# Annotate genomic regions to gene models
 #
 # == param
 # -gr  a `GenomicRanges::GRanges` object
-# -txdb a `GenomicFeatures::TxDb` object.
+# -txdb a `GenomicFeatures::TxDb-class` object.
 # -gene_model type of gene model, by transcript or by genes
 # -species We need this information to find out proper intergenic regions
 # -promoters_upstream length of upstream promoter from TSS, pass to `GenomicRanges::promoters`
@@ -147,7 +147,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 }
 
 # == title
-# Annotate to one or a list of genomic features
+# Annotate genomic regions to a list of genomic features
 #
 # == param
 # -gr           a `GenomicRanges::GRanges` object
@@ -157,7 +157,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 # -type  For each type of genomic features, ``number`` means numbers of genomic features that each 
 #        region in ``gr`` overlap; ``percent`` means the percent of each region in ``gr`` that is 
 #        overlapped by genomic features
-# -prefix prefix for the names in the annotation columns. The column names are constructed as "prefix_name"
+# -prefix prefix for the names in the annotation columns. The column names are constructed as "$prefix_$name"
 # -ignore.strand whether ignore strand information
 # -... pass to `GenomicRanges::countOverlaps` or `percentOverlaps`
 #

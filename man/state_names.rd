@@ -1,10 +1,10 @@
 \name{state_names}
 \alias{state_names}
 \title{
-Simply returns names of chromatin states
+Simply return names of chromatin states
 }
 \description{
-Simply returns names of chromatin states
+Simply return names of chromatin states
 }
 \usage{
 state_names(x)
@@ -20,5 +20,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

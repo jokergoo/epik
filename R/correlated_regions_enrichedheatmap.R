@@ -177,23 +177,40 @@ add_boxplot_as_column_annotation = function(ht_list, width, anno_name, anno_titl
 # -cr correalted regions
 # -txdb transcriptome annotation which was used in `correlated_regions`
 # -expr expression matrix which was used in `correlated_regions`
-# -cgi CpG island
-# -fdr_cutoff cutoff for fdr of correlation p-value and anove p-values
-# -meth_diff_cutoff cutoff for methylation difference
+# -cgi CpG island, a `GenomicRanges::GRanges` object
+# -fdr_cutoff cutoff for fdr
+# -meth_diff_cutoff cutoff for methylation difference. If there are no subgroup information or only one subgroup,
+#             ``meth_IQR`` column is used for filtering. If there are more than one subgroups, ``meth_diameter``
+#             column is used for filtering.
 # -marks names of histone marks
-# -type use negative correlated regions or positive correlated regions
+# -type visualize negative correlated regions or positive correlated regions
 # -extend base pairs extended to upstream and downstream
-# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object
+# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
-# There are several heatmaps visualize various signals enriched at TSS-CGIs.
+# There are several heatmaps visualize various signals enriched at TSS-CGIs. In the plot, in the extended
+# CGI region, one CGI only overlaps to one gene TSS and one gene TSS should only overlap to one extended CGI.
+# Since one CGI only corresponds to one gene, in the heatmap, each row corresponds to one single gene.
+#
+# There are following heatmaps:
 #
 # - heatmap for gene expression
-# - If ``cr`` is returned form `cr_enrichedheatmap`, there is a one column heatmap which
+# - If ``cr`` is returned form `cr_enriched_heatmap`, there is a one column heatmap which
 #   shows the k-means cluters genes belong to
-# - heatmap for correlated regions
-# - a point plot 
+# - heatmap for significant correlated regions
+# - a point plot showing CGI length
+# - heatmap for correlation between methylation and gene expression
+# - heatmap for mean methylation
+# - heatmap for metnylation difference
+# - heatmap for correlation, mean signal and signal difference for histone marks
+#
+# If there are more than 12 heatmaps, they will be put into two pages.
 # 
+# Heatmaps are split into two sub-clusters by k-means clustering on the mean methylation matrix.
+# If there are two subgroups in all samples, each subcluster are split by high expression/low expression
+# in subgroup 1. In each high expression/low expression, rows are split by the k-means clusters calculated
+# in `cr_enriched_heatmap`. Finally, rows are clustered by considering closeness of signals in the extended
+# CGI regions.
 #
 # == value
 # no value is returned
@@ -316,26 +333,50 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 # Visualizing enrichment for epigenomic signals at TSS
 #
 # == param
-# -cr
-# -txdb
-# -expr
-# -cgi
-# -fdr_cutoff
-# -meth_diff_cutoff
-# -marks
-# -type
-# -extend
-# -expr_annotation 
+# -cr correalted regions
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -expr expression matrix which was used in `correlated_regions`
+# -cgi CpG island, a `GenomicRanges::GRanges` object
+# -fdr_cutoff cutoff for fdr
+# -meth_diff_cutoff cutoff for methylation difference. If there are no subgroup information or only one subgroup,
+#             ``meth_IQR`` column is used for filtering. If there are more than one subgroups, ``meth_diameter``
+#             column is used for filtering.
+# -marks names of histone marks
+# -type visualize negative correlated regions or positive correlated regions
+# -extend base pairs extended to upstream and downstream
+# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
+# There are several heatmaps visualize various signals enriched at gene TSS.
+#
+# There are following heatmaps:
+#
+# - heatmap for gene expression
+# - a point plot showing gene length
+# - If ``cr`` is returned form `cr_enriched_heatmap`, there is a one column heatmap which
+#   shows the k-means cluters genes belong to
+# - heatmap for CGI enrichment at TSS
+# - heatmap for significant correlated regions
+# - heatmap for correlation between methylation and gene expression
+# - heatmap for mean methylation
+# - heatmap for metnylation difference
+# - heatmap for correlation, mean signal and signal difference for histone marks
+#
+# If there are more than 12 heatmaps, they will be put into two pages.
+# 
+# Heatmaps are split into two sub-clusters by k-means clustering on the mean methylation matrix.
+# If there are two subgroups in all samples, each subcluster are split by high expression/low expression
+# in subgroup 1. In each high expression/low expression, rows are split by the k-means clusters calculated
+# in `cr_enriched_heatmap`. Finally, rows are clustered by considering closeness of signals in the extended
+# TSS regions.
 #
 # == value
 # no value is returned
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi,
-	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = c(5000, 10000),
+cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05, 
+	meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = c(5000, 10000),
 	expr_annotation) {
 	
 	eval(SNIPPET_ATTACH_CR_PARAM)
@@ -437,25 +478,44 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi,
 # Visualizing enrichment for epigenomic signals at gene body
 #
 # == param
-# -cr
-# -txdb
-# -expr
-# -cgi
-# -K
-# -marks
-# -type
-# -extend
-# -expr_annotation 
+# -cr correalted regions
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -expr expression matrix which was used in `correlated_regions`
+# -cgi CpG island, a `GenomicRanges::GRanges` object
+# -K which k-means cluster which is generated by `cr_enriched_heatmap`
+# -marks names of histone marks
+# -extend base pairs extended to upstream and downstream
+# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
+# There are several heatmaps visualize various signals enriched at gene body
+#
+# There are following heatmaps:
+#
+# - heatmap for gene expression
+# - a point plot showing gene length
+# - If ``cr`` is returned form `cr_enriched_heatmap`, there is a one column heatmap which
+#   shows the k-means cluters genes belong to
+# - heatmap for CGI enrichment at TSS
+# - heatmap for correlation between methylation and gene expression
+# - heatmap for mean methylation
+# - heatmap for metnylation difference
+# - heatmap for correlation, mean signal and signal difference for histone marks
+#
+# If there are more than 12 heatmaps, they will be put into two pages.
+# 
+# Heatmaps are split into three sub-clusters by k-means clustering on the mean methylation matrix.
+# If there are two subgroups in all samples, each subcluster are split by high expression/low expression
+# in subgroup 1. In each high expression/low expression, rows are split by the k-means clusters calculated
+# in `cr_enriched_heatmap`. Finally, rows are clustered by mean methylation matrix.
 #
 # == value
 # no value is returned
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL, type = "neg", extend = 5000,
-	expr_annotation) {
+cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL, 
+	extend = 5000, expr_annotation) {
 	
 	eval(SNIPPET_ATTACH_CR_PARAM)
 
@@ -585,21 +645,45 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 # Visualizing enrichment for epigenomic signals at TSS-CGIs
 #
 # == param
-# -cr
-# -txdb
-# -expr
-# -gf
-# -fdr_cutoff
-# -meth_diff_cutoff
-# -marks
-# -type
-# -extend
-# -min_reduce
-# -min_width
-# -nearest_by
-# -expr_annotation 
+# -cr correalted regions
+# -txdb transcriptome annotation which was used in `correlated_regions`
+# -expr expression matrix which was used in `correlated_regions`
+# -gf genomic features, a `GenomicRanges::GRanges` object
+# -fdr_cutoff cutoff for fdr
+# -meth_diff_cutoff cutoff for methylation difference. If there are no subgroup information or only one subgroup,
+#             ``meth_IQR`` column is used for filtering. If there are more than one subgroups, ``meth_diameter``
+#             column is used for filtering.
+# -marks names of histone marks
+# -type visualize negative correlated regions or positive correlated regions
+# -extend base pairs extended to upstream and downstream
+# -min_reduce base pairs for merging neighbouring regions
+# -min_width minimal width of regions
+# -nearest_by "tss" or "gene", how to connect genomic features to genes
+# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
+# There are several heatmaps visualize various signals enriched at genomic features. After annotate to genes,
+# in the extended regions, each region can only have one gene.
+#
+# There are following heatmaps:
+#
+# - heatmap for gene expression
+# - If ``cr`` is returned form `cr_enriched_heatmap`, there is a one column heatmap which
+#   shows the k-means cluters genes belong to
+# - heatmap for significant correlated regions
+# - a point plot showing region length
+# - heatmap for correlation between methylation and gene expression
+# - heatmap for mean methylation
+# - heatmap for metnylation difference
+# - heatmap for correlation, mean signal and signal difference for histone marks
+#
+# If there are more than 12 heatmaps, they will be put into two pages.
+# 
+# Heatmaps are split into two sub-clusters by k-means clustering on the mean methylation matrix.
+# If there are two subgroups in all samples, each subcluster are split by high expression/low expression
+# in subgroup 1. In each high expression/low expression, rows are split by the k-means clusters calculated
+# in `cr_enriched_heatmap`. Finally, rows are clustered by considering closeness of signals in the extended
+# gf regions.
 #
 # == value
 # no value is returned
@@ -619,7 +703,7 @@ cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 
 	# overlap gf to gene extended regions
 	message("extracting gene tss")
-	gm = genes(TXDB)
+	gm = genes(txdb)
 	gm = gm[gm$gene_id %in% unique(cr$gene_id)]
 	tss = promoters(gm, upstream = 1, downstream = 0)
 	gl = width(gm)

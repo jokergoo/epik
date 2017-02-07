@@ -3,9 +3,9 @@
 # Run pre-defiend scripts
 #
 # == details
-# There are some R scripts which can be run directly. The path of all scripts can be obtained by 
+# There are several R scripts which can be run directly. The path of all scripts can be obtained by 
 # 
-#    dir(system.file("pipeline", "script", package = "epic"), pattern = "\\.R$")
+#    dir(system.file("pipeline", "script", package = "epik"), pattern = "\\.R$")
 #
 # You can either directly run these R scripts by:
 #
@@ -13,12 +13,18 @@
 #
 # or use the short command:
 #
-#    Rscript -e "epic::epic()" cmd [options]
+#    Rscript -e "epik::epik()" cmd [options]
 #
-# For each cmd, use ``Rscript -e "epic::epic()" cmd --help`` to get help.
+# to get the list of commands:
+#
+#    Rscript -e "epik::epik()"
+#
+# For each cmd, use ``Rscript -e "epik::epik()" cmd --help`` to get help.
 #
 # Basically all scripts need ``--config`` option which corresponds to a configuration R file
-# that defines how to get data.
+# that defines how to import data. A template for the configuration file is at:
+#
+#   system.file("pipeline", "pipeline_configure_template.R", package = "epik")
 #
 # Available commands (``cmd``) are:
 #
@@ -40,9 +46,9 @@
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-epic = function() {
+epik = function() {
 
-	all_cmds = dir(system.file("pipeline", "script", package = "epic"), pattern = "\\.R$")
+	all_cmds = dir(system.file("pipeline", "script", package = "epik"), pattern = "\\.R$")
 	all_cmds = gsub("\\.R$", "", all_cmds)
 	
 	msg = 'Usage: Rscript -e "epic::epic()" cmd [options]\n\nAvailable cmd:\n\n'
@@ -74,6 +80,6 @@ epic = function() {
 	# cmd = qq("\"@{R_binary}\" --vanilla --slave --args @{paste(x[-1], collapse=' ')} < \"@{system.file('pipeline', package = 'epic')}/@{x[1]}.R\"")
 	# cat(cmd, "\n")
 
-	GetoptLong:::source(qq("@{system.file('pipeline', 'script', package = 'epic')}/@{x[1]}.R"), argv = paste(x[-1], collapse=' '))
+	GetoptLong:::source(qq("@{system.file('pipeline', 'script', package = 'epik')}/@{x[1]}.R"), argv = paste(x[-1], collapse=' '))
 
 }

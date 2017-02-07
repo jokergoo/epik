@@ -1,5 +1,5 @@
-\name{epic}
-\alias{epic}
+\name{epik}
+\alias{epik}
 \title{
 Run pre-defiend scripts
 }
@@ -7,13 +7,13 @@ Run pre-defiend scripts
 Run pre-defiend scripts
 }
 \usage{
-epic()
+epik()
 }
 \details{
-There are some R scripts which can be run directly. The path of all scripts can be obtained by
+There are several R scripts which can be run directly. The path of all scripts can be obtained by
 
   \preformatted{
-   dir(system.file("pipeline", "script", package = "epic"), pattern = "\\.R$")  }
+   dir(system.file("pipeline", "script", package = "epik"), pattern = "\\.R$")  }
 
 You can either directly run these R scripts by:
 
@@ -23,12 +23,20 @@ You can either directly run these R scripts by:
 or use the short command:
 
   \preformatted{
-   Rscript -e "epic::epic()" cmd [options]  }
+   Rscript -e "epik::epik()" cmd [options]  }
 
-For each cmd, use \code{Rscript -e "epic::epic()" cmd --help} to get help.
+to get the list of commands:
+
+  \preformatted{
+   Rscript -e "epik::epik()"  }
+
+For each cmd, use \code{Rscript -e "epik::epik()" cmd --help} to get help.
 
 Basically all scripts need \code{--config} option which corresponds to a configuration R file
-that defines how to get data.
+that defines how to import data. A template for the configuration file is at:
+
+  \preformatted{
+  system.file("pipeline", "pipeline_configure_template.R", package = "epik")  }
 
 Available commands (\code{cmd}) are:
 
@@ -55,5 +63,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

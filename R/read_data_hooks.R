@@ -5,7 +5,7 @@
 #
 # == param
 # -... please ignore, see 'details' section.
-# -RESET please ignore
+# -RESET remove all hooks
 # -READ.ONLY please ignore
 # -LOCAL please ignore
 #
@@ -13,12 +13,12 @@
 # Methylation dataset from whole genome bisulfite sequencing is always huge and it does not
 # make sense to read them all into the memory. Normally, the methylation dataset is stored
 # by chromosome and this hook function can be set to read methylation data in a per-chromosome
-# manner.
+# manner. In the package, there are many functions use it internally to read methylation datasets.
 #
-# Generally, for methylation dataset, there are methylation rate, CpG coverage and genomic positions
+# Generally, for methylation dataset, there are methylation rate (ranging from 0 to 1), CpG coverage and genomic positions
 # for CpG sites. Sometimes there is also smoothed methylation rate. All these datasets can be set
 # by defining a proper ``methylation_hooks$get_by_chr``. The value for ``methylation_hooks$get_by_chr``
-# is a function with only one argument which is the chromosome name. This function defined how to
+# is a function with only one argument which is the chromosome name. This function defines how to
 # read methylation dataset for a single chromosome. The function must return a list which contains
 # following mandatory elements:
 #
@@ -36,6 +36,18 @@
 #
 # Note each row in above datasets should correspond to the same CpG site. 
 #
+# In following example code, assume the methylation data has been processed by bsseq package and saved as
+# ``path/bsseq_$chr.rds``, then the definition of ``methylation_hooks$get_by_chr`` is:
+#
+#   methylation_hooks$get_by_chr = function(chr) {
+#       obj = readRDS(paste0("path/bsseq_", chr, ".rds"))
+#       lt = list(gr   = granges(obj),
+#                 raw  = getMeth(obj, type = "raw"),
+#                 cov  = getCoverage(obj, type = "Cov"),
+#                 meth = getMeth(obj, type = "smooth")
+#       return(lt)
+#   }
+#
 # After ``methylation_hooks$get_by_chr`` is properly set, the "current chromosome" for the methylation dataset
 # can be set by ``methylation_hooks$set_chr(chr)`` where ``chr`` is the chromosome name you want to go.
 # After validating the dataset, following variables can be used directly:
@@ -45,6 +57,8 @@
 # - ``methylation_hooks$sample_id``
 # - ``methylation_hooks$cov``
 # - ``methylation_hooks$raw`` if available
+#
+# ``methylation_hooks$set_chr(chr)`` tries to reload the data only when the current chromosome changes.
 #
 # == value
 # Hook functions
@@ -160,13 +174,25 @@ methylation_hooks$set_chr = function(chr, verbose = TRUE) {
 
 class(methylation_hooks) = c("methylation_hooks", "GlobalOptionsFun")
 
+# == title
+# Print the methylation_hooks object
+#
+# == param
+# -x a `methylation_hooks` objects
+# -... additional arguments
+#
+# == value
+# No value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
 print.methylation_hooks = function(x, ...) {
 	if(is.null(methylation_hooks$get_by_chr)) {
-		cat("Importing data by setting `methylation_hooks$get_by_chr`. The value is a function with\n")
-		cat("only one argument which is the chromosome name. The returned value should be a list which\n")
-		cat("contains:\n")
+		str = "Please set `methylation_hooks$get_by_chr` to import methylation dataset. The value is a function with only one argument which is the chromosome name. The returned value should be a list which contains:\n"
+		qqcat(str, strwrap = TRUE)
 		qqcat("- `gr`: a GRanges object which contains positions of CpG sites.\n")
-		qqcat("- `meth`: methylation matrix\n")
+		qqcat("- `meth`: methylation matrix (mainly used in the package)\n")
 		qqcat("- `raw`: raw methylation matrix (unsmoothed), optional.\n")
 		qqcat("- `cov`: CpG coverage matrix.\n")
 	} else {
@@ -183,7 +209,7 @@ print.methylation_hooks = function(x, ...) {
 #
 # == param
 # -... please ignore, see 'details' section.
-# -RESET please ignore
+# -RESET remove all hooks
 # -READ.ONLY please ignore
 # -LOCAL please ignore
 #
@@ -194,22 +220,58 @@ print.methylation_hooks = function(x, ...) {
 # samples sequenced in e.g. whole genome bisulfite sequencing or RNA-Seq, thus, to import
 # such type of flexible data format, users need to define following hook functions:
 #
-# -sample_id This self-defined function returns a list of sample IDs given the name of a histome mark.
+# -sample_id This self-defined function returns a list of sample IDs given the name of a histone mark.
 # -peak This function should return a `GenomicRanges::GRanges` object which are peaks for a given
-#       histome mark in a given sample. The `GenomicRanges::GRanges` object should better have a meta column 
-#       which is the intensity of the histome modification signals.
-# -chromHMM This hook is optional. If chromatin segmentation by chromHMM is avaialble, this hoook
+#       histone mark in a given sample. The `GenomicRanges::GRanges` object should better have a meta column 
+#       which is the intensity of the histone modification signals. (**Note when you want to take the histone
+#       modification signals as quatitative analysis, please make sure they are normalized between samples**)
+# -chromHMM This hook is optional. If chromatin segmentation by chromHMM is avaialble, this hook
 #           can be defined as a function which accepts sample ID as argument and returns
 #           a `GenomicRanges::GRanges` object. The `GenomicRanges::GRanges` object should have a meta column named
 #           "states" which is the chromatin states inferred by chromHMM.
 #
-# The ``chipseq_hooks$peak`` must have two arguments ``mark`` and ``sid`` which are the name of the histone mark
-# and the sample id, there can be more arguments such as chromosomes.
+# The ``chipseq_hooks$peak()`` must have two arguments ``mark`` and ``sid`` which are the name of the histone mark
+# and the sample id. There can also be more arguments such as chromosomes.
 #
-# The ``chipseq_hooks$chromHMM`` must have one argument ``sid`` which is the sample id, also there can be more arguments such as chromosomes.
+# As an example, let's assume the peak files are stored in a format of ``path/$sample_id/$mark.bed``, then we can define
+# hooks functions as:
+#
+#   # here `qq` is from GetoptLong package which allows simple variable interpolation
+#   chipseq_hooks$sample_id = function(mark) {
+#       peak_files = scan(pipe(qq("ls path/*/@{mark}.bed")), what = "character")
+#       sample_id = gsub("^path/(.*?)/.*$", "\\1", peak_files)
+#       return(sample_id)
+#   }
+#
+#   # here ... is important that the epik package will pass more arguments to it
+#   chipseq_hooks$peak = function(mark, sid, ...) {
+#       peak_file = qq("path/@{sid}/@{mark}.bed")
+#       df = read.table(peak_file, sep = "\t", stringsAsFactors = FALSE)
+#       GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]], df[[3]]), density = df[[5]])
+#   }
+#
+# Normally ``chipseq_hooks$peak()`` are not directly used, it is usually used by `get_peak_list` to read peaks from all samples as a list.
+# You can also add more arguments when defining ``chipseq_hooks$peak()`` that these arguments can be passed from `get_peak_list` as well. 
+# For example, you can add chromosome name as the third argument that you do not need to read the full dataset at a time:
+#
+#   # to make it simple, let's assume it only allows one single chromosome
+#   chipseq_hooks$peak = function(mark, sid, chr) {
+#       peak_file = qq("path/@{sid}/@{mark}.bed")
+#       df = read.table(pipe(qq("awk '$1==\"@{chr}\"' @{peak_file}")), sep = "\t", stringsAsFactors = FALSE)
+#       GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]], df[[3]]), density = df[[5]])
+#   }
+#
+# then you can call `get_peak_list` as:
+#
+#   get_peak_list(mark, chr = "chr1")
+#
+# The ``chipseq_hooks$chromHMM()`` must have one argument ``sid`` which is the sample id, also there can be more arguments such as chromosomes.
 #
 # == value
 # Hook functions
+#
+# == seealso
+# `get_peak_list`, `get_chromHMM_list`
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -219,19 +281,23 @@ chipseq_hooks = setGlobalOptions(
 	sample_id = list(.value = function(mark) stop("you need to define `sample_id` hook"),
 		             .class = "function",
 		             .validate = function(f) length(as.list(f)) == 2,
-		             .failed_msg = "The function should only have one argument which is the name of the histome mark."),
+		             .failed_msg = "The function should only have one argument which is the name of the histone mark."),
 	peak = list(.value = function(mark, sid, ...) stop("you need to define `peak` hook"),
-		        .class = "function"),
+		        .class = "function",
+		        .validate = function(f) length(as.list(f)) >= 4,
+		        .failed_msg = "The function should only have more than three arguments which are the name of the histone mark, sample id and other stuff. If you only use the first two, simply add `...` as the third argument."),
 	chromHMM = list(.value = function(sid, ...) stop("you need to define `chromHMM` hook"),
-		            .class = "function")
+		            .class = "function",
+		            .validate = function(f) length(as.list(f)) >= 4,
+		            .failed_msg = "The function should only have more than two arguments which are the sample id and other stuff. If you only use the first one, simply add `...` as the second argument.")
 )
 
 # == title
-# Get a list of peak regions for a given histome mark
+# Get a list of peak regions for a given histone mark
 #
 # == param
-# -mark name of the histome mark
-# -sample_id a vector of sample IDs. If not defined, it is the total samples that are available for this histome mark.
+# -mark name of the histone mark
+# -sample_id a vector of sample IDs. If not defined, it is the total samples that are available for this histone mark.
 # -... more arguments pass to ``chipseq_hooks$peak()``.
 #
 # == details
@@ -260,7 +326,7 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
 # Get a list of chromatin segmentation regions 
 #
 # == param
-# -sample_id a vector of sample IDs. If not defined, it is the total samples that are available for this histome mark.
+# -sample_id a vector of sample IDs.
 # -... more arguments pass to ``chipseq_hooks$chromHMM()``.
 #
 # == details

@@ -1,10 +1,10 @@
 \name{hilbert_curve_chipseq_difference}
 \alias{hilbert_curve_chipseq_difference}
 \title{
-Visualize ChIP-Seq signals by Hilbert curve
+Visualize ChIP-Seq signal difference by Hilbert curve
 }
 \description{
-Visualize ChIP-Seq signals by Hilbert curve
+Visualize ChIP-Seq signal difference by Hilbert curve
 }
 \usage{
 hilbert_curve_chipseq_difference(mark, subgroup, comparison, chromosome = paste0("chr", 1:22),
@@ -15,11 +15,11 @@ hilbert_curve_chipseq_difference(mark, subgroup, comparison, chromosome = paste0
 
   \item{mark}{name of the histone mark, should also be supported in \code{\link{chipseq_hooks}}}
   \item{subgroup}{subgroup information which corresponds to sample IDs stored in \code{\link{methylation_hooks}}. The value should be a named vector that names are sample IDs.}
-  \item{comparison}{if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference The value is a vector of length of two and the difference is calculated as subgroup[1] - subgroup[2]}
-  \item{chromosome}{a vector fo chromosome}
+  \item{comparison}{if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference The value is a vector of length of two and the difference is calculated as \code{subgroup[1] - subgroup[2]}}
+  \item{chromosome}{a vector fo chromosome names}
   \item{species}{species}
   \item{type}{four types of visualization supported, see "details" section}
-  \item{density_column}{the column name of the signal defined in \code{\link{chipseq_hook}}$peak}
+  \item{density_column}{the column name of the signal defined in \code{\link{chipseq_hooks}}$peak}
 
 }
 \details{
@@ -36,7 +36,7 @@ There are four types of visualization methods:
 }
 }
 \value{
-a \code{\link[GenomicRanges]{GRanges}} object which contains mean signal for the 1kb segmentation and other statistics.
+a \code{\link[GenomicRanges]{GRanges}} object which contains mean signal for the 1kb segments and other statistics.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -44,5 +44,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

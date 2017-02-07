@@ -17,7 +17,7 @@ cpg_dinucleotide_methylation(pos, meth, cov)
 
 }
 \details{
-normally methylation for the two Cs in a CpG dinucleotide is very similar. This function
+Normally methylation for the two Cs in a CpG dinucleotide is very similar. This function
 helps to reduce the redundency of the methylation dataset.
 
 For two Cs in a CpG dinucleotide, the merged methylation value is calculated by weighting
@@ -33,5 +33,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }
