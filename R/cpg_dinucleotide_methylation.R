@@ -41,10 +41,10 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 	meth = as.matrix(meth)
 	cov = as.matrix(cov)
 
-	meth[is.na(meth)] = 0
 	cov[is.na(cov)] = 0
 	cov[cov < 0] = 0
-	cov[meth < 0] = 0
+	l = meth < 0; l[is.na(l)] = TRUE
+	cov[l] = 0
 
 	# check the methylation is on CpG level or C level
 	# if on C level, calcualte the mean methylation of two Cs weighted by coverage
@@ -92,7 +92,6 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 	cov2 = round(cov2)
 	l = is.na(meth2)
 	cov2[l] = 0
-	meth2[l] = 0
 
 	colnames(meth2) = colnames(meth)
 	colnames(cov2) = colnames(cov)
