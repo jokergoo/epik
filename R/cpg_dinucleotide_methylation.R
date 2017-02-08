@@ -93,6 +93,9 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 	cov2 = cov2[l, , drop = FALSE]
 	pos2 = pos2[l]
 
+	cov2[is.na(cov2)] = 0
+	meth2[is.na(meth2)] = 0
+
 	cov2 = round(cov2)
 	meth2 = round(meth2)
 
