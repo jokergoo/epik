@@ -11,7 +11,7 @@ weighted_mean = function(x1, x2, w1, w2) {
 #
 # == param
 # -pos positions of CpG sites, must be sorted
-# -meth methylation matrix
+# -meth methylation matrix. Note the value should be the number of methylated CpGs at each CpG site
 # -cov CpG coverage matrix
 #
 # == details
@@ -38,19 +38,23 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 		stop("dimension of `meth` should be the same as `cov`.")
 	}
 
+	if(all(meth <= 1)) {
+		stop("`meth` should be the number of methylated CpGs.")
+	}
+
 	meth = as.matrix(meth)
 	cov = as.matrix(cov)
 
 	cov[is.na(cov)] = 0
 	cov[cov < 0] = 0
-	l = meth < 0; l[is.na(l)] = TRUE
-	cov[l] = 0
+	meth[is.na(meth)] = 0
+	meth[meth < 0] = 0
 
 	# check the methylation is on CpG level or C level
 	# if on C level, calcualte the mean methylation of two Cs weighted by coverage
 	j = 0
-	meth2 = matrix(nrow = nrow(meth), ncol = ncol(meth))
-	cov2 = matrix(nrow = nrow(cov), ncol = ncol(cov))
+	meth2 = matrix(0, nrow = nrow(meth), ncol = ncol(meth))
+	cov2 = matrix(0, nrow = nrow(cov), ncol = ncol(cov))
 	pos2 = numeric(length(pos))
 
 	n = length(pos)
@@ -90,8 +94,7 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 	pos2 = pos2[l]
 
 	cov2 = round(cov2)
-	l = is.na(meth2)
-	cov2[l] = 0
+	meth2 = round(meth2)
 
 	colnames(meth2) = colnames(meth)
 	colnames(cov2) = colnames(cov)

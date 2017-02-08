@@ -638,3 +638,90 @@ cr_reduce = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 }
 
 
+# == title
+# Add subtype specificity columns in cr
+#
+# == param
+# -cr correlated regions
+# -cutoff cutoff for p-values of ANOVA test
+# -suffix suffix of column names
+#
+# == details
+# If ``subgroup`` is set in `correlated_regions`, this function can assign subtype specificity to each subtype.
+#
+# We use following digits to represent subtype specificity: 1 is defined as the methylation is higher than all other subtypes and the difference is significant.
+# -1 is defined as the methylation is lower than all other subtypes and the difference is significant.
+# All the others are defined as 0.
+#
+# == value
+# A `GenomicRanges::GRanges` object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+#
+cr_add_subtype_specificity = function(cr, cutoff = 0.05, suffix = "_ss") {
+	
+	cr_param = metadata(cr)$cr_param
+	subgroup = cr_param$subgroup
+	subgroup_level = unique(subgroup)
+	n_subgroup = length(subgroup_level)
+	sample_id = cr_param$sample_id
+
+	if(n_subgroup <= 1) {
+		warning("Number of subgroups < 2.")
+		return(cr)
+	}
+
+	subtype_ss = matrix(nrow = length(cr), ncol = n_subgroup)
+	colnames(subtype_ss) = subgroup_level
+
+	meth_mat = mcols(cr)
+	meth_mat = meth_mat[, grep("^mean_meth_", colnames(meth_mat))]
+	meth_mat = as.matrix(meth_mat)
+	counter = set_counter(length(cr))
+	for(i in seq_len(length(cr))) {
+		x = meth_mat[i, paste0("mean_meth_", sample_id)]
+		# pairwise t-test, t-value and p-value
+		mat_t = matrix(nrow = n_subgroup, ncol = n_subgroup)
+		rownames(mat_t) = subgroup_level
+		colnames(mat_t) = subgroup_level
+		mat_p = mat_t
+
+		for(i1 in 2:n_subgroup) {
+			for(i2 in 1:(i1-1)) {
+				x1 = x[subgroup == subgroup_level[i1]]
+				x2 = x[subgroup == subgroup_level[i2]]
+				test = t.test(x1, x2)
+				mat_t[i1, i2] = test$statistic
+				mat_p[i1, i2] = test$p.value
+				mat_t[i2, i1] = -mat_t[i1, i2]
+				mat_p[i2, i1] = mat_p[i1, i2]	
+			}
+		}
+
+		ss = apply(mat_t, 1, function(x) {
+			x = x[!is.na(x)]
+			if(all(x > 0)){
+				return(1)
+			} else if(all(x < 0)) {
+				return(-1)
+			} else {
+				return(0)
+			}
+		})
+
+		l = apply(mat_p, 1, function(x) {
+			x = x[!is.na(x)]
+			all(x < cutoff)
+		})
+		ss[!l] = 0
+		subtype_ss[i, ] = ss
+
+		counter()
+	}
+
+	colnames(subtype_ss) = paste0(colnames(subtype_ss), suffix)
+
+	mcols(cr) = cbind(as.data.frame(mcols(cr)), subtype_ss)
+	return(cr)
+}

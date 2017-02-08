@@ -29,7 +29,7 @@
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 # 
-compare_meth = function(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL) {
+compare_meth = function(gi, cr_smoothed, cr_raw, txdb = NULL, start = NULL, end = NULL) {
 
 	cr_param = metadata(cr_smoothed)$cr_param
 	extend = cr_param$extend
@@ -73,9 +73,18 @@ compare_meth = function(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL) 
 		title = qq("@{gi}, extend @{extend} bp to both side, @{length(site)} CpG sites")
 	}
 
+	has_cr_raw = !missing(cr_raw)
+	if(has_cr_raw) {
+		n_track = 7
+		track_ylab = c("smoothed meth", "corr", "raw meth", "corr from raw meth", qq("raw meth\n(cov >= @{cov_cutoff_1})(q25)"), qq("raw meth\n(cov >= @{cov_cutoff_2})(q50)"), "median cpg cov")
+		track_ylim = c(0, 1, -1, 1, 0, 1, -1, 1, 0, 1, 0, 1, c(0, max(rowMedians(cov))))
+	} else {
+		n_track = 6
+		track_ylab = c("smoothed meth", "corr", "raw meth", qq("raw meth\n(cov >= @{cov_cutoff_1})(q25)"), qq("raw meth\n(cov >= @{cov_cutoff_2})(q50)"), "median cpg cov")
+		track_ylim = c(0, 1, -1, 1, 0, 1, 0, 1, 0, 1, c(0, max(rowMedians(cov))))
+	}
 	gtrellis_layout(GRanges(seqnames = chr, ranges = IRanges(s, e)),
-		n_track = 6, track_ylab = c("smoothed meth", "corr", "raw meth", qq("raw meth\n(cov >= @{cov_cutoff_1})(q25)"), qq("raw meth\n(cov >= @{cov_cutoff_2})(q50)"), "median cpg cov"),
-		track_ylim = c(0, 1, -1, 1, 0, 1, 0, 1, 0, 1, c(0, max(rowMedians(cov)))),
+		n_track = n_track, track_ylab = track_ylab, track_ylim = track_ylim,
 		title = title)
 
 	add_track(NULL, panel_fun = function(gr) {
@@ -103,6 +112,21 @@ compare_meth = function(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL) 
 			grid.lines(site, raw[, i], gp = gpar(col = col[i]), default.units = "native")
 		}
 	}, use_raster = TRUE, raster_quality = 2)
+
+	if(has_cr_raw) {
+		add_track(NULL, panel_fun = function(gr) {
+			l = cr_raw$corr > 0
+			if(sum(l)) {
+				grid.rect(mid(ranges(cr_raw[l])), 0, width = width(cr_raw[l]), height = abs(cr_raw$corr[l]), default.units = "native",
+					gp = gpar(fill = "red", col = NA), just = "bottom")
+			}
+			l = cr_raw$corr < 0
+			if(sum(l)) {
+					grid.rect(mid(ranges(cr_raw[l])), 0, width = width(cr_raw[l]), height = abs(cr_raw$corr[l]), default.units = "native",
+					gp = gpar(fill = "green", col = NA), just = "top")
+			}
+		}, use_raster = TRUE, raster_quality = 2)
+	}
 	
 	# raw methylation with CpG coverage > q25
 	add_track(NULL, panel_fun = function(gr) {

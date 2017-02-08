@@ -285,6 +285,7 @@ gp_c = function(gp1, gp2) {
 #
 # == details
 # The whole genome is segented by ``nw`` windows. Methylation in different subgroups are visualized as separated tracks.
+# Between every two subgroups, there is a one row heatmap showing methylation difference.
 #
 # == value
 # No value is returned
@@ -297,15 +298,23 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 	title = qq("genome-wide methylation for @{length(sample_id)} samples"), ...) {
 	
 	col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
-	type = unique(subgroup)
+	subgroup_level = unique(subgroup)
 		
-	n = table(subgroup)[type]
+	n = table(subgroup)[subgroup_level]
 	ty = numeric(2*length(n))
 	ty[seq_along(n)*2-1] = 0.5
 	ty[seq_along(n)*2] = n + 0.5
 
+	track_height = unit(n[1], "null")
+	track_ylab = subgroup_level[1]
+	for(i in seq_along(n)) {
+		if(i == 1) next
+		track_height = unit.c(track_height, unit(2, "mm"), unit(n[i], "null"))
+		track_ylab = c(track_ylab, "", subgroup_level[i])
+	}
+
 	gtrellis_layout(category = chromosome, species = species, track_axis = FALSE, title = title,
-		n_track = length(type), track_ylab = type, track_ylim = ty, track_height = n,
+		n_track = length(subgroup_level), track_ylab = track_ylab, track_ylim = ty, track_height = track_height,
 		add_name_track = TRUE, add_ideogram_track = TRUE, ...)
 
 	# window size
@@ -313,6 +322,7 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 	w = round(sum(chr_len)/nw)
 	message(qq("number of windows: @{nw}, window size: @{w} bp"))
 
+	diff_col_fun = NULL
 	for(chr in chromosome) {
 		methylation_hooks$set_chr(chr, verbose = FALSE)
 
@@ -327,22 +337,25 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 
 		meth = do.call("rbind", meth)
 
-		for(i in seq_along(type)) {
-			message(qq("making plot for @{chr}, @{type[i]}"))
-			# sid = sample_id[subgroup == type[i]]
-			# m = meth[, sid, drop = FALSE]
-			# add_track(gr2, track = i+1, category = chr, panel.fun = function(gr) {
-			# 	x = (start(gr2) + end(gr2))/2
-			# 	for(i in seq_along(sid)) {
-			# 		y = rep(i, length(x)) + (runif(length(x))-0.5)*0.8
-			# 		grid.points(x, y, pch = ".", gp = gpar(col = col_fun(m[, i])))
-			# 	}
-			# })
+		for(i in seq_along(subgroup_level)) {
+			message(qq("making plot for @{chr}, @{subgroup_level[i]}"))
 			m = meth[, subgroup == type[i], drop = FALSE]
-			add_heatmap_track(gr2, m, category = chr, track = i + 1, fill = col_fun)
-			add_track(gr2, category = chr, track = i + 1, panel_fun = function(gr) {
+			add_heatmap_track(gr2, m, category = chr, track = 2*i, fill = col_fun)
+			add_track(gr2, category = chr, track = 2*i, panel_fun = function(gr) {
 				grid.rect(gp = gpar(fill = "transparent"))
 			})
+			if(i > 1) {
+				mean_diff = rowMeans(meth[, subgroup == type[i-1], drop = FALSE], na.rm = TRUE) - 
+						    rowMeans(meth[, subgroup == type[i], drop = FALSE], na.rm = TRUE)
+				if(is.null(diff_col_fun)) {
+					diff_col_fun = generate_diff_color_fun(rowMeans(meth[, subgroup == type[1], drop = FALSE], na.rm = TRUE) - 
+						                                   rowMeans(meth[, subgroup == type[2], drop = FALSE], na.rm = TRUE))
+				}
+				add_heatmap_track(gr2, mean_diff, category = chr, track = 2*i-1, fill = diff_col_fun)
+				add_track(gr2, category = chr, track = 2*i-1, panel_fun = function(gr) {
+					grid.rect(gp = gpar(fill = "transparent"))
+				})
+			}
 		}
 	}
 }
