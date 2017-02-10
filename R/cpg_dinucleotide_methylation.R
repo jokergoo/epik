@@ -64,10 +64,12 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 	l_continous[1:(n-1)] = l_continous[1:(n-1)] | pos[1:(n-1)] - pos[2:n] == -1
 
 	l_single = !l_continous
+	l_continous_odd = rep(FALSE, n)
 	
 	for(i in seq_len(n-1)) {
 		if(!l_continous[i+1]) {
 			l_continous[i] = FALSE
+			l_continous_odd[i] = TRUE
 		}
 		if(l_continous[i]) {
 			l_continous[i+1] = FALSE
@@ -76,6 +78,8 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 	if(l_continous[n]) {
 		l_continous[n] = FALSE
 	}
+
+	l_single = l_single | l_continous_odd
 
 	pos2[l_single] = pos[l_single]
 	meth2[l_single, ] = meth[l_single, ]
