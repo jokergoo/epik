@@ -68,7 +68,14 @@
 #
 methylation_hooks = function(..., RESET = FALSE, READ.ONLY = NULL, LOCAL = FALSE) {}
 
-METH_OBJ = list(meth = NULL, raw = NULL, cov = NULL, gr = NULL, chr = NULL)
+METH_OBJ = new.env()
+assign("meth", NULL, envir = METH_OBJ)
+assign("raw", NULL, envir = METH_OBJ)
+assign("cov", NULL, envir = METH_OBJ)
+assign("gr", NULL, envir = METH_OBJ)
+assign("chr", NULL, envir = METH_OBJ)
+assign("sample_id", NULL, envir = METH_OBJ)
+
 methylation_hooks = setGlobalOptions(
 	get_by_chr = list(.value = NULL, .class = "function"),
 	meth = list(.value = function() METH_OBJ$meth, .private = TRUE, .visible = FALSE),
@@ -154,11 +161,13 @@ methylation_hooks$set_chr = function(chr, verbose = TRUE) {
 			stop("Column names of `cov` should be identical to the column names of `meth`.")
 		}
 	}
-
-	METH_OBJ = obj
-	METH_OBJ$sample_id = sample_id
-	METH_OBJ$chr = chr
-	METH_OBJ <<- METH_OBJ
+	
+	assign("meth", obj$meth, envir = METH_OBJ)
+	assign("raw", obj$raw, envir = METH_OBJ)
+	assign("cov", obj$cov, envir = METH_OBJ)
+	assign("gr", obj$gr, envir = METH_OBJ)
+	assign("chr", chr, envir = METH_OBJ)
+	assign("sample_id", sample_id, envir = METH_OBJ)
 
 	if(verbose) {
 		message(qq("Following methylation datasets have been set for @{chr}:"))
