@@ -116,14 +116,24 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 		    corr_p = corr_p,
 		    meth_IQR = meth_IQR)	
 	} else {
-		df = DataFrame(ncpg = window_size,
-		    m, # mean methylation
-		    corr = corr,
-		    corr_p = corr_p,
-		    meth_IQR = meth_IQR,
-		    meth_anova = meth_anova,
-		    meth_diameter = meth_diameter,
-		    meth_diff = meth_diff)
+		if(length(unique(subgroup)) == 2) {
+			df = DataFrame(ncpg = window_size,
+			    m, # mean methylation
+			    corr = corr,
+			    corr_p = corr_p,
+			    meth_IQR = meth_IQR,
+			    meth_anova = meth_anova,
+			    meth_diameter = meth_diameter,
+			    meth_diff = meth_diff)
+		} else {
+			df = DataFrame(ncpg = window_size,
+			    m, # mean methylation
+			    corr = corr,
+			    corr_p = corr_p,
+			    meth_IQR = meth_IQR,
+			    meth_anova = meth_anova,
+			    meth_diameter = meth_diameter)
+		}
 	}
 	mcols(gr) = df
 
@@ -606,11 +616,18 @@ cr_reduce = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 				df = DataFrame(m, # mean methylation
 				    meth_IQR = meth_IQR)	
 			} else {
-				df = DataFrame(m, # mean methylation
-				    meth_IQR = meth_IQR,
-				    meth_anova = meth_anova,
-				    meth_diameter = meth_diameter,
-				    meth_diff = meth_diff)
+				if(length(unique(subgroup)) == 2) {
+					df = DataFrame(m, # mean methylation
+					    meth_IQR = meth_IQR,
+					    meth_anova = meth_anova,
+					    meth_diameter = meth_diameter,
+					    meth_diff = meth_diff)
+				} else {
+					df = DataFrame(m, # mean methylation
+					    meth_IQR = meth_IQR,
+					    meth_anova = meth_anova,
+					    meth_diameter = meth_diameter)
+				}
 			}
 		} else {
 			if(is.null(subgroup)) {
@@ -619,13 +636,22 @@ cr_reduce = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 		   			corr_p = corr_p,
 				    meth_IQR = meth_IQR)	
 			} else {
-				df = DataFrame(m, # mean methylation
-					corr = corr,
-		    		corr_p = corr_p,
-				    meth_IQR = meth_IQR,
-				    meth_anova = meth_anova,
-				    meth_diameter = meth_diameter,
-				    meth_diff = meth_diff)
+				if(length(unique(subgroup)) == 2) {
+					df = DataFrame(m, # mean methylation
+						corr = corr,
+			    		corr_p = corr_p,
+					    meth_IQR = meth_IQR,
+					    meth_anova = meth_anova,
+					    meth_diameter = meth_diameter,
+					    meth_diff = meth_diff)
+				} else {
+					df = DataFrame(m, # mean methylation
+						corr = corr,
+			    		corr_p = corr_p,
+					    meth_IQR = meth_IQR,
+					    meth_anova = meth_anova,
+					    meth_diameter = meth_diameter)
+				}
 			}
 		}
 		mcols(cr_reduced_list[[i]]) = cbind(mcols(cr_reduced_list[[i]]), df)
