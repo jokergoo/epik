@@ -772,7 +772,7 @@ cr_concatenate = function(cr1, cr2) {
 		return(cr1)
 	}
 	cr_param = metadata(cr1)$cr_param
-	cr = c(cr1, cr2)
+	suppressWarnings(cr <- c(cr1, cr2))
 	metadata(cr) = list(cr_param = cr_param)
 	return(cr)
 }
