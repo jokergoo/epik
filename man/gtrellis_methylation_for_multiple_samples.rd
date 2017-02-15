@@ -24,6 +24,7 @@ gtrellis_methylation_for_multiple_samples(sample_id, subgroup,
 }
 \details{
 The whole genome is segented by \code{nw} windows. Methylation in different subgroups are visualized as separated tracks.
+Between every two subgroups, there is a one row heatmap showing methylation difference.
 }
 \value{
 No value is returned
@@ -34,4 +35,5 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
+
 }

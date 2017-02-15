@@ -12,7 +12,7 @@ cpg_dinucleotide_methylation(pos, meth, cov)
 \arguments{
 
   \item{pos}{positions of CpG sites, must be sorted}
-  \item{meth}{methylation matrix}
+  \item{meth}{methylation matrix. Note the value should be the number of methylated CpGs at each CpG site}
   \item{cov}{CpG coverage matrix}
 
 }
@@ -33,4 +33,5 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
+
 }

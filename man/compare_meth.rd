@@ -7,7 +7,7 @@ Compare raw and smoothed methylation
 Compare raw and smoothed methylation
 }
 \usage{
-compare_meth(gi, cr_smoothed, txdb = NULL, start = NULL, end = NULL)
+compare_meth(gi, cr_smoothed, cr_raw, txdb = NULL, start = NULL, end = NULL)
 }
 \arguments{
 
@@ -43,4 +43,5 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
+
 }

@@ -751,3 +751,28 @@ cr_add_subtype_specificity = function(cr, cutoff = 0.05, suffix = "_ss") {
 	mcols(cr) = cbind(as.data.frame(mcols(cr)), subtype_ss)
 	return(cr)
 }
+
+# == title
+# Concatenate two CR objects
+#
+# == param
+# -cr1 correlated regions
+# -cr2 correlated regions
+#
+# == value
+# A concatenated CR object
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+cr_concatenate = function(cr1, cr2) {
+	if(length(cr1) == 0) {
+		return(cr2)
+	}
+	if(length(cr2) == 0) {
+		return(cr1)
+	}
+	cr_param = metadata(cr1)$cr_param
+	cr = c(cr1, cr2)
+	metadata(cr) = list(cr_param = cr_param)
+	return(cr)
+}
