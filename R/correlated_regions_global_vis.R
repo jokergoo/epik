@@ -254,17 +254,17 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 		device_type = .Device
 		filepath = attr(.Device, "filepath")
 		if(device_type == "pdf") {
-			filepath = gsub("\\.pdf$", ".stat.pdf", ignore.case = TRUE)
+			filepath = gsub("\\.pdf$", ".stat.pdf", filepath, ignore.case = TRUE)
 			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)
 			stat_plot_height = 3
 			pdf(filepath, width = stat_plot_width, height = stat_plot_height)
 		} else if(device_type == "png") {
-			filepath = gsub("\\.png$", ".stat.png", ignore.case = TRUE)
+			filepath = gsub("\\.png$", ".stat.png", filepath, ignore.case = TRUE)
 			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)*200
 			stat_plot_height = 3*200
 			png(filepath, width = stat_plot_width, height = stat_plot_height)
 		} else {
-			filepath = gsub("\\.[^.]+$", ".stat.png", ignore.case = TRUE)
+			filepath = gsub("\\.[^.]+$", ".stat.png", filepath, ignore.case = TRUE)
 			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)*200
 			stat_plot_height = 3*200
 			png(filepath, width = stat_plot_width, height = stat_plot_height)
