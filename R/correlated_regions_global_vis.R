@@ -130,6 +130,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 
 	expr = expr[cr_gi, sample_id, drop = FALSE]
 
+	expr_split = NULL
 	if(n_subgroup == 2) {
 		subgroup1_sample_id = sample_id[subgroup == subgroup_level[1]]
 		subgroup2_sample_id = sample_id[subgroup == subgroup_level[2]]
