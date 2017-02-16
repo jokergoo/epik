@@ -64,6 +64,7 @@ enrich_with_histone_mark = function(target, mark, sample_id, mode = mean, return
 # -mode how to summarize methylation among samples, by default it is the cross-sample mean methylation. 
 #       Since methylation is represented as matrix, here we use ``row*``-family functions (e.g. `rowMeans`, `matrixStats::rowMedians`)
 # -extend pass to `EnrichedHeatmap::normalizeToMatrix`
+# -smooth pass to `EnrichedHeatmap::normalizeToMatrix`
 # -... pass to `EnrichedHeatmap::normalizeToMatrix`
 #
 # == value
@@ -71,7 +72,7 @@ enrich_with_histone_mark = function(target, mark, sample_id, mode = mean, return
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-enrich_with_methylation = function(target, sample_id, mode = rowMeans, extend = 5000, ...) {
+enrich_with_methylation = function(target, sample_id, mode = rowMeans, extend = 5000, smooth = TRUE, ...) {
 
 	target_name = deparse(substitute(target))
 
@@ -93,7 +94,7 @@ enrich_with_methylation = function(target, sample_id, mode = rowMeans, extend = 
 	}
 	colnames(mcols(meth_gr)) = "mean_meth"
 	message(qq("normalize methylation signals to @{target_name}..."))
-	mat = normalizeToMatrix(meth_gr, target, value_column = "mean_meth", extend = extend, ...)
+	mat = normalizeToMatrix(meth_gr, target, value_column = "mean_meth", extend = extend, smooth = smooth, ...)
 	return(mat)
 }
 

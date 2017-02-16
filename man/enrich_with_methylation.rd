@@ -7,7 +7,7 @@ Normalize methylation to target
 Normalize methylation to target
 }
 \usage{
-enrich_with_methylation(target, sample_id, mode = rowMeans, extend = 5000, ...)
+enrich_with_methylation(target, sample_id, mode = rowMeans, extend = 5000, smooth = TRUE, ...)
 }
 \arguments{
 
@@ -15,6 +15,7 @@ enrich_with_methylation(target, sample_id, mode = rowMeans, extend = 5000, ...)
   \item{sample_id}{a vector of sample ids}
   \item{mode}{how to summarize methylation among samples, by default it is the cross-sample mean methylation.  Since methylation is represented as matrix, here we use \code{row*}-family functions (e.g. \code{\link{rowMeans}}, \code{\link[matrixStats]{rowMedians}})}
   \item{extend}{pass to \code{\link[EnrichedHeatmap]{normalizeToMatrix}}}
+  \item{smooth}{pass to \code{\link[EnrichedHeatmap]{normalizeToMatrix}}}
   \item{...}{pass to \code{\link[EnrichedHeatmap]{normalizeToMatrix}}}
 
 }

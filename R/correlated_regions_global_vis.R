@@ -433,6 +433,7 @@ sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 	mat_neg_cr_list = list()
 	mat_pos_cr_list = list()
 
+	ymax = 0
 	for(i in seq_along(fdr_cutoff)) {
 	     for(j in seq_along(meth_diff_cutoff)) {
 	     	
@@ -452,6 +453,9 @@ sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 			
 			mat_neg_cr_list[[qq("fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}")]] = mat_neg_cr
 			mat_pos_cr_list[[qq("fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}")]] = mat_pos_cr
+			line_list_neg = tapply(seq_len(nrow(mat_neg_cr)), km4, function(ind) colMeans(mat_neg_cr[ind, ]))
+			line_list_pos = tapply(seq_len(nrow(mat_pos_cr)), km4, function(ind) colMeans(mat_pos_cr[ind, ]))
+			ymax = max(c(ymax, unlist(line_list_pos), unlist(line_list_neg)))
 		}
 	}
 
@@ -461,7 +465,6 @@ sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 	pushViewport(viewport(layout = grid.layout(nrow = n_meth_diff+3, ncol = n_fdr+2, 
 		heights = unit.c(3*grobHeight(textGrob("A")), 3*grobHeight(textGrob("A")), unit(rep(1, n_meth_diff), "null"), unit(1, "cm")),
 		widths = unit.c(3*grobHeight(textGrob("A")), unit(rep(1, n_fdr), "null"), unit(1.5, "cm")))))
-	ymax = rep(0, n_meth_diff)
 	for(i in seq_along(fdr_cutoff)) {
 	     for(j in seq_along(meth_diff_cutoff)) {
 	     	message(qq("add enrich lines for fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}"))
@@ -478,9 +481,8 @@ sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 
 			line_list_neg = tapply(seq_len(nrow(mat_neg_cr)), km4, function(ind) colMeans(mat_neg_cr[ind, ]))
 			line_list_pos = tapply(seq_len(nrow(mat_pos_cr)), km4, function(ind) colMeans(mat_pos_cr[ind, ]))
-			ymax[j] = max(c(ymax[j], unlist(c(line_list_neg, line_list_pos))))
 			n = length(line_list_neg[[1]])
-			ylim = c(0, 0.41)
+			ylim = c(0, ymax*1.1)
 
 			pushViewport(viewport(layout.pos.row = j+2, layout.pos.col = i+1))
 			pushViewport(viewport(x = 0, y = 1, width = unit(1, "npc") - unit(2, "mm"), height = unit(1, "npc") - unit(2, "mm"),
