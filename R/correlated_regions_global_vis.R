@@ -299,7 +299,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 		} else {
 			lt = split(rowMeans(expr), combined_split)
 
-			foo = boxplot(lt, col = group_mean_col, outline = FALSE,
+			foo = boxplot(lt, col = rep(group_mean_col, each = 4), outline = FALSE,
 				xlab = NULL, "ylab" = "expression", main = "mean expression", names = rep("", 16))
 			par(xpd = NA)
 			text(seq_along(lt), -1, paste(names(lt), rep(c("group1", "group2"), 4), sep = ","), adj = c(1, 0.5), srt = 45)
