@@ -314,7 +314,7 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 	}
 
 	gtrellis_layout(category = chromosome, species = species, track_axis = FALSE, title = title,
-		n_track = length(subgroup_level), track_ylab = track_ylab, track_ylim = ty, track_height = track_height,
+		n_track = length(subgroup_level)*2 - 1, track_ylab = track_ylab, track_ylim = ty, track_height = track_height,
 		add_name_track = TRUE, add_ideogram_track = TRUE, ...)
 
 	# window size

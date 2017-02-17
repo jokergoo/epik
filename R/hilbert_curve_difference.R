@@ -43,7 +43,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 	chromGr_1kb_window = makeWindows(chromGr, w = 1000, short.keep = TRUE)
 	mcols(chromGr_1kb_window) = NULL
 
-	methylation_hooks$set_chr(sample(chromosome, 1), verbose = FALSE)
+	methylation_hooks$set_chr(chromInfo$chrom[which.min(chromInfo$length)[1]], verbose = FALSE)
 	sample_id = methylation_hooks$sample_id
 
 	if(is.null(names(subgroup))) {
