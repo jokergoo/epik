@@ -63,6 +63,7 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 			data[[sid]]$cov[[chr]] = cv
 			data[[sid]]$meth[[chr]] = mh
 			data[[sid]]$strand[[chr]] = strd
+			message("\n", appendLF = FALSE)
 		}
 	}
 
@@ -308,11 +309,11 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 		ty[2*(2*i-1)] = tb[i] + 0.5
 	}
 	
-	track_height = unit(n[1], "null")
+	track_height = unit(tb[1], "null")
 	track_ylab = subgroup_level[1]
-	for(i in seq_along(n)) {
+	for(i in seq_len(n)) {
 		if(i == 1) next
-		track_height = unit.c(track_height, unit(2, "mm"), unit(n[i], "null"))
+		track_height = unit.c(track_height, unit(2, "mm"), unit(tb[i], "null"))
 		track_ylab = c(track_ylab, "", subgroup_level[i])
 	}
 
@@ -399,7 +400,14 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 		col = structure(seq_along(unique(subgroup)), names = unique(subgroup))
 		col_v = col[subgroup]
 	} else {
-		col = ha@anno_list[[1]]@color_mapping@colors
+		anno_names = tolower(names(ha@anno_list))
+		i = which(anno_names %in% c("subtype", "subgroup", "type", "group"))
+		if(length(i)) {
+			i = i[1]
+		} else {
+			i = 1
+		}
+		col = ha@anno_list[[i]]@color_mapping@colors
 		col_v = col[subgroup]
 	}
 
