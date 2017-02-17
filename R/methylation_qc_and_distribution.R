@@ -300,11 +300,14 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 	col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 	subgroup_level = unique(subgroup)
 		
-	n = table(subgroup)[subgroup_level]
-	ty = numeric(2*length(n))
-	ty[seq_along(n)*2-1] = 0.5
-	ty[seq_along(n)*2] = n + 0.5
-
+	tb = table(subgroup)[subgroup_level]
+	n = length(tb)
+	ty = rep(c(0, 1), 2*n - 1)
+	for(i in seq_len(n)) {
+		ty[2*(2*i-1)-1] = 0.5
+		ty[2*(2*i-1)] = tb[i] + 0.5
+	}
+	
 	track_height = unit(n[1], "null")
 	track_ylab = subgroup_level[1]
 	for(i in seq_along(n)) {
