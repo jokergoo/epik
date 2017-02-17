@@ -114,7 +114,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 		cm = ColorMapping(col_fun = col_fun)
 		lgd = color_mapping_legend(cm, title = "meth_diff", plot = FALSE)
 
-		hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = 10, title = qq("mean methylation difference"), legend = lgd)
+		hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = 10, title = qq("mean methylation difference (@{comparison[1]} - @{comparison[2]})"), legend = lgd)
 		hc_layer(hc, gr_meth[l], col = col_fun(diff))
 		hc_map(hc, add = TRUE, fill = NA, border = "#808080")
 		seekViewport(qq("hilbert_curve_@{HilbertCurve:::.ENV$I_PLOT}"))
