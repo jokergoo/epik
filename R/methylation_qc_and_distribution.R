@@ -341,7 +341,7 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 		meth = do.call("rbind", meth)
 
 		for(i in seq_along(subgroup_level)) {
-			message(qq("making plot for @{chr}, @{subgroup_level[i]}"))
+			message(qq("making heatmap for @{chr}, @{subgroup_level[i]}"))
 			m = meth[, subgroup == subgroup_level[i], drop = FALSE]
 			add_heatmap_track(gr2, m, category = chr, track = 2*i, fill = col_fun)
 			add_track(gr2, category = chr, track = 2*i, panel_fun = function(gr) {
@@ -399,7 +399,7 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 		col = structure(seq_along(unique(subgroup)), names = unique(subgroup))
 		col_v = col[subgroup]
 	} else {
-		col = ha@anno_list$subgroup@color_mapping@colors
+		col = ha@anno_list[[1]]@color_mapping@colors
 		col_v = col[subgroup]
 	}
 
