@@ -342,17 +342,17 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 
 		for(i in seq_along(subgroup_level)) {
 			message(qq("making plot for @{chr}, @{subgroup_level[i]}"))
-			m = meth[, subgroup == type[i], drop = FALSE]
+			m = meth[, subgroup == subgroup_level[i], drop = FALSE]
 			add_heatmap_track(gr2, m, category = chr, track = 2*i, fill = col_fun)
 			add_track(gr2, category = chr, track = 2*i, panel_fun = function(gr) {
 				grid.rect(gp = gpar(fill = "transparent"))
 			})
 			if(i > 1) {
-				mean_diff = rowMeans(meth[, subgroup == type[i-1], drop = FALSE], na.rm = TRUE) - 
-						    rowMeans(meth[, subgroup == type[i], drop = FALSE], na.rm = TRUE)
+				mean_diff = rowMeans(meth[, subgroup == subgroup_level[i-1], drop = FALSE], na.rm = TRUE) - 
+						    rowMeans(meth[, subgroup == subgroup_level[i], drop = FALSE], na.rm = TRUE)
 				if(is.null(diff_col_fun)) {
-					diff_col_fun = generate_diff_color_fun(rowMeans(meth[, subgroup == type[1], drop = FALSE], na.rm = TRUE) - 
-						                                   rowMeans(meth[, subgroup == type[2], drop = FALSE], na.rm = TRUE))
+					diff_col_fun = generate_diff_color_fun(rowMeans(meth[, subgroup == subgroup_level[1], drop = FALSE], na.rm = TRUE) - 
+						                                   rowMeans(meth[, subgroup == subgroup_level[2], drop = FALSE], na.rm = TRUE))
 				}
 				add_heatmap_track(gr2, mean_diff, category = chr, track = 2*i-1, fill = diff_col_fun)
 				add_track(gr2, category = chr, track = 2*i-1, panel_fun = function(gr) {
