@@ -194,6 +194,15 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 		legend("bottomleft", pch = 16, col = c("black", "red"), legend = c("mean", "median"))
 		abline(v = q99, lty = 2, col = "blue"); text(q99, 0, "q99 of cov", adj = c(0, 0))
 		par(mfrow = c(1, 1))
+
+		plot(NULL, xlim = c(0, 1), ylim = c(0, 1), type = "n", axes = FALSE, ann = FALSE)
+		mean_meth = mean(unlist(meth), na.rm = TRUE)
+		median_meth = median(unlist(meth), na.rm = TRUE)
+		mean_cov = mean(unlist(cov), na.rm = TRUE)
+		median_cov = median(unlist(cov), na.rm = TRUE)
+		txt = qq("mean_meth: @{sprintf('%.1f', mean_meth)}\nmedian_meth: @{sprintf('%.1f', median_meth)}")
+		txt = qq("@{txt}\nmean_cov: @{round(mean_cov)}\nmedian_cov: @{median_cov}")
+		text(0.2, 0.8, txt, adj = c(0, 1))
 	}
 	
 	return(invisible(data))
@@ -298,8 +307,13 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 	chromosome = paste0("chr", 1:22), species = "hg19", nw = 1000, 
 	title = qq("genome-wide methylation for @{length(sample_id)} samples"), ...) {
 	
+	chr = sample(chromosome, 1)
+	methylation_hooks$set_chr(chr, verbose = FALSE)
+	mean_meth = tapply(colMeans(methylation_hooks$meth[, sample_id], na.rm = TRUE), subgroup, mean, na.rm = TRUE)
+	mean_meth = sort(mean_meth, decreasing = TRUE)
+	subgroup_level = names(mean_meth)
+
 	col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
-	subgroup_level = unique(subgroup)
 		
 	tb = table(subgroup)[subgroup_level]
 	n = length(tb)
