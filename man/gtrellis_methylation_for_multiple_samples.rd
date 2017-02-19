@@ -8,7 +8,7 @@ Plot methylation for multiple samples as heatmaps
 }
 \usage{
 gtrellis_methylation_for_multiple_samples(sample_id, subgroup,
-    chromosome = paste0("chr", 1:22), species = "hg19", nw = 1000,
+    chromosome = paste0("chr", 1:22), species = "hg19", nw = 2000,
     title = qq("genome-wide methylation for @{length(sample_id)} samples"), ...)
 }
 \arguments{

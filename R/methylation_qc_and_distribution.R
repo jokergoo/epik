@@ -305,7 +305,7 @@ gp_c = function(gp1, gp2) {
 # Zuguang Gu <z.gu@dkfz.de>
 #
 gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup, 
-	chromosome = paste0("chr", 1:22), species = "hg19", nw = 1000, 
+	chromosome = paste0("chr", 1:22), species = "hg19", nw = 2000, 
 	title = qq("genome-wide methylation for @{length(sample_id)} samples"), ...) {
 	
 	chr = sample(chromosome, 1)
@@ -492,6 +492,8 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 # -background background to look into. The value can be a single `GenomicRanges::GRanges` object or a list of `GenomicRanges::GRanges` objects.
 # -p probability to randomly sample CpG sites
 # -meth_range the range of methylation on the plot
+# -max_cov maximum range for coverage
+# -plot_cov also make plot for coverage
 #
 # == details
 # There are two plots:
@@ -512,13 +514,14 @@ global_methylation_distribution = function(sample_id, subgroup,
 	reorder_column = TRUE, 
 	ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE), 
 	chromosome = paste0("chr", 1:22), by_chr = FALSE, 
-	background = NULL, p = NULL, meth_range = c(0, 1)) {
+	background = NULL, p = NULL, meth_range = c(0, 1),
+	max_cov = 100, plot_cov = FALSE) {
 	
 	###############################################
 	# distribution of global methylation
 	if(inherits(background, "list")) {
 		meth_list = vector("list", length(sample_id))
-		# cov_list = NULL
+		cov_list = NULL
 
 		if(length(background) != length(sample_id)) {
 			stop("Since you specified `background` as a list, the length should be same as `sample_id`.")
@@ -550,26 +553,26 @@ global_methylation_distribution = function(sample_id, subgroup,
 				}
 				m
 			})
-			# current_cov_list = lapply(seq_along(ind_list), function(i) {
-			# 	cov = methylation_hooks$cov[ind_list[[i]], sample_id[i]]
-			# 	cov[cov == 0] = NA
-			# 	cov[cov > max_cov] = NA
-			# 	log10(cov)
-			# })
+			current_cov_list = lapply(seq_along(ind_list), function(i) {
+				cov = methylation_hooks$cov[ind_list[[i]], sample_id[i]]
+				cov[cov == 0] = NA
+				cov[cov > max_cov] = NA
+				log10(cov)
+			})
 			message(qq("on average there are @{round(mean(sapply(current_meth_list, function(x) sum(is.na(x)))))} CpG without coverage information."))
 			
 			if(by_chr) {
 				# it can be for some chromosomes, no CpG sites are sampled
 				try(od <- mat_dist(current_meth_list, reorder_column = reorder_column, subgroup = subgroup, ha = ha, title = qq("methylation:@{chr}"), range = meth_range, ylab = "methylation"))
-				# try(mat_dist(current_cov_list, reorder_column = FALSE, od = od, subgroup = subgroup, ha = ha, title = qq("coverage:@{chr}"), range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})")))
+				if(plot_cov) try(mat_dist(current_cov_list, reorder_column = reorder_column, subgroup = subgroup, ha = ha, title = qq("coverage:@{chr}"), range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})")))
 			}
 
 			meth_list = lapply(seq_along(current_meth_list), function(i) {
 				c(meth_list[[i]], current_meth_list[[i]])
 			})
-			# cov_list = lapply(seq_along(cov_list), function(i) {
-			# 	c(cov_list[[i]], current_cov_list[[i]])
-			# })
+			cov_list = lapply(seq_along(cov_list), function(i) {
+				c(cov_list[[i]], current_cov_list[[i]])
+			})
 		}
 
 		if(!by_chr) {
@@ -581,21 +584,21 @@ global_methylation_distribution = function(sample_id, subgroup,
 					meth
 				}
 			})
-			# cov_list = lapply(cov_list, function(cov) {
-			# 	n = length(cov)
-			# 	if(n > 100000) {
-			# 		cov[sample(n, 100000)]
-			# 	}
-			# })
+			cov_list = lapply(cov_list, function(cov) {
+				n = length(cov)
+				if(n > 100000) {
+					cov[sample(n, 100000)]
+				}
+			})
 			
 			od = mat_dist(meth_list, reorder_column = reorder_column, subgroup = subgroup, ha = ha, title = "methylation", range = meth_range, ylab = "methylation")
-			# mat_dist(cov_list, reorder_column = FALSE, od = od, subgroup = subgroup, ha = ha, title = "coverage", range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})"))
+			if(plot_cov) mat_dist(cov_list, reorder_column = reorder_column, subgroup = subgroup, ha = ha, title = "coverage", range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})"))
 			
 			return(invisible(od))
 		}
 	} else {
 		meth_mat = NULL
-		# cov_mat = NULL
+		cov_mat = NULL
 		for(chr in chromosome) {
 
 			methylation_hooks$set_chr(chr, verbose = FALSE)
@@ -620,18 +623,18 @@ global_methylation_distribution = function(sample_id, subgroup,
 				l[is.na(l)] = TRUE
 				mm[l] = NA
 			}
-			# cm[cm == 0] = NA
-			# cm[cm > max_cov] = NA
+			cm[cm == 0] = NA
+			cm[cm > max_cov] = NA
 			
 			message(qq("on average there are @{round(mean(apply(mm, 2, function(x) sum(is.na(x)))))} CpG without coverage information."))
 
 			meth_mat = rbind(meth_mat, mm)
-			# cov_mat = rbind(cov_mat, cm)
+			cov_mat = rbind(cov_mat, cm)
 
 			if(by_chr) {
 				
 				try(od <- mat_dist(mm, reorder_column = reorder_column, subgroup = subgroup, ha = ha, title = qq("methylation:@{chr}"), range = meth_range, ylab = "methylation"))
-				# try(mat_dist(log10(cm), reorder_column = FALSE, od = od, subgroup = subgroup, ha = ha, title = qq("coverage:@{chr}"), range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})")))
+				if(plot_cov) try(mat_dist(log10(cm), reorder_column = FALSE, od = od, subgroup = subgroup, ha = ha, title = qq("coverage:@{chr}"), range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})")))
 			}
 		}
 
@@ -639,12 +642,11 @@ global_methylation_distribution = function(sample_id, subgroup,
 			nr = nrow(meth_mat)
 			if(nr > 100000) {
 				meth_mat = meth_mat[sample(nr, 100000), ]
-				# cov_mat = cov_mat[sample(nr, 100000), ]
+				cov_mat = cov_mat[sample(nr, 100000), ]
 			}
 			
 			od = mat_dist(meth_mat, reorder_column = reorder_column, subgroup = subgroup, ha = ha, title = "methylation", range = meth_range, ylab = "methylation")
-			# mat_dist(log10(cov_mat), reorder_column = FALSE, od = od, subgroup = subgroup, ha = ha, title = "coverage", range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})"))
-			
+			if(plot_cov) mat_dist(log10(cov_mat), reorder_column = FALSE, od = od, subgroup = subgroup, ha = ha, title = "coverage", range = c(0, log10(max_cov)), ylab = qq("log10(CpG coverage, 1~@{max_cov})"))
 			
 			return(invisible(od))
 		}

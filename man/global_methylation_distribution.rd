@@ -11,7 +11,8 @@ global_methylation_distribution(sample_id, subgroup,
     reorder_column = TRUE,
     ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE),
     chromosome = paste0("chr", 1:22), by_chr = FALSE,
-    background = NULL, p = NULL, meth_range = c(0, 1))
+    background = NULL, p = NULL, meth_range = c(0, 1),
+    max_cov = 100, plot_cov = FALSE)
 }
 \arguments{
 
@@ -24,6 +25,8 @@ global_methylation_distribution(sample_id, subgroup,
   \item{background}{background to look into. The value can be a single \code{\link[GenomicRanges]{GRanges}} object or a list of \code{\link[GenomicRanges]{GRanges}} objects.}
   \item{p}{probability to randomly sample CpG sites}
   \item{meth_range}{the range of methylation on the plot}
+  \item{max_cov}{maximum range for coverage}
+  \item{plot_cov}{also make plot for coverage}
 
 }
 \details{
