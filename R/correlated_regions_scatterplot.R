@@ -53,7 +53,7 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column, xlab = "Methylation"
 		scatterplot_with_boxplot(v, e, subgroup, subgroup_col, 
 			main = qq("@{chr}:@{start(cr_now)}-@{end(cr_now)}, @{gi},\ncor = @{sprintf('%.2f', cr_now$corr)}, n_CpG = @{cr_now$ncpg}"),
 			xlab = xlab, ylab = ylab,
-			text_list = unlist(mcols(cr_now)[, text_column, drop = FALSE]))
+			text_list = unlist(as.data.frame(mcols(cr_now)[, text_column, drop = FALSE])))
 		if(i %% 50 == 0) {
 			message(qq("@{i}/@{length(cr)} CRs finished"))
 		}
