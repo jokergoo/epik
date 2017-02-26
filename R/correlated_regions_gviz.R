@@ -279,6 +279,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 				if(length(single_hm_list2[[j]])) hm_merged = rbind(hm_merged, as.data.frame(single_hm_list2[[j]]))
 			}
 			hm_merged = GRanges(seqnames = hm_merged[[1]], ranges = IRanges(hm_merged[[2]], hm_merged[[3]]))
+			if(length(hm_merged) == 0) hm_merged = GRanges(seqnames = chr, ranges = IRanges(1, 2), score = 0)
 			if(length(hm_merged) > 0) {
 				segments = as(coverage(hm_merged), "GRanges")[-1]
 				# also add zero-coverage to the GRanges object
