@@ -209,7 +209,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 										type = "heatmap",
 										showSampleNames = FALSE,
 										gradient = c("blue", "white", "red"),
-										size = 0.3*ncol(meth_mat),
+										size = 0.2*ncol(meth_mat),
 										col = NA,
 										panelFun = function() {grid.text("methylation", 0, unit(1, "npc") - unit(2, "mm"), gp = gpar(fontsize = 10), just = c("left", "top"))},))
 	} else {
@@ -224,7 +224,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 										type = "heatmap",
 										showSampleNames = FALSE,
 										gradient = c("blue", "white", "red"),
-										size = 0.3*ncol(mat),
+										size = 0.2*ncol(mat),
 										col = NA,
 										panelFun = local({t = t; function() grid.text(qq("methylation, @{t}"), 0, unit(1, "npc") - unit(2, "mm"), gp = gpar(fontsize = 10), just = c("left", "top"))})
 									))
@@ -280,10 +280,10 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 			}
 			hm_merged = GRanges(seqnames = hm_merged[[1]], ranges = IRanges(hm_merged[[2]], hm_merged[[3]]))
 			if(length(hm_merged) > 0) {
-				segments = as(coverage(hm_merged), "GRanges")
+				segments = as(coverage(hm_merged), "GRanges")[-1]
 				# also add zero-coverage to the GRanges object
 				gr_g = GRanges(seqnames = chr, ranges = IRanges(gene_start, gene_end))
-				gr_diff = setdiff(gr_g, segments)
+				gr_diff = GRanges(seqnames = chr, ranges = setdiff(ranges(gr_g), ranges(segments)))
 				if(length(gr_diff)) {
 					gr_diff$score = 0
 					segments = c(segments, gr_diff)
@@ -297,7 +297,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 					mtch = as.matrix(findOverlaps(segments, single_hm_list2[[j]]))
 					hm_mat[j, mtch[, 1]] = single_hm_list2[[j]][mtch[, 2]]$density
 				}
-				
+
 				if(is.null(subgroup)) {
 						mat = cbind(hm_mat, rep(0, nrow(hm_mat)))
 						mat = hm_mat
@@ -353,7 +353,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 	plotTracks(trackList, from = gene_start, to = gene_end, chromosome = chr, main = title, cex.main = 1, showTitle = FALSE)
 
 	n_tx = length(unique(grtrack@range[grtrack@range$gene == gi]$transcript))
-	size1 = length(hm_list)*length(unique(subgroup)) + 0.5*length(gf_list) + 1 + 0.3*length(sample_id) + 0.5 + 0.5 + 1.5
+	size1 = length(hm_list)*length(unique(subgroup)) + 0.5*length(gf_list) + 1 + 0.2*length(sample_id) + 0.5 + 0.5 + 1.5
 	# (1.5*n_tx + 3 + 4)*(2/3) + length(strsplit(title, "\n")[[1]]) + 1
 
 	# the height of text with fontsize = 12 equals to 0.12 inches
