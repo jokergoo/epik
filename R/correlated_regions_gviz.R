@@ -281,6 +281,13 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 			hm_merged = GRanges(seqnames = hm_merged[[1]], ranges = IRanges(hm_merged[[2]], hm_merged[[3]]))
 			if(length(hm_merged) > 0) {
 				segments = as(coverage(hm_merged), "GRanges")
+				# also add zero-coverage to the GRanges object
+				gr_g = GRanges(seqnames = chr, ranges = IRagnes(gene_start, gene_end))
+				gr_diff = setdiff(gr_g, segments)
+				gr_diff$score = 0
+				segments = c(segments, gr_diff)
+				segments = sort(segments)
+
 				# covert to matrix
 				hm_mat = matrix(0, nrow = length(single_hm_list), ncol = length(segments))
 				rownames(hm_mat) = names(single_hm_list)
@@ -288,7 +295,6 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 					mtch = as.matrix(findOverlaps(segments, single_hm_list2[[j]]))
 					hm_mat[j, mtch[, 1]] = single_hm_list2[[j]][mtch[, 2]]$density
 				}
-				segments = suppressWarnings(c(segments, GRanges(chr, ranges = IRanges(gene_end - 100, gene_end), score = 0)))
 				
 				if(is.null(subgroup)) {
 						mat = cbind(hm_mat, rep(0, nrow(hm_mat)))
