@@ -300,6 +300,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 				
 				if(is.null(subgroup)) {
 						mat = cbind(hm_mat, rep(0, nrow(hm_mat)))
+						mat = hm_mat
 						# mat[1, ncol(mat)] = max(hm_mat)
 						mean_signal = colMeans(mat)
 						trackList = pushTrackList(trackList, DataTrack(name = hm_name[i],
