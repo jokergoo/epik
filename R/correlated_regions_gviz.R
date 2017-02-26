@@ -284,9 +284,11 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 				# also add zero-coverage to the GRanges object
 				gr_g = GRanges(seqnames = chr, ranges = IRanges(gene_start, gene_end))
 				gr_diff = setdiff(gr_g, segments)
-				gr_diff$score = 0
-				segments = c(segments, gr_diff)
-				segments = sort(segments)
+				if(length(gr_diff)) {
+					gr_diff$score = 0
+					segments = c(segments, gr_diff)
+					segments = sort(segments)
+				}
 
 				# covert to matrix
 				hm_mat = matrix(0, nrow = length(single_hm_list), ncol = length(segments))
