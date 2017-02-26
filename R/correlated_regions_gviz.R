@@ -319,14 +319,14 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 					mean_signal_list = list()
 					for(t in unique(subgroup)) {
 						mat = hm_mat[rownames(hm_mat) %in% sample_id[subgroup == t], , drop = FALSE]
-						mat = cbind(mat, rep(0, nrow(mat)))
+						# mat = cbind(mat, rep(0, nrow(mat)))
 						# mat[1, ncol(mat)] = max(hm_mat)
 						mean_signal_list[[t]] = colMeans(mat)
 					}
 					ylim = c(0, max(unlist(mean_signal_list)))
 					for(t in unique(subgroup)) {
 						mat = hm_mat[rownames(hm_mat) %in% sample_id[subgroup == t], , drop = FALSE]
-						mat = cbind(mat, rep(0, nrow(mat)))
+						# mat = cbind(mat, rep(0, nrow(mat)))
 						# mat[1, ncol(mat)] = max(hm_mat)
 						mean_signal = colMeans(mat)
 
