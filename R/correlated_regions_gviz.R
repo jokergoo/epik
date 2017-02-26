@@ -282,7 +282,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 			if(length(hm_merged) > 0) {
 				segments = as(coverage(hm_merged), "GRanges")
 				# also add zero-coverage to the GRanges object
-				gr_g = GRanges(seqnames = chr, ranges = IRagnes(gene_start, gene_end))
+				gr_g = GRanges(seqnames = chr, ranges = IRanges(gene_start, gene_end))
 				gr_diff = setdiff(gr_g, segments)
 				gr_diff$score = 0
 				segments = c(segments, gr_diff)
