@@ -930,7 +930,7 @@ cr_genes_function_enrichment = function(cr, david_user, count_cutoff = 50, fdr_c
 
 	l = (km4 == 1 | km4 == 4)
 	gene_mat = matrix(0, nrow = sum(l), ncol = nrow(term_df))
-	rownames(gene_mat) = gsub("\\.\\d+$", "", rownames(mat2)[l])
+	rownames(gene_mat) = gsub("\\.\\d+$", "", names(km4)[l])
 	colnames(gene_mat) = gsub("GO:.*~", "", term_df[, 1])
 	for(i in seq_len(nrow(term_df))) {
 		g_vector = unique(unlist(strsplit(term_df$gene_list[i], ", ")))
@@ -940,33 +940,33 @@ cr_genes_function_enrichment = function(cr, david_user, count_cutoff = 50, fdr_c
 
 	combined_split2 = combined_split[l]
 
-	index_14 = which(l)
-	rod = NULL
-	if(n_subgroup == 2) {
-		for(i1 in c(1, 4)) {
-			for(i2 in c("high", "low")) {
-				label = paste(i1, i2, sep = ",")
-				lx = combined_split[index_14] == label
-				message(qq("cluster @{label}, @{sum(lx)} rows"))
-				dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
-				dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
-				row_od1 = order.dendrogram(dend1)
+	# index_14 = which(l)
+	# rod = NULL
+	# if(n_subgroup == 2) {
+	# 	for(i1 in c(1, 4)) {
+	# 		for(i2 in c("high", "low")) {
+	# 			label = paste(i1, i2, sep = ",")
+	# 			lx = combined_split[index_14] == label
+	# 			message(qq("cluster @{label}, @{sum(lx)} rows"))
+	# 			dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
+	# 			dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
+	# 			row_od1 = order.dendrogram(dend1)
 
-				rod = c(rod, which(lx)[row_od1])
-			}
-		}
-	} else {
-		for(i1 in c("1", "4")) {
-			label = i1
-			lx = combined_split[index_14] == label
-			message(qq("cluster @{label}, @{sum(lx)} rows"))
-			dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
-			dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
-			row_od1 = order.dendrogram(dend1)
+	# 			rod = c(rod, which(lx)[row_od1])
+	# 		}
+	# 	}
+	# } else {
+	# 	for(i1 in c("1", "4")) {
+	# 		label = i1
+	# 		lx = combined_split[index_14] == label
+	# 		message(qq("cluster @{label}, @{sum(lx)} rows"))
+	# 		dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
+	# 		dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
+	# 		row_od1 = order.dendrogram(dend1)
 
-			rod = c(rod, which(lx)[row_od1])
-		}
-	}
+	# 		rod = c(rod, which(lx)[row_od1])
+	# 	}
+	# }
 
 	ht_list = Heatmap(km4[l], name = "cluster", col = group_mean_col, show_row_names = FALSE, width = 2*grobHeight(textGrob("1", gp = gpar(fontsize = 10)))) +
 		Heatmap(expr_split[l], name = "expr_direction", show_row_names = FALSE, width = unit(5, "mm"), 

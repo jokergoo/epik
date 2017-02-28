@@ -13,6 +13,7 @@ compare_meth(gi, cr_smoothed, cr_raw, txdb = NULL, start = NULL, end = NULL)
 
   \item{gi}{a single gene id}
   \item{cr_smoothed}{correlated regions using smoothed methylation}
+  \item{cr_raw}{correlated regions using raw methylation}
   \item{txdb}{transcriptome annotation if \code{start} and \code{end} are not set}
   \item{start}{start position of the region of interested (in the extended gene region)}
   \item{end}{end position of the region of interested (in the extended gene region)}

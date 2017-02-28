@@ -5,6 +5,7 @@
 # == param
 # -gi a single gene id
 # -cr_smoothed correlated regions using smoothed methylation
+# -cr_raw correlated regions using raw methylation
 # -txdb transcriptome annotation if ``start`` and ``end`` are not set
 # -start start position of the region of interested (in the extended gene region)
 # -end end position of the region of interested (in the extended gene region)

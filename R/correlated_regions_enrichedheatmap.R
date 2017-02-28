@@ -221,6 +221,13 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
 	expr_annotation) {
 	
+	n_subgroup = NULL
+	subgroup = NULL
+	subgroup_level = NULL
+	expr_col_od = NULL
+	km_col = NULL
+	mat_mix = NULL
+
 	eval(SNIPPET_ATTACH_CR_PARAM)
 
 	message(qq("filter sigCR by fdr_cutoff = @{fdr_cutoff}, meth_diff_cutoff = @{meth_diff_cutoff}"))
@@ -379,6 +386,14 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 	meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = c(5000, 10000),
 	expr_annotation) {
 	
+	sig_cr = NULL
+	n_subgroup = NULL
+	subgroup = NULL
+	subgroup_level = NULL
+	expr_col_od = NULL
+	km_col = NULL
+	mat_mix = NULL
+
 	eval(SNIPPET_ATTACH_CR_PARAM)
 
 	message(qq("filter sigCR by fdr_cutoff = @{fdr_cutoff}, meth_diff_cutoff = @{meth_diff_cutoff}"))
@@ -516,6 +531,13 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 # Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL, 
 	extend = 5000, expr_annotation) {
+
+	sample_id = NULL
+	n_subgroup = NULL
+	subgroup = NULL
+	subgroup_level = NULL
+	meth_mat_mean = NULL
+	km_col = NULL
 	
 	eval(SNIPPET_ATTACH_CR_PARAM)
 
@@ -693,6 +715,14 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
 	min_reduce = 1, min_width = 1000, nearest_by = "tss", expr_annotation) {
+
+	gm_extend = NULL
+	n_subgroup = NULL
+	subgroup = NULL
+	subgroup_level = NULL
+	expr_col_od = NULL
+	km_col = NULL
+	mat_mix = NULL
 
 	eval(SNIPPET_ATTACH_CR_PARAM)
 

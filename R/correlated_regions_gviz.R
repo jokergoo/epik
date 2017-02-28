@@ -1,25 +1,25 @@
 
-if(!exists(".boxes")) {
-	.boxes = Gviz.epik:::.boxes
-}
-if(!exists(".arrowBar")) {
-	.arrowBar = Gviz.epik:::.arrowBar
-}
-if(!exists(".fontGp")) {
-	.fontGp = Gviz.epik:::.fontGp
-}
+# if(!exists(".boxes")) {
+# 	.boxes = Gviz.epik:::.boxes
+# }
+# if(!exists(".arrowBar")) {
+# 	.arrowBar = Gviz.epik:::.arrowBar
+# }
+# if(!exists(".fontGp")) {
+# 	.fontGp = Gviz.epik:::.fontGp
+# }
 
-elementNROWS = function (x) {
-    if (!is.list(x))
-        x <- as.list(x)
-    ans <- try(.Call2("sapply_NROW", x, PACKAGE = "S4Vectors"),
-        silent = TRUE)
-    if (!inherits(ans, "try-error")) {
-        names(ans) <- names(x)
-        return(ans)
-    }
-    return(vapply(x, NROW, integer(1)))
-}
+# elementNROWS = function (x) {
+#     if (!is.list(x))
+#         x <- as.list(x)
+#     ans <- try(.Call2("sapply_NROW", x, PACKAGE = "S4Vectors"),
+#         silent = TRUE)
+#     if (!inherits(ans, "try-error")) {
+#         names(ans) <- names(x)
+#         return(ans)
+#     }
+#     return(vapply(x, NROW, integer(1)))
+# }
 
 # == title
 # Customized Gviz plot for a single gene
@@ -124,31 +124,30 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 		size = 0.5)
 		
 	.boxes_wrap = function(GdObject, offsets) {
-		df = .boxes(GdObject, offsets)
+		df = getFromNamespace("get_origin_fun", "Gviz.epik")(".boxes")(GdObject, offsets)
 		l = df$gene == gi
 		# df$fill[l] = "pink"
 		df$fill[!l] = paste0(df$fill[!l], "40")
 		df
 	}
-	assignInNamespace(".boxes", .boxes_wrap, "Gviz.epik")
+	getFromNamespace("change_fun", "Gviz.epik")(".boxes", .boxes_wrap)
 	
-
 	tx_gene_mapping = structure(grtrack@range$gene, names = grtrack@range$transcript)
 
 	.arrowBar_wrap = function(xx1, xx2, strand, coords, y=20, W=3, D=10, H, col, lwd, lty, alpha, barOnly=FALSE,
-        diff=.pxResolution(coord="y"), min.height=3) {
+        diff = Gviz.epik:::.pxResolution(coord="y"), min.height=3) {
 		env = parent.frame()
 		if("bar" %in% ls(envir = env)) {
 			bar = get("bar", envir = env)
 			arrow_col = ifelse(tx_gene_mapping[rownames(bar)] == gi, "darkgrey", "#00000020")
 		}
-		.arrowBar(xx1 = xx1, xx2 = xx2, strand = strand, coords = coords, y=y, W=W, D=D, H, col = arrow_col, lwd = lwd, lty = lty, alpha = alpha, barOnly=barOnly,
+		getFromNamespace("get_origin_fun", "Gviz.epik")(".arrowBar")(xx1 = xx1, xx2 = xx2, strand = strand, coords = coords, y=y, W=W, D=D, H, col = arrow_col, lwd = lwd, lty = lty, alpha = alpha, barOnly=barOnly,
         	diff=diff, min.height=min.height)
 	}
-	assignInNamespace(".arrowBar", .arrowBar_wrap, "Gviz.epik")
+	getFromNamespace("change_fun", "Gviz.epik")(".arrowBar", .arrowBar_wrap)
 	
 	.fontGp_wrap = function(GdObject, subtype = NULL, ...) {
-		gp = .fontGp(GdObject, subtype, ...)
+		gp = getFromNamespace("get_origin_fun", "Gviz.epik")(".fontGp")(GdObject, subtype, ...)
 		if(!is.null(subtype)) {
 			if(subtype == "group") {
 				env = parent.frame()
@@ -162,9 +161,8 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 		}
 		return(gp)
 	}
-	assignInNamespace(".fontGp", .fontGp_wrap, "Gviz.epik")
+	getFromNamespace("change_fun", "Gviz.epik")(".fontGp", .fontGp_wrap)
 	
-
 	trackList = pushTrackList(trackList, grtrack)
 
 	## correlation track
@@ -368,9 +366,9 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 
 	message(qq("The suggested height of the image is @{coef}*n_tx + @{num} inches, here n_tx = @{n_tx} and the height is @{hh} inches."))
 	
-	assignInNamespace(".boxes", .boxes, "Gviz.epik")
-	assignInNamespace(".arrowBar", .arrowBar, "Gviz.epik")
-	assignInNamespace(".fontGp", .fontGp, "Gviz.epik")
+	getFromNamespace("reset_fun", "Gviz.epik")(".boxes")
+	getFromNamespace("reset_fun", "Gviz.epik")(".arrowBar")
+	getFromNamespace("reset_fun", "Gviz.epik")(".fontGp")
 
 	return(invisible(NULL))
 }
