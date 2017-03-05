@@ -256,17 +256,17 @@ is.not.null = function(...) {
 	!is.null(...)
 }
 
-qq_message = function(text, ...) {
-	text = paste(strwrap(qq(text)), collapse = "\n")
+qq_message = function(text, envir = parent.frame(), ...) {
+	text = paste(strwrap(qq(text, envir = envir)), collapse = "\n")
 	message(text, ...)
 }
 
-qq_stop = function(text, ...) {
-	text = paste(strwrap(qq(text)), collapse = "\n")
+qq_stop = function(text, envir = parent.frame(), ...) {
+	text = paste(strwrap(qq(text, envir = envir)), collapse = "\n")
 	stop(text, ...)
 }
 
-qq_warning = function(text, ...) {
-	text = paste(strwrap(qq(text)), collapse = "\n")
+qq_warning = function(text, envir = parent.frame(), ...) {
+	text = paste(strwrap(qq(text, envir = envir)), collapse = "\n")
 	warning(text, ...)
 }
