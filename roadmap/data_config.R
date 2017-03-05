@@ -1,11 +1,11 @@
 
-library(GetoptLong)
-library(bsseq)
-library(GlobalOptions)
-library(GenomicRanges)
-library(ComplexHeatmap)
-library(GenomicFeatures)
-source("/home/guz/project/development/epik/R/read_data_hooks.R")
+# library(GetoptLong)
+# library(bsseq)
+# library(GlobalOptions)
+# library(GenomicRanges)
+# library(ComplexHeatmap)
+# library(GenomicFeatures)
+# source("/home/guz/project/development/epik/R/read_data_hooks.R")
 
 PROJECT_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap/"
 
@@ -14,6 +14,7 @@ names(SUBGROUP) = c("E003", "E004", "E005", "E006", "E007", "E011", "E012", "E01
               "E024", "E050", "E065", "E066", "E071", "E079", "E094", "E095", "E096",
               "E097", "E098", "E100", "E104", "E105", "E106", "E109", "E112", "E113")
 SAMPLE_ID = names(SUBGROUP)
+sample_id = SAMPLE_ID
 SUBGROUP_COLOR = c("group1" = "red", "group2" = "blue")
 HA = HeatmapAnnotation(subgroup = SUBGROUP, col = list(subgroup = SUBGROUP_COLOR))
 

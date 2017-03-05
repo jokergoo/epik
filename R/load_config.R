@@ -72,7 +72,7 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 	GTF_FILE = NULL
 	CGI_SHORE_EXTEND = 2000
 
-	message("sourcing", config_file)
+	message("sourcing ", config_file)
 	sys.source(config_file, envir = environment())
 	
 	if(is.null(GENOMIC_FEATURE_LIST)) {
@@ -199,7 +199,7 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 				gn = basename(GENOMIC_FEATURE_LIST)
 			}
 			GENOMIC_FEATURE_LIST = lapply(GENOMIC_FEATURE_LIST, function(x) {
-				message("reading", x)
+				message("reading ", x)
 				df = read.table(x, sep = "\t", stringsAsFactors = FALSE)
 				GRanges(seqnames = df[[1]], ranges = IRanges(df[[2]], df[[3]]))
 			})
@@ -239,7 +239,7 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 	gf_name = names(GENOMIC_FEATURE_LIST)
 	for(i in seq_along(GENOMIC_FEATURE_LIST)) {
 		if(is.character(GENOMIC_FEATURE_LIST[[i]])) {
-			message("reading", GENOMIC_FEATURE_LIST[[i]])
+			message("reading ", GENOMIC_FEATURE_LIST[[i]])
 			GENOMIC_FEATURE_LIST[[i]] = read.table(GENOMIC_FEATURE_LIST[[i]], sep = "\t", stringsAsFactors = FALSE)
 		}
 		if(is.data.frame(GENOMIC_FEATURE_LIST[[i]])) {
@@ -345,7 +345,7 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 				sample_id = chipseq_hooks$sample_id(mk)
 			}
 
-			message(mk, ":", length(sample_id), "samples.")
+			message(mk, ": ", length(sample_id), "samples.")
 
 			sid = sample(sample_id, 1)
 			qqcat("random pick one sample: @{sid}\n")
