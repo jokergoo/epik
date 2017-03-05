@@ -17,6 +17,10 @@ SAMPLE_ID = names(SUBGROUP)
 SUBGROUP_COLOR = c("group1" = "red", "group2" = "blue")
 HA = HeatmapAnnotation(subgroup = SUBGROUP, col = list(subgroup = SUBGROUP_COLOR))
 
+SAMPLE = data.frame(subgroup = SUBGROUP)
+rownames(SAMPLE) = SAMPLE_ID
+COLOR = list(subgroup = SUBGROUP_COLOR)
+
 methylation_hooks$get_by_chr = function(chr) {
     obj = readRDS(qq("@{PROJECT_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))
     obj2 = list(gr = granges(obj),
@@ -63,6 +67,7 @@ chipseq_hooks$chromHMM = function(sid, chr = NULL) {
 }
 
 TXDB = loadDb(qq("@{PROJECT_DIR}/txdb/gen10_long_protein_coding_gene_adjusted.sqlite"))
+GTF_FILE = qq("@{PROJECT_DIR}/data/gen10_long_protein_coding_gene_adjusted.gtf")
 
 GENE = genes(TXDB)
 TSS = promoters(GENE, upstream = 1, downstream = 0)

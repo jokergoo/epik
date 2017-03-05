@@ -7,13 +7,14 @@ Load and validate configuration file
 Load and validate configuration file
 }
 \usage{
-load_config(config_file, export_env = parent.frame(), validate = TRUE)
+load_config(config_file, export_env = parent.frame(), validate = TRUE, use_std_dir = FALSE)
 }
 \arguments{
 
   \item{config_file}{path of configuration file}
   \item{export_env}{environment where to export variables}
   \item{validate}{whether do validation}
+  \item{use_std_dir}{whether to create folders}
 
 }
 \details{
@@ -41,9 +42,9 @@ The configuration file should provide following variables:
 
 \code{CHROMOSOME}: a vector of chromosome names.
 
-\code{GENOME}: abbreviation of species.
+\code{GENOME}: abbreviation of GENOME.
 
-\code{OUTPUT_DIR}: path of output directory. Several sub directories will be created.
+\code{PROJECT_DIR}: path of output directory. Several sub directories will be created.
 
 \code{GENOMIC_FEATURE_LIST}: a list of genomic features as GRanges objects. There
   must be a element named 'cgi'.
@@ -55,8 +56,6 @@ The configuration file should provide following variables:
 \code{chipseq_hooks()} is optional unless you want to do integrative analysis.
 
 \code{CGI_SHORE_EXTEND}: extension of cgi, by default it is 2kb both upstream and downstream.
-
-\code{CR_CUTOFF}: cutoff for correlation significance of cr.
 }
 \value{
 No value is returned.

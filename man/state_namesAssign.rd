@@ -7,7 +7,7 @@ Change chromatin state names
 Change chromatin state names
 }
 \usage{
-state_names(x) <- value
+state_names(x) <-value
 }
 \arguments{
 

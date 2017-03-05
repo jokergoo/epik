@@ -255,3 +255,18 @@ add_transparency = function(col, transparency = 0) {
 is.not.null = function(...) {
 	!is.null(...)
 }
+
+qq_message = function(text, ...) {
+	text = paste(strwrap(qq(text)), collapse = "\n")
+	message(text, ...)
+}
+
+qq_stop = function(text, ...) {
+	text = paste(strwrap(qq(text)), collapse = "\n")
+	stop(text, ...)
+}
+
+qq_warning = function(text, ...) {
+	text = paste(strwrap(qq(text)), collapse = "\n")
+	warning(text, ...)
+}
