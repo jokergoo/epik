@@ -776,3 +776,32 @@ cr_concatenate = function(cr1, cr2) {
 	metadata(cr) = list(cr_param = cr_param)
 	return(cr)
 }
+
+# == title
+# Get significant CRs
+#
+# == param
+# -cr correlated regions
+# -fdr cutoff for FDRs
+# -meth_diff cutoff for methylation difference
+#
+# == value
+# Significant CRs
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+get_sig_cr = function(cr, fdr, meth_diff) {
+	
+	cr_param = metadata(cr)$cr_param
+	subgroup = cr_param$subgroup
+	subgroup_level = unique(subgroup)
+	n_subgroup = length(subgroup_level)
+	
+	if(n_subgroup >= 2) {
+		l = cr$corr_fdr <= fdr & cr$meth_anova_fdr <= fdr & cr$meth_diameter >= meth_diff
+	} else {
+		l = cr$corr_fdr <= fdr & cr$meth_IQR >= meth_diff
+	}
+
+	return(cr[l])
+}

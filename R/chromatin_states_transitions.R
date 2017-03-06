@@ -10,7 +10,7 @@
 #         of the width of all regions is used.
 # -min_1  If there are multiple samples in the group, it is possible that a segment has more than one states asigned to it.
 #         If the recurrency of each state is relatively low, it means there is no one dominant state for this segment and it should 
-#         be removed. This argument controls the minimal value for the recurrency of states in a given segment.
+#         be removed. This argument controls the minimal value for the recurrency of states in a given segment. The value is a percent.
 # -min_2 same as ``min_1``, but for samples in group 2.
 # -meth_diff If methylation dataset is provided, the segments for which the methylation difference between two groups is less than
 #             this value are removed.
@@ -53,8 +53,7 @@
 # })
 # mat = make_transition_matrix_from_chromHMM(gr_list_1, gr_list_2)
 make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = NULL, 
-	min_1 = floor(length(gr_list_1)/2), min_2 = floor(length(gr_list_2)/2), 
-	meth_diff = 0, chromosome = paste0("chr", 1:22)) {
+	min_1 = 0.5, min_2 = 0.5, meth_diff = 0, chromosome = paste0("chr", 1:22)) {
 
 	if(inherits(gr_list_1, "GRanges")) {
 		gr_list_1 = list(gr_list_1)
@@ -64,6 +63,9 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, window = N
 		gr_list_2 = list(gr_list_2)
 		min_2 = 0
 	}
+
+	min_1 = floor(min_1*length(gr_list_1))
+	min_2 = floor(min_2*length(gr_list_2))
 
 	if(!is.null(chromosome)) {
 		gr_list_1 = lapply(gr_list_1, function(gr) gr[seqnames(gr) %in% chromosome])

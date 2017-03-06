@@ -110,6 +110,13 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 		assign("MARKS", MARKS, envir = export_env)
 		assign("GTF_FILE", GTF_FILE, envir = export_env)
 		assign("CGI_SHORE_EXTEND", CGI_SHORE_EXTEND, envir = export_env)
+
+		if(exists("CHROMATIN_STATES_COLOR")) {
+			assign("CHROMATIN_STATES_COLOR", CHROMATIN_STATES_COLOR, envir = export_env)
+		}
+		if(exists("CHROMATIN_STATES_ORDER")) {
+			assign("CHROMATIN_STATES_ORDER", CHROMATIN_STATES_ORDER, envir = export_env)
+		}
 	}
 
 	# test SAMPLE
@@ -138,7 +145,7 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 
 	qq_message("There are @{nrow(SAMPLE)} samples defined in `SAMPLE`.")
 	qq_message("@{length(unique(SAMPLE$subgroup))} subgroups: @{paste0(unique(SAMPLE$subgroup))}")
-	qq_message("Following sample annotations will be used: @{paste0(cn, collapse = ",")}")
+	qq_message("Following sample annotations will be used: @{paste0(cn, collapse = ',')}")
 
 	sample_id = rownames(SAMPLE)
 
@@ -379,6 +386,13 @@ load_config = function(config_file, export_env = parent.frame(), validate = TRUE
 	assign("GTF_FILE", GTF_FILE, envir = export_env)
 	assign("CGI_SHORE_EXTEND", CGI_SHORE_EXTEND, envir = export_env)
 
+	if(exists("CHROMATIN_STATES_COLOR")) {
+		assign("CHROMATIN_STATES_COLOR", CHROMATIN_STATES_COLOR, envir = export_env)
+	}
+	if(exists("CHROMATIN_STATES_ORDER")) {
+		assign("CHROMATIN_STATES_ORDER", CHROMATIN_STATES_ORDER, envir = export_env)
+	}
+
 	gc(verbose = FALSE)
 
 	qq_message("\nValidation passed and following global variables are imported: SAMPLE, COLOR, TXDB, EXPR, CHROMOSOME, GENOME, PROJECT_DIR, GENOMIC_FEATURE_LIST, MARKS, GTF_FILE\n")
@@ -389,6 +403,7 @@ initialize_project_directory = function(x) {
 	dir.create(paste0(x, "/image"), showWarnings = FALSE)
 	dir.create(paste0(x, "/gviz"), showWarnings = FALSE)
 	dir.create(paste0(x, "/rds"), showWarnings = FALSE)
+	dir.create(paste0(x, "/rds_cr"), showWarnings = FALSE)
 	dir.create(paste0(x, "/temp"), showWarnings = FALSE)
 	dir.create(paste0(x, "/enriched_heatmap"), showWarnings = FALSE)
 
@@ -396,6 +411,7 @@ initialize_project_directory = function(x) {
 	qq_message("  @{x}/image/ for general plots")
 	qq_message("  @{x}/gviz/ for Gviz plots")
 	qq_message("  @{x}/rds/ for rds files")
+	qq_message("  @{x}/rds_cr/ for CR-related rds files")
 	qq_message("  @{x}/temp/ for temporary files")
 	qq_message("  @{x}/enriched_heatmap/")
 }
