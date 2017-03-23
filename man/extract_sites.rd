@@ -11,16 +11,16 @@ extract_sites(start, end, site, return_index = FALSE, min_sites = 0)
 }
 \arguments{
 
-  \item{start}{start positions, a numeric vector}
-  \item{end}{end positions, a numeric vector.}
-  \item{site}{positions of all sites, should be sorted increasingly.}
+  \item{start}{start positions, a single integer or a numeric vector}
+  \item{end}{end positions, a single integer or a numeric vector}
+  \item{site}{positions of all sites, a numeric vector, should be sorted increasingly.}
   \item{return_index}{whether return the index in the position vector or just the position itself?}
   \item{min_sites}{minimal number of sites in an interval, regions which contain sites less than this value will be filtered out.}
 
 }
 \details{
 Providing a huge vector of genomic positions, we want to extract subset of positions which
-locate in a specific group of regions (e.g. extract CpG sites in DMRs). Normally, we will use:
+locate in a specific group of regions (e.g. extract CpG sites in DMRs). The simplest way is to use:
 
   \preformatted{
   site = sort(sample(10000000, 1000000))
@@ -40,7 +40,7 @@ Of course, \code{site} should be sorted non-decreasing beforehand.
   subsite = extract_sites(start, end, site, index = FALSE)  }
 
 Not only for single interval, you can also extract sites in multiple genomic regins,
-by setting \code{start} and \code{end} as vectors.
+by setting \code{start} and \code{end} as vectors. E.g. extracting CpG sites in exons in every gene.
 
   \preformatted{
   start = c(123456, 234567, 345678)
@@ -57,6 +57,27 @@ You can choose to return index only or positions.
   head(site[subsite_index])  }
 
 Regions that include sites less than \code{min_site} will be filtered out.
+
+This kind of overlapping can also be done by defining an \code{\link[IRanges]{IRanges}} or \code{\link[GenomicRanges]{GRanges}}
+object and calling \code{\link[GenomicRanges]{findOverlaps}} function. Following compares the running time for using \code{\link[IRanges]{findOverlaps}}
+and \code{\link{extract_sites}}:
+
+  \preformatted{
+  set.seed(123)
+  site = sort(sample(1000, 100))
+  pos = do.call("rbind", lapply(1:10, function(i) sort(sample(max(site), 2))))
+  pos_ir = IRanges(pos[, 1], pos[, 2])
+  site_ir = IRanges(site, site)
+  library(microbenchmark)
+  microbenchmark(f1 = \{r1 = extract_sites(pos[, 1], pos[, 2], site)\},
+      f2 = \{
+      mtch = findOverlaps(pos_ir, site_ir)
+      r2 = start(site_ir[unique(subjectHits(mtch))])
+  \})
+  # Unit: microseconds
+  #  expr      min        lq       mean    median       uq      max neval cld
+  #    f1    6.052    8.3925   13.99696   15.5855   18.132   29.366   100  a
+  #    f2 1105.678 1175.9220 1237.87162 1192.6070 1271.972 2054.595   100   b  }
 }
 \value{
 A vector of positions or index.

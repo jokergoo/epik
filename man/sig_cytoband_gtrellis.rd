@@ -1,5 +1,5 @@
-\name{gtrellis_sig_cytoband}
-\alias{gtrellis_sig_cytoband}
+\name{sig_cytoband_gtrellis}
+\alias{sig_cytoband_gtrellis}
 \title{
 Visualize correlations in cytoband
 }
@@ -7,7 +7,7 @@ Visualize correlations in cytoband
 Visualize correlations in cytoband
 }
 \usage{
-gtrellis_sig_cytoband(cr, txdb, cytoband_list, color_head = TRUE)
+sig_cytoband_gtrellis(cr, txdb, cytoband_list, color_head = TRUE)
 }
 \arguments{
 
@@ -30,7 +30,7 @@ For each cytoband, there are several tracks:
 }
 }
 \value{
-no value is returned
+No value is returned.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -38,5 +38,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

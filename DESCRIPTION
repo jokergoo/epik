@@ -9,7 +9,7 @@ Depends: R (>= 3.1.2), IRanges, GenomicRanges, GenomicFeatures, AnnotationDbi,
     GlobalOptions (>= 0.0.10)
 Imports: circlize (>= 0.3.4), GetoptLong, parallel, ComplexHeatmap (>= 1.11.6),
     EnrichedHeatmap (>= 1.1.5), matrixStats, GenomeInfoDb, S4Vectors (>= 0.12.1),
-    Gviz.epik, HilbertCurve, gtrellis (>= 1.7.1), numbers, ggplot2, Rcpp, memoise, 
+    epik.Gviz, HilbertCurve, gtrellis (>= 1.7.1), numbers, ggplot2, Rcpp, memoise, 
     graphics, utils, stats, grDevices, RColorBrewer, grid, gridBase, RDAVIDWebService,
     methods, rtracklayer (>= 1.34.2)
 Suggests: testthat (>= 0.3), knitr, markdown, rGREAT

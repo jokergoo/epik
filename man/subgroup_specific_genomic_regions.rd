@@ -29,7 +29,13 @@ The returned value can be sent to \code{\link{heatmap_subgroup_specificity}} to 
 Zuguang Gu <z.gu@dkfz.de>
 }
 \examples{
-# There is no example
+\dontrun{
+# following two calls are basically the same
+subgroup_specific_genomic_regions(gr, subgroup, 
+    present = 0.7, absent = 0.3)
+subgroup_specific_genomic_regions(gr, subgroup, 
+    present = function(x) mean(x) >= 0.7, 
+    absent = function(x) mean(x) <= 0.3)
+}
 NULL
-
 }

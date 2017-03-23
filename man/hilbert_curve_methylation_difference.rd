@@ -16,7 +16,7 @@ hilbert_curve_methylation_difference(subgroup, comparison, chromosome = paste0("
   \item{comparison}{if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference The value is a vector of length of two and the difference is calculated as \code{subgroup[1] - subgroup[2]}}
   \item{chromosome}{a vector of chromosome names}
   \item{species}{species}
-  \item{type}{Three types of visualization supported, see "details" section}
+  \item{type}{Three types of visualization are supported, see "details" section}
 
 }
 \details{
@@ -35,12 +35,14 @@ To compare methylation in two subgroups, users can use following two ways:
 
 \itemize{
   \item directly compare mean methylation in the two subgroups
-  \item use combination of "global_mean" + "difference"
+  \item use combination of "global_mean" + "difference" (this one I feel better to visualize the difference)
 }
 }
 \value{
-a \code{\link[GenomicRanges]{GRanges}} object which contains mean methylation for the 1kb segmentation and other statistics.
-If users just need this object without making any plots, setting \code{type = "none"}.
+A \code{\link[GenomicRanges]{GRanges}} object which contains mean methylation for the 1kb segmentation and other statistics.
+If users just need this object without making any plots, set \code{type = "none"}.
+
+The returned value can be sent to \code{\link{general_chipseq_association_to_methylation}}.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -48,5 +50,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

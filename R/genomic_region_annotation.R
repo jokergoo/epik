@@ -158,7 +158,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 #        region in ``gr`` overlap; ``percent`` means the percent of each region in ``gr`` that is 
 #        overlapped by genomic features
 # -prefix prefix for the names in the annotation columns. The column names are constructed as "$prefix_$name"
-# -ignore.strand whether ignore strand information
+# -ignore_strand whether ignore strand information
 # -... pass to `GenomicRanges::countOverlaps` or `percentOverlaps`
 #
 # == details
@@ -182,7 +182,7 @@ annotate_to_gene_models = function(gr, txdb, gene_model =c("gene", "tx"),
 # annotate_to_genomic_features(gr1, list(gr2 = gr2, gr3 = gr3), type = "number", prefix = "#")
 annotate_to_genomic_features = function(gr, genomic_features, 
 	name = NULL, type = c("percent", "number"), prefix = "overlap_to_", 
-	ignore.strand = TRUE, ...) {
+	ignore_strand = TRUE, ...) {
 	
 	# check names
 	if(is.null(name)) {
@@ -204,9 +204,9 @@ annotate_to_genomic_features = function(gr, genomic_features,
 
         ostrand = strand(gr)
         if(type == "percent") {
-            s2 = percentOverlaps(gr, genomic_features, ignore.strand = ignore.strand, ...)
+            s2 = percentOverlaps(gr, genomic_features, ignore_strand = ignore_strand, ...)
         } else if(type == "number") {
-        	if(ignore.strand) {
+        	if(ignore_strand) {
 		        strand(gr) = "*"
 		        strand(genomic_features) = "*"
 		    }
@@ -249,7 +249,7 @@ annotate_to_genomic_features = function(gr, genomic_features,
 # == param
 # -query a `GenomicRanges::GRanges` object
 # -subject a `GenomicRanges::GRanges` object
-# -ignore.strand wether ignore strands
+# -ignore_strand wether ignore strands
 # -... pass to `GenomicRanges::findOverlaps`
 #
 # == details
@@ -268,9 +268,9 @@ annotate_to_genomic_features = function(gr, genomic_features,
 # gr2 = GRanges(seqname = "chr1", ranges = IRanges(start = c(7, 13), end = c(8, 20)))
 # percentOverlaps(gr1, gr2)
 # percentOverlaps(gr2, gr1)
-percentOverlaps = function(query, subject, ignore.strand = TRUE, ...) {
+percentOverlaps = function(query, subject, ignore_strand = TRUE, ...) {
 		
-	if(ignore.strand) {
+	if(ignore_strand) {
 		strand(query) = "*"
 		strand(subject) = "*"
 	}

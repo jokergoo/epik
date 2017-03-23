@@ -19,7 +19,7 @@
 # bp(10.1)
 bp = function(x) {
 	x = round(x)
-	class(x) = c(class(x), "bp")
+	class(x) = unique(c(class(x), "bp"))
 	x
 }
 
@@ -102,7 +102,7 @@ print.bp = function(x, ...) {
 # `GenomicRanges::reduce` only merges regions with fixed gap width, but sometimes it is not reasonable to set gap
 # to a same width for all regions. Assuming we have a list of differentially methylated regions (DMRs) and we want to reduce
 # the number of DMRs by merging neighouring DMRs. DMRs distribute differently in different places in the genome, e.g. DMRs are dense
-# and short in CpG-rich regions (e.g. CpG islands) while long in CpG-poor regions (e.g. gene bodies and intergenic regions),
+# and short in CpG-rich regions (e.g. CpG islands) while long and sparse in CpG-poor regions (e.g. gene bodies and intergenic regions),
 # thus the merging should be applied based to the width of every DMR itself. `reduce2` can merge regions by the width of every region itself.
 # This type of merging is dynamic because after each iteration of merging, some regions are merged into a large region and 
 # it will has longer extension. The whole merging will proceed iteratively unless there is no new merging.

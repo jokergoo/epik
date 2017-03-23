@@ -4,12 +4,12 @@
 
 
 # == title
-# Basic statistics on genomic regions
+# Visualize basic statistics on genomic regions
 #
 # == param
 # -gr_list a list of `GenomicRanges::GRanges`.
-# -annotation a vector which contains groups of samples. If it has names which correspond to ``gr_list``, the order of this vector is automatically adjusted.
-# -annotation_color colors corresponding to classes of annotations
+# -subgroup a vector which contains groups of samples. If it has names which correspond to ``gr_list``, the order of this vector is automatically adjusted.
+# -subgroup_color colors corresponding to subgroups
 # -title title of the plot
 # -species species, necessary if ``type`` is set to ``proportion``.
 # -type type of statistics
@@ -21,7 +21,7 @@
 #
 # For ``type`` settings:
 #
-# -proportion proportion of total length of regions compared to the whole genome. It is more unbiased.
+# -proportion proportion of total length of regions in the whole genome.
 # -number number of regions. Sometimes only looking at the number of regions gives biased estimation of
 #     amount of regions if the width of regions are very viarable.
 # -median_width median width of regions
@@ -40,16 +40,16 @@
 # 	GRanges(df[[1]], ranges = IRanges(df[[2]], df[[3]]))
 # })
 # names(gr_list) = paste0("sample_", 1:10)
-# basic_genomic_regions_stat(gr_list)
-# basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-#     annotation_color = c("a" = "red", "b" = "blue"))
-# basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-#     annotation_color = c("a" = "red", "b" = "blue"), type = "number")
-# basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-#     annotation_color = c("a" = "red", "b" = "blue"), type = "median_width")
-# basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-#     annotation_color = c("a" = "red", "b" = "blue"), by_chr = TRUE)
-basic_genomic_regions_stat = function(gr_list, annotation = NULL, annotation_color = NULL, 
+# genomic_regions_basic_stat(gr_list)
+# genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+#     subgroup_color = c("a" = "red", "b" = "blue"))
+# genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+#     subgroup_color = c("a" = "red", "b" = "blue"), type = "number")
+# genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+#     subgroup_color = c("a" = "red", "b" = "blue"), type = "median_width")
+# genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+#     subgroup_color = c("a" = "red", "b" = "blue"), by_chr = TRUE)
+genomic_regions_basic_stat = function(gr_list, subgroup = NULL, subgroup_color = NULL, 
 	title = paste0("Basic statistics for genomic regions"), species = "hg19", 
 	type = c("proportion", "number", "median_width"),
 	chromosome = paste0("chr", c(1:22, "X", "Y")), by_chr = FALSE) {
@@ -70,10 +70,9 @@ basic_genomic_regions_stat = function(gr_list, annotation = NULL, annotation_col
 	}
 	sid = names(gr_list)
 
-    
-	if(!is.null(annotation)) {
-		if(is.null(names(annotation))) names(annotation) = sid
-		annotation = annotation[sid]
+	if(!is.null(subgroup)) {
+		if(is.null(names(subgroup))) names(subgroup) = sid
+		subgroup = subgroup[sid]
 	}
 
 	n_gr = length(gr_list)
@@ -155,17 +154,17 @@ basic_genomic_regions_stat = function(gr_list, annotation = NULL, annotation_col
 		df = data.frame(x = x, sid = factor(sid, levels = sid))
 	}
 
-	if(is.null(annotation)) {
+	if(is.null(subgroup)) {
 		gp = ggplot(df, aes(y = x, x = sid)) + geom_bar(stat = "identity")
 	} else {
-		df = cbind(df, annotation = annotation[df$sid])
-		gp = ggplot(df, aes(y = x, x = sid)) + geom_bar(stat = "identity", aes(fill = annotation))
+		df = cbind(df, subgroup = subgroup[df$sid])
+		gp = ggplot(df, aes(y = x, x = sid)) + geom_bar(stat = "identity", aes(fill = subgroup))
 	}
 
 	if(by_chr) gp = gp + facet_wrap( ~ chr)
 
-	if(!is.null(annotation_color)) {	
-		gp = gp + scale_fill_manual(values = annotation_color)
+	if(!is.null(subgroup_color)) {	
+		gp = gp + scale_fill_manual(values = subgroup_color)
 	}
 
 	gp = gp + xlab("") + ylab(ylab) + theme(axis.text.x=element_text(angle = 90, vjust = 0.5)) + ggtitle(title)

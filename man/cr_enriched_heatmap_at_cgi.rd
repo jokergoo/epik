@@ -9,7 +9,7 @@ Visualizing enrichment for epigenomic signals at TSS-CGIs
 \usage{
 cr_enriched_heatmap_at_cgi(cr, txdb, expr, cgi,
     fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
-    expr_annotation)
+    expr_ha)
 }
 \arguments{
 
@@ -17,12 +17,12 @@ cr_enriched_heatmap_at_cgi(cr, txdb, expr, cgi,
   \item{txdb}{transcriptome annotation which was used in \code{\link{correlated_regions}}}
   \item{expr}{expression matrix which was used in \code{\link{correlated_regions}}}
   \item{cgi}{CpG island, a \code{\link[GenomicRanges]{GRanges}} object}
-  \item{fdr_cutoff}{cutoff for fdr}
+  \item{fdr_cutoff}{cutoff for fdr, used to filter significant CRs}
   \item{meth_diff_cutoff}{cutoff for methylation difference. If there are no subgroup information or only one subgroup, \code{meth_IQR} column is used for filtering. If there are more than one subgroups, \code{meth_diameter} column is used for filtering.}
-  \item{marks}{names of histone marks}
+  \item{marks}{names of histone marks, should be supported in \code{\link{chipseq_hooks}}}
   \item{type}{visualize negative correlated regions or positive correlated regions}
   \item{extend}{base pairs extended to upstream and downstream}
-  \item{expr_annotation}{a \code{\link[ComplexHeatmap]{HeatmapAnnotation}} class object.It is used for the expression heatmap}
+  \item{expr_ha}{a \code{\link[ComplexHeatmap]{HeatmapAnnotation}} class object. It is used for the expression heatmap}
 
 }
 \details{
@@ -60,5 +60,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

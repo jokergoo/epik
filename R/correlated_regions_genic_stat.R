@@ -1,19 +1,21 @@
 
 # == title
-# Plot general statistics for the annotation to genes
+# Plot general statistics for the annotations to genes
 #
 # == param
 # -cr_reduced significant correlated regions which have been reduced by `cr_reduce`
 # -txdb the transcriptome annotation which is same as the one used in `correlated_regions`
 #
 # == details
-# There are five plots which are:
+# There are five plots:
 # 
 # - mean methylation difference for negative/positive CRs in promoters/gene body/intergenic regions
 # - length of negative/positive CRs in promoters/gene body/intergenic regions
-# - genes for which promoters/gene body/intergenic regions are affected by negative/positive CRs
+# - number of genes for which promoters/gene body/intergenic regions are affected by negative/positive CRs
 # - sum of length of negative/positive CRs in promoters/gene body/intergenic regions
 # - Number of CpG per 1kb window for negative/positive CRs in promoters/gene body/intergenic regions
+#
+# Here the promoter is defined as (-1000, 2000) of TSS.
 #
 # == value
 # No value is returned

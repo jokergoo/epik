@@ -7,13 +7,13 @@ Overlap genomic regions
 Overlap genomic regions
 }
 \usage{
-percentOverlaps(query, subject, ignore.strand = TRUE, ...)
+percentOverlaps(query, subject, ignore_strand = TRUE, ...)
 }
 \arguments{
 
   \item{query}{a \code{\link[GenomicRanges]{GRanges}} object}
   \item{subject}{a \code{\link[GenomicRanges]{GRanges}} object}
-  \item{ignore.strand}{wether ignore strands}
+  \item{ignore_strand}{wether ignore strands}
   \item{...}{pass to \code{\link[GenomicRanges]{findOverlaps}}}
 
 }

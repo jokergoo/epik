@@ -14,6 +14,8 @@
 # Scatterplot for all correlated regions corresponding to the gene will be made. If you want to make
 # a subset of correlated regions, directly subset ``cr``.
 #
+# Internally it uses `scatterplot_with_boxplot`.
+#
 # == value
 # No value is returned
 #
@@ -66,8 +68,8 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column, xlab = "Methylation"
 # == param
 # -x values on x-axis
 # -y values on y-axis
-# -annotation groups of data points
-# -annotation_color colors for groups
+# -subgroup groups of data points
+# -subgroup_col colors for groups
 # -main title for the plot
 # -xlab labels on x-axis
 # -ylab labels on y-axis
@@ -85,27 +87,27 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column, xlab = "Methylation"
 # Zuguang Gu <z.gu@dkfz.de>
 #
 # == example
-# scatterplot_with_boxplot(rnorm(40), rnorm(40), annotation = sample(letters[1:2], 40, replace = TRUE))
+# scatterplot_with_boxplot(rnorm(40), rnorm(40), subgroup = sample(letters[1:2], 40, replace = TRUE))
 #
-scatterplot_with_boxplot = function(x, y, annotation = rep("unknown", length(x)), 
-	annotation_color = structure(seq_along(levels(annotation)), names = levels(annotation)),
+scatterplot_with_boxplot = function(x, y, subgroup = rep("unknown", length(x)), 
+	subgroup_col = structure(seq_along(levels(subgroup)), names = levels(subgroup)),
 	main = NULL, xlab = NULL, ylab = NULL, xlim = range(x), ylim = range(y), text_list = NULL) {
 
-	if(!is.factor(annotation)) {
-		annotation = factor(annotation)
+	if(!is.factor(subgroup)) {
+		subgroup = factor(subgroup)
 	}
 	xrange = xlim
 	yrange = ylim
 
 	layout(rbind(1:2, 3:4), widths=c(1, 2), heights=c(2, 1))
     par(mar = c(0, 5, 5, 0))
-    boxplot(y ~ annotation, ylim = yrange, axes = FALSE, ann = FALSE, col = annotation_color[levels(annotation)])
+    boxplot(y ~ subgroup, ylim = yrange, axes = FALSE, ann = FALSE, col = subgroup_col[levels(subgroup)])
     box()
     axis(side = 2, cex.axis = 1.5)
     title(ylab = ylab, cex.lab = 1.5)
 
     par(mar = c(0, 0, 5, 5))
-    plot(x, y, xlim = xrange, ylim = yrange, axes = FALSE, ann = FALSE, cex = 1.5, pch = 16, col = annotation_color[annotation])
+    plot(x, y, xlim = xrange, ylim = yrange, axes = FALSE, ann = FALSE, cex = 1.5, pch = 16, col = subgroup_col[subgroup])
     box()
     title(main, cex.main = 1)
 
@@ -114,7 +116,7 @@ scatterplot_with_boxplot = function(x, y, annotation = rep("unknown", length(x))
 
     par(mar = c(5, 5, 0, 0), xpd = NA)
     plot(c(0, 1), c(0, 1), type = "n", axes = FALSE, ann = FALSE)
-    legend("bottomleft", legend = levels(annotation), pch = 16, col = annotation_color[levels(annotation)])
+    legend("bottomleft", legend = levels(subgroup), pch = 16, col = subgroup_col[levels(subgroup)])
     if(length(text_list)) {
 	    text_list_name = names(text_list)
 	    text_list = as.character(text_list)
@@ -129,7 +131,7 @@ scatterplot_with_boxplot = function(x, y, annotation = rep("unknown", length(x))
 	}
 
     par(mar = c(5, 0, 0, 5))
-    boxplot(x ~ annotation, ylim = xrange, horizontal = TRUE, axes = FALSE, ann = FALSE, col = annotation_color[levels(annotation)])
+    boxplot(x ~ subgroup, ylim = xrange, horizontal = TRUE, axes = FALSE, ann = FALSE, col = subgroup_col[levels(subgroup)])
     box()
     axis(side = 1, cex.axis = 1.5)
     #axis(side = 4, at = seq_along(levels(d$cate)), labels=levels(d$cate))

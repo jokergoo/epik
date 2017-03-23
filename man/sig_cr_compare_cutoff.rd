@@ -21,10 +21,11 @@ sig_cr_compare_cutoff(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 \details{
 It simply plots how correlated signals are enriched at extended gene regions for
 negative correlated regions and positive correlated regions under different combination
-of cutoffs.
+of cutoffs. The basic rule for selecting the cutoffs is they should not be too loose while
+the pattern of the enrichment (on tss/gene body) should still be obvious.
 }
 \value{
-no value is returned
+No value is returned.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -32,5 +33,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

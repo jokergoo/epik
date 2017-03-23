@@ -21,6 +21,8 @@ It works after \code{\link{chipseq_hooks}} is set.
 }
 \value{
 A list of \code{\link[GenomicRanges]{GRanges}} objects.
+
+If you e.g. set "chr" as the third argument when defining \code{chipseq_hooks$peak()\code{\link{, "chr" can also be passed here through }...}}`.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -28,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

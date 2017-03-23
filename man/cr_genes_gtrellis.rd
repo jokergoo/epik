@@ -1,5 +1,5 @@
-\name{gtrellis_cr_genes}
-\alias{gtrellis_cr_genes}
+\name{cr_genes_gtrellis}
+\alias{cr_genes_gtrellis}
 \title{
 Visualize CR genes in gtrellis layout
 }
@@ -7,7 +7,7 @@ Visualize CR genes in gtrellis layout
 Visualize CR genes in gtrellis layout
 }
 \usage{
-gtrellis_cr_genes(cr, txdb, expr)
+cr_genes_gtrellis(cr, txdb, expr)
 }
 \arguments{
 
@@ -39,5 +39,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

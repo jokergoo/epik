@@ -28,7 +28,7 @@ Only three Gene Ontology (biological process, molecular function and cellular co
 There is also a heatmap which shows the significant enrichment.
 }
 \value{
-a list of function enrichments
+A list of function enrichments.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -36,5 +36,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

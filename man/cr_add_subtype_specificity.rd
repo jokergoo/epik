@@ -1,10 +1,10 @@
 \name{cr_add_subtype_specificity}
 \alias{cr_add_subtype_specificity}
 \title{
-Add subtype specificity columns in cr
+Add subtype specificity columns in CR
 }
 \description{
-Add subtype specificity columns in cr
+Add subtype specificity columns in CR
 }
 \usage{
 cr_add_subtype_specificity(cr, cutoff = 0.05, suffix = "_ss")
@@ -32,5 +32,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

@@ -1,10 +1,10 @@
 \name{sig_cr_enriched_heatmap}
 \alias{sig_cr_enriched_heatmap}
 \title{
-Visualize significant correlated regions
+Visualize significantly correlated regions
 }
 \description{
-Visualize significant correlated regions
+Visualize significantly correlated regions
 }
 \usage{
 sig_cr_enriched_heatmap(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff = 0.1)
@@ -22,7 +22,7 @@ There are two heatmaps which corresponds to significant negative correlated regi
 correlated regions. Rows are same as the heatmaps produced by \code{\link{cr_enriched_heatmap}}.
 }
 \value{
-no value is returned
+No value is returned.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -30,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

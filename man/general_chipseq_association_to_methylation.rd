@@ -16,8 +16,12 @@ general_chipseq_association_to_methylation(gr_list, gr_meth)
 
 }
 \details{
-For each histone mark, the distribution of methylation difference in regions which show
-higher histone modification signal difference is visualized.
+Each histone mark corresponds to one panel. In each panel, there are two plots:
+
+\itemize{
+  \item distribution of methylation difference in regions where histone mark signals are larger than corresponding quantile.
+  \item proportion of regions which show higher histone modification signal in group 1 and in group2.
+}
 }
 \value{
 no value is returned
@@ -28,5 +32,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

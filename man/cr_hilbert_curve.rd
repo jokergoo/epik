@@ -14,10 +14,10 @@ cr_hilbert_curve(cr, chromosome = paste0("chr", 1:22),
 
   \item{cr}{correlated regions}
   \item{chromosome}{a vector of chromosome names}
-  \item{merge_chr}{whether to merge all chromosomes in one plot}
+  \item{merge_chr}{whether merge all chromosomes in one plot}
   \item{add_chr_name}{whether add chromosome names to the plot}
   \item{title}{title of the plot}
-  \item{legend}{legend}
+  \item{legend}{legend generated from \code{\link[ComplexHeatmap]{Legend}}}
   \item{...}{pass to \code{\link[HilbertCurve]{GenomicHilbertCurve}}}
 
 }
@@ -30,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

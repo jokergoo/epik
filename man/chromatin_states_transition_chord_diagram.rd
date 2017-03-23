@@ -12,7 +12,7 @@ chromatin_states_transition_chord_diagram(mat, group_names = NULL, max_mat = mat
 }
 \arguments{
 
-  \item{mat}{the transition matrix. It should be a square matrix in which row names and column names should be all the same. If it is not, the function will try to re-format it.}
+  \item{mat}{the transition matrix. It should be a square matrix in which row names and column names should be all the same. If it is not, the function will try to re-format it. If the matrix is from \code{\link{make_transition_matrix_from_chromHMM}} with methylation dataset, there will be additional tracks showing methylation difference between two groups.}
   \item{group_names}{name for the two groups under comparison. You also add it afterwards by using \code{\link[graphics]{text}}}
   \item{max_mat}{if there are several transition matrix to be compared, set it to the matrix with maximum absolute and it will make scales of all matrix the same and comparable.}
   \item{remove_unchanged_transition}{whether to remove transitions that states are not changed (set the values in diagonal to 0)}
@@ -34,7 +34,8 @@ there will be extra tracks on the outside of the circlie to represenst the mean 
 Chord diagram is implemented in base graphic system, which means, you can add titles or other graphics by base graphic 
 functions (e.g. \code{\link[graphics]{title}}, \code{\link[graphics]{text}}, ...)
 
-If you want to adjust order of states in the chord diagram, directly change row and column order of the matrix.
+If you want to adjust order of states in the chord diagram, directly change row and column order of the matrix. If the matrix
+is from \code{\link{make_transition_matrix_from_chromHMM}}, use \code{\link{state_names}} to retrieved or modify chromatin state names.
 }
 \value{
 No value is returned.

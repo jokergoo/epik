@@ -1,5 +1,5 @@
-\name{wgbs_qcplot}
-\alias{wgbs_qcplot}
+\name{methylation_qcplot}
+\alias{methylation_qcplot}
 \title{
 Basic qc plot for distribution of methylation and CpG coverage
 }
@@ -7,11 +7,11 @@ Basic qc plot for distribution of methylation and CpG coverage
 Basic qc plot for distribution of methylation and CpG coverage
 }
 \usage{
-wgbs_qcplot(sample_id, chromosome = paste0("chr", 1:22), background = NULL)
+methylation_qcplot(sample_id, chromosome = paste0("chr", 1:22), background = NULL)
 }
 \arguments{
 
-  \item{sample_id}{a vector of sample ids. You can generate plots for a list of samples in a same time while is faster than make it one by one.}
+  \item{sample_id}{a vector of sample IDs. You can generate plots for a list of samples in a batch which is faster than making it one by one.}
   \item{chromosome}{a vector of chromosome names}
   \item{background}{background regions where the CpG sites will only be looked into}
 
@@ -36,5 +36,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

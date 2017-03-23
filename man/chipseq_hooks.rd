@@ -26,7 +26,7 @@ such type of flexible data format, users need to define following hook functions
 
 \describe{
   \item{sample_id}{This self-defined function returns a list of sample IDs given the name of a histone mark.}
-  \item{peak}{This function should return a \code{\link[GenomicRanges]{GRanges}} object which are peaks for a given histone mark in a given sample. The \code{\link[GenomicRanges]{GRanges}} object should better have a meta column  which is the intensity of the histone modification signals. (**Note when you want to take the histone modification signals as quatitative analysis, please make sure they are normalized between samples**)}
+  \item{peak}{This function should return a \code{\link[GenomicRanges]{GRanges}} object which are peaks for a given histone mark in a given sample. The \code{\link[GenomicRanges]{GRanges}} object should better have a meta column named "density" which is the density of the histone modification signals. (**Note when you want to take the histone modification signals as quatitative analysis, please make sure they are properly normalized between samples**)}
   \item{chromHMM}{This hook is optional. If chromatin segmentation by chromHMM is avaialble, this hook can be defined as a function which accepts sample ID as argument and returns a \code{\link[GenomicRanges]{GRanges}} object. The \code{\link[GenomicRanges]{GRanges}} object should have a meta column named "states" which is the chromatin states inferred by chromHMM.}
 }
 
@@ -69,6 +69,7 @@ then you can call \code{\link{get_peak_list}} as:
   get_peak_list(mark, chr = "chr1")  }
 
 The \code{chipseq_hooks$chromHMM()} must have one argument \code{sid} which is the sample id, also there can be more arguments such as chromosomes.
+The usage for the additional argumetns are same as \code{chipseq_hooks$peak()}.
 }
 \value{
 Hook functions
@@ -82,5 +83,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

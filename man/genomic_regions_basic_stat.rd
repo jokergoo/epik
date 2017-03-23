@@ -1,13 +1,13 @@
-\name{basic_genomic_regions_stat}
-\alias{basic_genomic_regions_stat}
+\name{genomic_regions_basic_stat}
+\alias{genomic_regions_basic_stat}
 \title{
-Basic statistics on genomic regions
+Visualize basic statistics on genomic regions
 }
 \description{
-Basic statistics on genomic regions
+Visualize basic statistics on genomic regions
 }
 \usage{
-basic_genomic_regions_stat(gr_list, annotation = NULL, annotation_color = NULL,
+genomic_regions_basic_stat(gr_list, subgroup = NULL, subgroup_color = NULL,
     title = paste0("Basic statistics for genomic regions"), species = "hg19",
     type = c("proportion", "number", "median_width"),
     chromosome = paste0("chr", c(1:22, "X", "Y")), by_chr = FALSE)
@@ -15,8 +15,8 @@ basic_genomic_regions_stat(gr_list, annotation = NULL, annotation_color = NULL,
 \arguments{
 
   \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}}.}
-  \item{annotation}{a vector which contains groups of samples. If it has names which correspond to \code{gr_list}, the order of this vector is automatically adjusted.}
-  \item{annotation_color}{colors corresponding to classes of annotations}
+  \item{subgroup}{a vector which contains groups of samples. If it has names which correspond to \code{gr_list}, the order of this vector is automatically adjusted.}
+  \item{subgroup_color}{colors corresponding to subgroups}
   \item{title}{title of the plot}
   \item{species}{species, necessary if \code{type} is set to \code{proportion}.}
   \item{type}{type of statistics}
@@ -30,7 +30,7 @@ The function makes barplot to visualize different statistics in all samples.
 For \code{type} settings:
 
 \describe{
-  \item{proportion}{proportion of total length of regions compared to the whole genome. It is more unbiased.}
+  \item{proportion}{proportion of total length of regions in the whole genome.}
   \item{number}{number of regions. Sometimes only looking at the number of regions gives biased estimation of amount of regions if the width of regions are very viarable.}
   \item{median_width}{median width of regions}
 }
@@ -49,13 +49,13 @@ gr_list = lapply(1:10, function(i) {
 	GRanges(df[[1]], ranges = IRanges(df[[2]], df[[3]]))
 })
 names(gr_list) = paste0("sample_", 1:10)
-basic_genomic_regions_stat(gr_list)
-basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-    annotation_color = c("a" = "red", "b" = "blue"))
-basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-    annotation_color = c("a" = "red", "b" = "blue"), type = "number")
-basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-    annotation_color = c("a" = "red", "b" = "blue"), type = "median_width")
-basic_genomic_regions_stat(gr_list, annotation = rep(letters[1:2], each = 5), 
-    annotation_color = c("a" = "red", "b" = "blue"), by_chr = TRUE)
+genomic_regions_basic_stat(gr_list)
+genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+    subgroup_color = c("a" = "red", "b" = "blue"))
+genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+    subgroup_color = c("a" = "red", "b" = "blue"), type = "number")
+genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+    subgroup_color = c("a" = "red", "b" = "blue"), type = "median_width")
+genomic_regions_basic_stat(gr_list, subgroup = rep(letters[1:2], each = 5), 
+    subgroup_color = c("a" = "red", "b" = "blue"), by_chr = TRUE)
 }

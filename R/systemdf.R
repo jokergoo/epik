@@ -1,6 +1,6 @@
 
 # == title
-# Wrapper of system calls in which input and output are all tables
+# Wrapper of system calls in which input and output are all table-like files
 #
 # == param
 # -cmd     shell command
@@ -14,7 +14,7 @@
 #
 # - use backtick to mark variables which are data frames or other variables which can be converted
 #    to data frames by `base::as.data.frame`
-# - extract data frames
+# - extract the variable names and look for data frames in ``envir``
 # - write data frames into temporary files 
 # - replace variables names with paths that correspond to temporary files
 # - make the system call 

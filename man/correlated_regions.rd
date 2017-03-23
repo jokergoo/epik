@@ -14,33 +14,34 @@ correlated_regions(sample_id, expr, txdb, chr, extend = 50000,
 }
 \arguments{
 
-  \item{sample_id}{a vector of sample ids}
+  \item{sample_id}{a vector of sample IDs}
   \item{expr}{expression matrix}
   \item{txdb}{a \code{\link[GenomicFeatures]{TxDb-class}} object.}
   \item{chr}{a single chromosome name}
   \item{extend}{extension of gene model, both upstream and downstream}
-  \item{cov_filter}{if \code{coverage} hook is set in \code{\link{methylation_hooks}}, this option can be set to filter out CpG sites with low coverage across samples. the value for this option is a function for which the argument is a vector of coverage values for current CpG in all samples.}
-  \item{cor_method}{method for calcualting correlations}
-  \item{subgroup}{subgroup information}
+  \item{cov_filter}{if \code{coverage} hook is set in \code{\link{methylation_hooks}}, this option can be set to filter out CpG sites with low coverage across samples. the value for this option is a function for which the argument is a vector of coverage values for current CpG in all samples. The default setting means the CpG should have coverage in more than half of samples.}
+  \item{cor_method}{method for calcualting correlations, pass to \code{\link[stats]{cor}}.}
+  \item{subgroup}{subgroup information. If provided, ANOVA test and group mean are applied on each correlated region.}
   \item{window_size}{how many CpG sites in a window}
   \item{window_step}{step of the sliding window, measured in number of CpG sites}
   \item{max_width}{maximum width of a window}
   \item{raw_meth}{whether use raw methylation value (values from \code{raw} hook set in \code{\link{methylation_hooks}})}
-  \item{cov_cutoff}{cutoff for CpG coverage}
-  \item{min_dp}{minimal number of non-NA values for calculating correlations. When \code{meth} is the raw methylation, values for which CpG coverage is too low will be replaced with \code{NA}, We only use non-NA values to calculate correlations.}
+  \item{cov_cutoff}{cutoff for CpG coverage when using raw methylation rate, used for raw methylation. Note when the CpG coverage is too low, the raw methylation rate is not reliable. Raw methylation rate for those CpGs with coverage less this this cutoff is set to \code{NA} will be further filtered by \code{min_gp}.}
+  \item{min_dp}{minimal number of non-NA values for calculating correlations. When \code{meth} is the raw methylation, values for which CpG coverage is too low will be replaced with \code{NA}, We only use non-NA values to calculate correlations. If the number of data points for calculating correlation is less than \code{min_dp}, the CpG window is just excluded.}
   \item{col}{color for subgroups. This setting will be saved in the returned object and will be used in downstream analysis. If not set, random colors are assigned.}
-  \item{species}{species. This setting will be used in downstream analysis}
+  \item{species}{species. This setting will be saved and used in downstream analysis}
 
 }
 \details{
-The detection for correlated regions is gene-centric. For every gene, the process are as follows:
+A correlated region is defined as a region where methylation is correlated with the expression of associated gene.
+The detection for correlated regions is gene-centric. For every gene, the processes are as follows:
 
 \itemize{
-  \item extend to both upstream and downstream by \code{extend}
+  \item extend to both upstream and downstream by \code{extend};
+  \item filter CpG sites by CpG coverage (by \code{cov_filter});
   \item from the most upstream, use a sliding window which contains \code{windows_size} CpG sites, moving step of \code{window_step} CpG sites;
-  \item filter each window by CpG coverage (by \code{cov_filter} and \code{cov_cutoff}) if \code{raw_meth} is \code{TRUE}
-  \item calculate correlation between methylation and gene expression for this window
-  \item calculate other statistics
+  \item calculate correlation between methylation and gene expression for this window;
+  \item calculate other statistics.
 }
 
 Following meta columns are attached to the \code{\link[GenomicRanges]{GRanges}} objects:
@@ -66,7 +67,10 @@ filter significant correlated regions by p-value, fdr and meth_diff columns, or 
 \value{
 A \code{\link[GenomicRanges]{GRanges}} object which contains correlations and associated statistics for every CpG windows.
 
-The settings for finding correlated regions are stored as metadata of the \code{\link[GenomicRanges]{GRanges}} object.
+The settings for finding correlated regions are stored as the meta data of the \code{\link[GenomicRanges]{GRanges}} object.
+}
+\seealso{
+Internally, the calculation is done by \code{\link{correlated_regions_by_window}}.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -74,5 +78,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

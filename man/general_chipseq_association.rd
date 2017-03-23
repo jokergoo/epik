@@ -17,7 +17,7 @@ general_chipseq_association(gr_list, q = 0.9)
 }
 \details{
 For every pair of histone marks, the Jaccard coefficient for the regions which show higher difference
-than quantile \code{q} is calculated and visualized. There are three plots:
+than quantile \code{seq(0.1, 0.9, by = 0.1)} is calculated and visualized. There are three plots:
 
 For each pair of histone marks,
 
@@ -36,5 +36,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

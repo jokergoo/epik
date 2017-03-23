@@ -11,7 +11,7 @@ cr_add_fdr_column(cr, fdr_method = "BH")
 }
 \arguments{
 
-  \item{cr}{original correlated regions from \code{\link{correlated_regions}}}
+  \item{cr}{original correlated regions from \code{\link{correlated_regions}}. CRs from all chromosomes should be concatenated into one object by \code{\link{cr_concatenate}}.}
   \item{fdr_method}{method to calculate FDR}
 
 }
@@ -30,5 +30,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

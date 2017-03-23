@@ -129,12 +129,12 @@ find_neighbours = function(query, reference, upstream = 1000, downstream = 1000)
 
 
 
-
+# == title
 # Number of columns which are highly correlated to other columns
 #
 # == param
 # -x a matrix, correlation is calculated by columns
-# -abs_cutoff cutoff of absolute correlation
+# -abs_cutoff cutoff of absolute correlation. It can be a numeric vector with more than one cutoffs.
 # -size size of blocks
 # -mc number of cores
 # -... pass to `stats::cor`
@@ -142,21 +142,21 @@ find_neighbours = function(query, reference, upstream = 1000, downstream = 1000)
 # == details
 # For each column, it looks for number of other columns which correlate with absolute correlation coefficient larger tham ``abs_cutoff``.
 # The calculation involves pair-wise correlation of all columns in the matrix.
-# When number of columns is huge in a matrix, it is out of ability of R to store such a long vector. This function
-# solves this problem by splitting the columns into k blocks and looks at each block sequentially or parallel.
+# When number of columns is huge in the matrix, it is out of ability of R to store such long vector. This function
+# solves this problem by splitting the columns into k blocks and looks at each block sequentially or in parallel.
 #
 # The code is partially adapted from https://rmazing.wordpress.com/2013/02/22/bigcor-large-correlation-matrices-in-r/
 #
 # == value
-# A vector that represents how many other columns correlate to current column under the correlation cutoff.
+# A matrix that represents how many other columns correlate to current column under the correlation cutoff.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
 # == example
 # \dontrun{
-# mat = matrix(rnorm(100000 * 10), ncol = 100000, nrow = 20)
-# cor_columns(mat)
+# mat = matrix(rnorm(20000 * 10), ncol = 20000, nrow = 20)
+# cor_columns(mat, abs_cutoff = c(0.5, 0.6, 0.7))
 # }
 # NULL
 cor_columns = function (x, abs_cutoff = 0.5, size = 1000, mc = 1, ...) {
@@ -186,7 +186,7 @@ cor_columns = function (x, abs_cutoff = 0.5, size = 1000, mc = 1, ...) {
 	    for (i in ind) {
 	        COMB <- COMBS[i, ]
 
-	        qqcat("block @{COMB[1]}(row @{(COMB[1]-1)*size+1}~@{COMB[1]*size})/@{max(COMBS[,1])} and @{COMB[2]}(row @{(COMB[2]-1)*size+1}~@{COMB[2]*size})/@{max(COMBS[,2])}\n")
+	        qq_message("block @{COMB[1]}/@{max(COMBS[,1])} (row @{(COMB[1]-1)*size+1}~@{COMB[1]*size}) and @{COMB[2]}/@{max(COMBS[,2])} (row @{(COMB[2]-1)*size+1}~@{COMB[2]*size})")
 	        G1 <- SPLIT[[COMB[1]]]
 	        G2 <- SPLIT[[COMB[2]]]
 	        
@@ -215,7 +215,6 @@ cor_columns = function (x, abs_cutoff = 0.5, size = 1000, mc = 1, ...) {
 	colnames(count) = abs_cutoff
 	return(count)
 }
-
 
 generate_diff_color_fun = function(x, quantile = 0.95, col = c("#3794bf", "#FFFFFF", "#df8640")) {
 	q = quantile(abs(x), quantile)

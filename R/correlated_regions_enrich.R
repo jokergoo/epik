@@ -1,11 +1,11 @@
 
 # == title
-# Normalize histone modification signals to target
+# Normalize histone modification signals to target regions
 #
 # == param
 # -target target regions
-# -mark histone mark name
-# -sample_id a vector of sample ids
+# -mark name of the histone mark
+# -sample_id a vector of sample IDs
 # -mode how to summarize histone modification signals among samples, by defualt is the cross-sample mean signal
 # -return_arr whether also return the three dimension array itself
 # -... pass to `EnrichedHeatmap::normalizeToMatrix`
@@ -18,8 +18,7 @@
 # == values
 # If ``return_arr`` is set to ``FALSE``, the funtion returns a matrix which can be directly sent to 
 # `EnrichedHeatmap::EnrichedHeatmap`. If ``return_arr`` is ``TRUE``, the returned value is a list in which
-# the first element is the original array that each slice in the third dimension is the normalize matrix
-# in each sample.
+# the first element is the original array and the second element is the normalized matrix.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -49,18 +48,18 @@ enrich_with_histone_mark = function(target, mark, sample_id, mode = mean, return
 	mat = copyAttr(tm, mat)
 
 	if(return_arr) {
-		return(list(arr = arr, list = mat))
+		return(list(arr = arr, mat = mat))
 	} else {
 		return(mat)
 	}
 }
 
 # == title
-# Normalize methylation to target
+# Normalize methylation to target regions
 #
 # == param
 # -target target regions
-# -sample_id a vector of sample ids
+# -sample_id a vector of sample IDs
 # -mode how to summarize methylation among samples, by default it is the cross-sample mean methylation. 
 #       Since methylation is represented as matrix, here we use ``row*``-family functions (e.g. `rowMeans`, `matrixStats::rowMedians`)
 # -extend pass to `EnrichedHeatmap::normalizeToMatrix`

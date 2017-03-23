@@ -16,8 +16,8 @@ mat_dist(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix(x)) seq_le
   \item{x}{a matrix or a list. If it is a matrix, distribution in columns are visualized}
   \item{subgroup}{subgroup information}
   \item{reorder_column}{if it is true, samples are first ordered by subgroups and in each subgroup, samples are ordered by median values}
-  \item{od}{order of columns}
-  \item{ha}{additional annotation can be specified as a \code{\link[ComplexHeatmap]{HeatmapAnnotation-class}} object}
+  \item{od}{order of columns. If \code{reorder_column} is set to \code{TRUE}, this argument is ignored.}
+  \item{ha}{Annotations that are specified as a \code{\link[ComplexHeatmap]{HeatmapAnnotation-class}} object. The annotations will be put on top of the heatmap.}
   \item{type}{three types of plots are supported, see details}
   \item{title}{title for the plot}
   \item{...}{pass to \code{\link[ComplexHeatmap]{densityHeatmap}}}
@@ -29,11 +29,11 @@ Three types of plots for visualizing distributions are supported:
 \describe{
   \item{densityHeatmap:}{density of distribution is visualized as heatmaps, use \code{\link[ComplexHeatmap]{densityHeatmap}}}
   \item{lineplot:}{distribution is visualized as normal line plot, use \code{\link[graphics]{matplot}}}
-  \item{MDS:}{multiple dimension scaling}
+  \item{MDS:}{multiple dimension scaling by calling \code{\link[stats]{cmdscale}}}
 }
 }
 \value{
-Order of columns in density heatmap
+Order of columns in the heatmap
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -41,5 +41,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

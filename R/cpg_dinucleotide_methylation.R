@@ -11,14 +11,14 @@ weighted_mean = function(x1, x2, w1, w2) {
 #
 # == param
 # -pos positions of CpG sites, must be sorted
-# -meth methylation matrix. Note the value should be the number of methylated CpGs at each CpG site
+# -meth methylation matrix associated with the CpG positions. Note the value should be the number of methylated CpGs at each CpG site
 # -cov CpG coverage matrix
 #
 # == details
-# Normally methylation for the two Cs in a CpG dinucleotide is very similar. This function
+# Normally methylation for the two Cs in a CpG dinucleotide (a second C is on the other strand) is very similar. This function
 # helps to reduce the redundency of the methylation dataset.
 #
-# For two Cs in a CpG dinucleotide, the merged methylation value is calculated by weighting
+# For two Cs in a CpG dinucleotide, the merged methylation value (the methylated Cs) is calculated by weighting
 # the CpG coverage of the two Cs. Also the merged coverage is also calculated by weighting
 # the coverage itself.
 #
@@ -28,7 +28,7 @@ weighted_mean = function(x1, x2, w1, w2) {
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 # 
-cpg_dinucleotide_methylation = function(pos, meth, cov) {
+merge_cpg_dinucleotide_methylation = function(pos, meth, cov) {
 
 	if(length(pos) != nrow(meth)) {
 		stop("length of `pos` should be same as the number of rows of `meth`.")
@@ -102,6 +102,8 @@ cpg_dinucleotide_methylation = function(pos, meth, cov) {
 
 	cov2 = round(cov2)
 	meth2 = round(meth2)
+	l = meth2 < cov2
+	meth2[l] = cov2[l]
 
 	colnames(meth2) = colnames(meth)
 	colnames(cov2) = colnames(cov)

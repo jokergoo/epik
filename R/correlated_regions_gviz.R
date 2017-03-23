@@ -1,12 +1,12 @@
 
 # if(!exists(".boxes")) {
-# 	.boxes = Gviz.epik:::.boxes
+# 	.boxes = epik.Gviz:::.boxes
 # }
 # if(!exists(".arrowBar")) {
-# 	.arrowBar = Gviz.epik:::.arrowBar
+# 	.arrowBar = epik.Gviz:::.arrowBar
 # }
 # if(!exists(".fontGp")) {
-# 	.fontGp = Gviz.epik:::.fontGp
+# 	.fontGp = epik.Gviz:::.fontGp
 # }
 
 # elementNROWS = function (x) {
@@ -25,7 +25,7 @@
 # Customized Gviz plot for a single gene
 #
 # == param
-# -sig_cr correlated regions which show significant correlations
+# -sig_cr correlated regions which show significant correlations, i.e. should be filtered by `cr_reduce`.
 # -gi gene id
 # -expr the expression matrix which was used in `correlated_regions`
 # -txdb the transcriptome annotation which was used in `correlated_regions`
@@ -38,15 +38,15 @@
 # == details
 # There are following Gviz tracks:
 #
-# - gene models. Multiple transcripts will also be plotted.
+# - gene models where multiple transcripts are plotted.
 # - correlation between methylation and expression
 # - heatmap for methylation
 # - significant correlated regions
 # - CpG density
 # - annotation to other genomic features, if provided
-# - histome modification data, if provided
+# - histome modification signals in subgroups, if provided
 #
-# A modified version of Gviz (https://github.com/jokergoo/Gviz.epik ) is used to make the plot.
+# A modified version of Gviz (https://github.com/jokergoo/epik.Gviz ) is used to make the plot.
 #
 # == value
 # No value is returned.
@@ -124,30 +124,30 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 		size = 0.5)
 		
 	.boxes_wrap = function(GdObject, offsets) {
-		df = getFromNamespace("get_origin_fun", "Gviz.epik")(".boxes")(GdObject, offsets)
+		df = getFromNamespace("get_origin_fun", "epik.Gviz")(".boxes")(GdObject, offsets)
 		l = df$gene == gi
 		# df$fill[l] = "pink"
 		df$fill[!l] = paste0(df$fill[!l], "40")
 		df
 	}
-	getFromNamespace("change_fun", "Gviz.epik")(".boxes", .boxes_wrap)
+	getFromNamespace("change_fun", "epik.Gviz")(".boxes", .boxes_wrap)
 	
 	tx_gene_mapping = structure(grtrack@range$gene, names = grtrack@range$transcript)
 
 	.arrowBar_wrap = function(xx1, xx2, strand, coords, y=20, W=3, D=10, H, col, lwd, lty, alpha, barOnly=FALSE,
-        diff = Gviz.epik:::.pxResolution(coord="y"), min.height=3) {
+        diff = epik.Gviz:::.pxResolution(coord="y"), min.height=3) {
 		env = parent.frame()
 		if("bar" %in% ls(envir = env)) {
 			bar = get("bar", envir = env)
 			arrow_col = ifelse(tx_gene_mapping[rownames(bar)] == gi, "darkgrey", "#00000020")
 		}
-		getFromNamespace("get_origin_fun", "Gviz.epik")(".arrowBar")(xx1 = xx1, xx2 = xx2, strand = strand, coords = coords, y=y, W=W, D=D, H, col = arrow_col, lwd = lwd, lty = lty, alpha = alpha, barOnly=barOnly,
+		getFromNamespace("get_origin_fun", "epik.Gviz")(".arrowBar")(xx1 = xx1, xx2 = xx2, strand = strand, coords = coords, y=y, W=W, D=D, H, col = arrow_col, lwd = lwd, lty = lty, alpha = alpha, barOnly=barOnly,
         	diff=diff, min.height=min.height)
 	}
-	getFromNamespace("change_fun", "Gviz.epik")(".arrowBar", .arrowBar_wrap)
+	getFromNamespace("change_fun", "epik.Gviz")(".arrowBar", .arrowBar_wrap)
 	
 	.fontGp_wrap = function(GdObject, subtype = NULL, ...) {
-		gp = getFromNamespace("get_origin_fun", "Gviz.epik")(".fontGp")(GdObject, subtype, ...)
+		gp = getFromNamespace("get_origin_fun", "epik.Gviz")(".fontGp")(GdObject, subtype, ...)
 		if(!is.null(subtype)) {
 			if(subtype == "group") {
 				env = parent.frame()
@@ -161,7 +161,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 		}
 		return(gp)
 	}
-	getFromNamespace("change_fun", "Gviz.epik")(".fontGp", .fontGp_wrap)
+	getFromNamespace("change_fun", "epik.Gviz")(".fontGp", .fontGp_wrap)
 	
 	trackList = pushTrackList(trackList, grtrack)
 
@@ -366,9 +366,9 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 
 	message(qq("The suggested height of the image is @{coef}*n_tx + @{num} inches, here n_tx = @{n_tx} and the height is @{hh} inches."))
 	
-	getFromNamespace("reset_fun", "Gviz.epik")(".boxes")
-	getFromNamespace("reset_fun", "Gviz.epik")(".arrowBar")
-	getFromNamespace("reset_fun", "Gviz.epik")(".fontGp")
+	getFromNamespace("reset_fun", "epik.Gviz")(".boxes")
+	getFromNamespace("reset_fun", "epik.Gviz")(".arrowBar")
+	getFromNamespace("reset_fun", "epik.Gviz")(".fontGp")
 
 	return(invisible(NULL))
 }

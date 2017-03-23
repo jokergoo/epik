@@ -9,7 +9,7 @@
 #        The value is a vector of length of two and the difference is calculated as ``subgroup[1] - subgroup[2]``
 # -chromosome a vector of chromosome names
 # -species species
-# -type Three types of visualization supported, see "details" section
+# -type Three types of visualization are supported, see "details" section
 # 
 # == details
 # Genome is segmented by 1kb window and mean methylation for each 1kb window is calculated, later visualized
@@ -24,11 +24,13 @@
 # To compare methylation in two subgroups, users can use following two ways:
 #
 # - directly compare mean methylation in the two subgroups
-# - use combination of "global_mean" + "difference"
+# - use combination of "global_mean" + "difference" (this one I feel better to visualize the difference)
 #
 # == value
-# a `GenomicRanges::GRanges` object which contains mean methylation for the 1kb segmentation and other statistics.
-# If users just need this object without making any plots, setting ``type = "none"``.
+# A `GenomicRanges::GRanges` object which contains mean methylation for the 1kb segmentation and other statistics.
+# If users just need this object without making any plots, set ``type = "none"``.
+#
+# The returned value can be sent to `general_chipseq_association_to_methylation`.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -153,14 +155,13 @@ average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(a
 #
 # == param
 # -mark name of the histone mark, should also be supported in `chipseq_hooks`
-# -subgroup subgroup information which corresponds to sample IDs stored in `methylation_hooks`.
+# -subgroup subgroup information which corresponds to sample IDs stored in `chipseq_hooks`$sample_id.
 #      The value should be a named vector that names are sample IDs.
-# -comparison if there are more than one subgroups, the comparison of two subgroups which shows the methylation difference
+# -comparison if there are more than one subgroups, the comparison of two subgroups which shows the difference
 #        The value is a vector of length of two and the difference is calculated as ``subgroup[1] - subgroup[2]``
 # -chromosome a vector fo chromosome names
 # -species species
 # -type four types of visualization supported, see "details" section
-# -density_column the column name of the signal defined in `chipseq_hooks`$peak
 # 
 # == details
 # Genome is segmented by 1kb window and mean signal for each 1kb window is calculated, later visualized
@@ -176,13 +177,15 @@ average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(a
 # == value
 # a `GenomicRanges::GRanges` object which contains mean signal for the 1kb segments and other statistics.
 #
+# The returned value can be sent to `general_chipseq_association_to_methylation` and `general_chipseq_association`.
+#
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
 hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromosome = paste0("chr", 1:22), 
-	species = "hg19", type = c("global_mean", "subgroup_mean", "abs_difference", "rel_difference"),
-	density_column = "density") {
+	species = "hg19", type = c("global_mean", "subgroup_mean", "abs_difference", "rel_difference")) {
 
+	density_column = "density"
 	message("split genome by 1kb window")
 	chromInfo = getChromInfoFromUCSC(species)
 	chromInfo = chromInfo[chromInfo$chrom %in% chromosome, ]
@@ -371,7 +374,7 @@ if(!is.memoized(get_chipseq_association_stat)) {
 #
 # == details
 # For every pair of histone marks, the Jaccard coefficient for the regions which show higher difference
-# than quantile ``q`` is calculated and visualized. There are three plots:
+# than quantile ``seq(0.1, 0.9, by = 0.1)`` is calculated and visualized. There are three plots:
 #
 # For each pair of histone marks,
 #
@@ -515,8 +518,10 @@ general_chipseq_association = function(gr_list, q = 0.9) {
 #          The object is usually from `hilbert_curve_methylation_difference`
 #
 # == details
-# For each histone mark, the distribution of methylation difference in regions which show
-# higher histone modification signal difference is visualized.
+# Each histone mark corresponds to one panel. In each panel, there are two plots:
+# 
+# - distribution of methylation difference in regions where histone mark signals are larger than corresponding quantile.
+# - proportion of regions which show higher histone modification signal in group 1 and in group2.
 #
 # == value
 # no value is returned
@@ -585,7 +590,7 @@ general_chipseq_association_to_methylation = function(gr_list, gr_meth) {
 			default.units = "native", gp = gpar(fill = "#FF000060", col = NA))
 		grid.yaxis(gp = gpar(fontsize = 8))
 		if(ci == 1) {
-			grid.text("methylation difference", x = unit(-1.4, "cm"), rot = 90, gp = gpar(fontsize = 10))
+			grid.text("methylation\ndifference", x = unit(-1.4, "cm"), rot = 90, gp = gpar(fontsize = 10))
 		}
 		upViewport()
 

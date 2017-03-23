@@ -6,7 +6,6 @@ intronsByTranscript = memoise(GenomicFeatures::intronsByTranscript)
 fiveUTRsByTranscript = memoise(GenomicFeatures::fiveUTRsByTranscript)
 threeUTRsByTranscript = memoise(GenomicFeatures::threeUTRsByTranscript)
 
-read.chromInfo = memoise(circlize::read.chromInfo)
 getChromInfoFromUCSC = function(genome, goldenPath_url = "http://hgdownload.cse.ucsc.edu/goldenPath") {
 	oe = try(df <- GenomicFeatures::getChromInfoFromUCSC(genome, goldenPath_url))
 	if(inherits(oe, "try-error")) {

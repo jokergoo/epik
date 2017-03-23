@@ -22,7 +22,7 @@
 # read methylation dataset for a single chromosome. The function must return a list which contains
 # following mandatory elements:
 #
-# -gr a `GenomicRanges::GRanges` object which contains genomic positions for CpG sites.
+# -gr a `GenomicRanges::GRanges` object which contains genomic positions for CpG sites. Positions should be sorted.
 # -meth a matrix which contains methylation rate. This will be the main methylation dataset the epik
 #       package uses, so it should be smoothed methylation rate if the CpG coverage is not high.
 #       Note, this matrix must have column names which is sample names and will be used to match
@@ -125,6 +125,9 @@ methylation_hooks$set_chr = function(chr, verbose = TRUE) {
 	if(!inherits(obj$gr, "GRanges")) {
 		stop("`gr` should be a GRanges object.")
 	}
+	if(is.unsorted(start(obj$gr))) {
+		stop("`gr` should be sorted.")
+	}
 	if(!is.null(obj$raw)) {
 		if(inherits(obj$raw, "data.frame")) {
 			obj$raw = as.matrix(obj$raw)
@@ -213,6 +216,11 @@ print.methylation_hooks = function(x, ...) {
 	}
 }
 
+strwrap2 = function(x) {
+	paste0(strwrap(x), collapse = "\n")
+}
+
+
 # == title
 # Read ChIP-Seq dataset
 #
@@ -231,9 +239,9 @@ print.methylation_hooks = function(x, ...) {
 #
 # -sample_id This self-defined function returns a list of sample IDs given the name of a histone mark.
 # -peak This function should return a `GenomicRanges::GRanges` object which are peaks for a given
-#       histone mark in a given sample. The `GenomicRanges::GRanges` object should better have a meta column 
-#       which is the intensity of the histone modification signals. (**Note when you want to take the histone
-#       modification signals as quatitative analysis, please make sure they are normalized between samples**)
+#       histone mark in a given sample. The `GenomicRanges::GRanges` object should better have a meta column named "density"
+#       which is the density of the histone modification signals. (**Note when you want to take the histone
+#       modification signals as quatitative analysis, please make sure they are properly normalized between samples**)
 # -chromHMM This hook is optional. If chromatin segmentation by chromHMM is avaialble, this hook
 #           can be defined as a function which accepts sample ID as argument and returns
 #           a `GenomicRanges::GRanges` object. The `GenomicRanges::GRanges` object should have a meta column named
@@ -275,6 +283,7 @@ print.methylation_hooks = function(x, ...) {
 #   get_peak_list(mark, chr = "chr1")
 #
 # The ``chipseq_hooks$chromHMM()`` must have one argument ``sid`` which is the sample id, also there can be more arguments such as chromosomes.
+# The usage for the additional argumetns are same as ``chipseq_hooks$peak()``.
 #
 # == value
 # Hook functions
@@ -290,16 +299,17 @@ chipseq_hooks = setGlobalOptions(
 	sample_id = list(.value = function(mark) stop("you need to define `sample_id` hook"),
 		             .class = "function",
 		             .validate = function(f) length(as.list(f)) == 2,
-		             .failed_msg = "The function should only have one argument which is the name of the histone mark."),
+		             .failed_msg = strwrap2("The function should only have one argument which is the name of the histone mark.")),
 	peak = list(.value = function(mark, sid, ...) stop("you need to define `peak` hook"),
 		        .class = "function",
 		        .validate = function(f) length(as.list(f)) >= 4,
-		        .failed_msg = "The function should only have more than three arguments which are the name of the histone mark, sample id and other stuff. If you only use the first two, simply add `...` as the third argument."),
+		        .failed_msg = strwrap2("The function should have more than two arguments which are the name of the histone mark, sample id and other stuff. If you only use the first two, simply add `...` as the third argument.")),
 	chromHMM = list(.value = function(sid, ...) stop("you need to define `chromHMM` hook"),
 		            .class = "function",
 		            .validate = function(f) length(as.list(f)) >= 3,
-		            .failed_msg = "The function should only have more than two arguments which are the sample id and other stuff. If you only use the first one, simply add `...` as the second argument.")
+		            .failed_msg = strwrap2("The function should have more than one arguments which are the sample id and other stuff. If you only use the first one, simply add `...` as the second argument."))
 )
+
 
 # == title
 # Get a list of peak regions for a given histone mark
@@ -314,6 +324,8 @@ chipseq_hooks = setGlobalOptions(
 #
 # == value
 # A list of `GenomicRanges::GRanges` objects.
+#
+# If you e.g. set "chr" as the third argument when defining ``chipseq_hooks$peak()`, "chr" can also be passed here through ``...``.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -343,6 +355,8 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
 #
 # == value
 # A list of `GenomicRanges::GRanges` objects.
+#
+# If you e.g. set "chr" as the third argument when defining ``chipseq_hooks$peak()`, "chr" can also be passed here through ``...``.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>

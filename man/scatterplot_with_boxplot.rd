@@ -7,16 +7,16 @@ Scatterplot with boxplots on both sides
 Scatterplot with boxplots on both sides
 }
 \usage{
-scatterplot_with_boxplot(x, y, annotation = rep("unknown", length(x)),
-    annotation_color = structure(seq_along(levels(annotation)), names = levels(annotation)),
+scatterplot_with_boxplot(x, y, subgroup = rep("unknown", length(x)),
+    subgroup_col = structure(seq_along(levels(subgroup)), names = levels(subgroup)),
     main = NULL, xlab = NULL, ylab = NULL, xlim = range(x), ylim = range(y), text_list = NULL)
 }
 \arguments{
 
   \item{x}{values on x-axis}
   \item{y}{values on y-axis}
-  \item{annotation}{groups of data points}
-  \item{annotation_color}{colors for groups}
+  \item{subgroup}{groups of data points}
+  \item{subgroup_col}{colors for groups}
   \item{main}{title for the plot}
   \item{xlab}{labels on x-axis}
   \item{ylab}{labels on y-axis}
@@ -35,5 +35,5 @@ No value is returned
 Zuguang Gu <z.gu@dkfz.de>
 }
 \examples{
-scatterplot_with_boxplot(rnorm(40), rnorm(40), annotation = sample(letters[1:2], 40, replace = TRUE))
+scatterplot_with_boxplot(rnorm(40), rnorm(40), subgroup = sample(letters[1:2], 40, replace = TRUE))
 }

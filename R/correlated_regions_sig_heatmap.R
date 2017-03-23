@@ -44,25 +44,25 @@ mean_chromHMM_overlap = function(gr, cs_list, state) {
 # -txdb transcriptome annotation which was used in `correlated_regions`
 # -expr expression matrix which was used in `correlated_regions`
 # -ha top annotation for the expression heatmap, should be constructed by `ComplexHeatmap::HeatmapAnnotation`
-# -gf_list a list of `GenomicRanges::GRanges` objects which are additional genomic features
+# -gf_list a list of `GenomicRanges::GRanges` objects which are additional genomic features used as annotations
 #
 # == details
-# There are several heatmaps associating between difference sources of datasets, each row in the heatmaps are
+# There are several heatmaps showing associations between difference sources of datasets, each row in the heatmaps is
 # a correlated region or other genomic association to this correlated region.
 #
-# - heatmap for methylation
+# - heatmap for methylation (mean methylation in CR)
 # - one column heatmap which shows the methylation difference
 # - heatmap for gene expression
 # - heatmap describing how genomic features overlap to correlated regions
-# - if ``chipseq_hooks$chromHMM`` is set and there are two subgroups, there is a heamtap showing the difference of
-#   overlapping of different chromatin states in the two groups
+# - if `chipseq_hooks`$chromHMM is set and there are two subgroups, there is a heamtap showing the difference of
+#   the overlapping of different chromatin states in the two groups
 # - a point plot showing the distance to nearest TSS
 # - overlap to promoter/gene body/intergenic regions
 #
 # For the list heatmaps, rows are firstly split by negative correlation and positive correlation. In each sub cluster,
-# it is split by k-means clustering (four groups), and in each k-means cluster, hierarchical clustering is applied.
+# it is split by k-means clustering (four groups), and in each k-means cluster, rows are ordered by hierarchical clustering.
 #
-# There will also be plots showing general statistic plots for each annotation.
+# There will also be plots showing general statistics for each annotation.
 #
 # == value
 # No value is returned.

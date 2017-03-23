@@ -1,10 +1,10 @@
 \name{systemdf}
 \alias{systemdf}
 \title{
-Wrapper of system calls in which input and output are all tables
+Wrapper of system calls in which input and output are all table-like files
 }
 \description{
-Wrapper of system calls in which input and output are all tables
+Wrapper of system calls in which input and output are all table-like files
 }
 \usage{
 systemdf(cmd, envir = parent.frame(), verbose = FALSE)
@@ -23,7 +23,7 @@ system calls in R. Since most of system calls expect tables as inputs and output
 
 \itemize{
   \item use backtick to mark variables which are data frames or other variables which can be converted to data frames by \code{\link[base]{as.data.frame}}
-  \item extract data frames
+  \item extract the variable names and look for data frames in \code{envir}
   \item write data frames into temporary files 
   \item replace variables names with paths that correspond to temporary files
   \item make the system call 

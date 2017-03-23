@@ -11,7 +11,7 @@ cr_gviz(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title = gi)
 }
 \arguments{
 
-  \item{sig_cr}{correlated regions which show significant correlations}
+  \item{sig_cr}{correlated regions which show significant correlations, i.e. should be filtered by \code{\link{cr_reduce}}.}
   \item{gi}{gene id}
   \item{expr}{the expression matrix which was used in \code{\link{correlated_regions}}}
   \item{txdb}{the transcriptome annotation which was used in \code{\link{correlated_regions}}}
@@ -24,16 +24,16 @@ cr_gviz(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title = gi)
 There are following Gviz tracks:
 
 \itemize{
-  \item gene models. Multiple transcripts will also be plotted.
+  \item gene models where multiple transcripts are plotted.
   \item correlation between methylation and expression
   \item heatmap for methylation
   \item significant correlated regions
   \item CpG density
   \item annotation to other genomic features, if provided
-  \item histome modification data, if provided
+  \item histome modification signals in subgroups, if provided
 }
 
-A modified version of Gviz (\url{https://github.com/jokergoo/Gviz.epik} ) is used to make the plot.
+A modified version of Gviz (\url{https://github.com/jokergoo/epik.Gviz} ) is used to make the plot.
 }
 \value{
 No value is returned.
@@ -44,5 +44,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

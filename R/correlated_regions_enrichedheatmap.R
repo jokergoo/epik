@@ -178,14 +178,14 @@ add_boxplot_as_column_annotation = function(ht_list, width, anno_name, anno_titl
 # -txdb transcriptome annotation which was used in `correlated_regions`
 # -expr expression matrix which was used in `correlated_regions`
 # -cgi CpG island, a `GenomicRanges::GRanges` object
-# -fdr_cutoff cutoff for fdr
+# -fdr_cutoff cutoff for fdr, used to filter significant CRs
 # -meth_diff_cutoff cutoff for methylation difference. If there are no subgroup information or only one subgroup,
 #             ``meth_IQR`` column is used for filtering. If there are more than one subgroups, ``meth_diameter``
 #             column is used for filtering.
-# -marks names of histone marks
+# -marks names of histone marks, should be supported in `chipseq_hooks`
 # -type visualize negative correlated regions or positive correlated regions
 # -extend base pairs extended to upstream and downstream
-# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
+# -expr_ha a `ComplexHeatmap::HeatmapAnnotation` class object. It is used for the expression heatmap
 #
 # == details
 # There are several heatmaps visualize various signals enriched at TSS-CGIs. In the plot, in the extended
@@ -219,7 +219,7 @@ add_boxplot_as_column_annotation = function(ht_list, width, anno_name, anno_titl
 # Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
-	expr_annotation) {
+	expr_ha) {
 	
 	n_subgroup = NULL
 	subgroup = NULL
@@ -291,9 +291,9 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 
 	eval(SNIPPET_HEATMAP_PAGE)
 
-	if(missing(expr_annotation)) {
+	if(missing(expr_ha)) {
 		if(n_subgroup >= 2) {
-			expr_annotation = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
+			expr_ha = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
 				show_annotation_name = TRUE, annotation_name_side = "left", annotation_name_gp = gpar(fontsize = 10))
 		}
 	}
@@ -308,7 +308,7 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 	n_row_group = 2
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
-		top_annotation = expr_annotation, column_title = "Expression", show_row_dend = FALSE,
+		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
 		use_raster = TRUE, raster_quality = 2)
 	n_heatmap = n_heatmap + 1
 	
@@ -348,10 +348,10 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 # -meth_diff_cutoff cutoff for methylation difference. If there are no subgroup information or only one subgroup,
 #             ``meth_IQR`` column is used for filtering. If there are more than one subgroups, ``meth_diameter``
 #             column is used for filtering.
-# -marks names of histone marks
+# -marks names of histone marks, should be supported in `chipseq_hooks`
 # -type visualize negative correlated regions or positive correlated regions
 # -extend base pairs extended to upstream and downstream
-# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
+# -expr_ha a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
 # There are several heatmaps visualize various signals enriched at gene TSS.
@@ -384,7 +384,7 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 # Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05, 
 	meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = c(5000, 10000),
-	expr_annotation) {
+	expr_ha) {
 	
 	sig_cr = NULL
 	n_subgroup = NULL
@@ -438,9 +438,9 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 	fixed_heatmap = 3
 	eval(SNIPPET_HEATMAP_PAGE)
 
-	if(missing(expr_annotation)) {
+	if(missing(expr_ha)) {
 		if(n_subgroup >= 2) {
-			expr_annotation = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
+			expr_ha = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
 				show_annotation_name = TRUE, annotation_name_side = "left", annotation_name_gp = gpar(fontsize = 10))
 		}
 	}
@@ -455,7 +455,7 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 	n_row_group = 2
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
-		top_annotation = expr_annotation, column_title = "Expression", show_row_dend = FALSE,
+		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
 		use_raster = TRUE, raster_quality = 2)
 	n_heatmap = n_heatmap + 1
 	
@@ -498,9 +498,9 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 # -expr expression matrix which was used in `correlated_regions`
 # -cgi CpG island, a `GenomicRanges::GRanges` object
 # -K which k-means cluster which is generated by `cr_enriched_heatmap`
-# -marks names of histone marks
+# -marks names of histone marks, should be supported in `chipseq_hooks`
 # -extend base pairs extended to upstream and downstream
-# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
+# -expr_ha a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
 # There are several heatmaps visualize various signals enriched at gene body
@@ -530,7 +530,7 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL, 
-	extend = 5000, expr_annotation) {
+	extend = 5000, expr_ha) {
 
 	sample_id = NULL
 	n_subgroup = NULL
@@ -620,9 +620,9 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 	fixed_heatmap = 2
 	eval(SNIPPET_HEATMAP_PAGE)
 
-	if(missing(expr_annotation)) {
+	if(missing(expr_ha)) {
 		if(n_subgroup >= 2) {
-			expr_annotation = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
+			expr_ha = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
 				show_annotation_name = TRUE, annotation_name_side = "left", annotation_name_gp = gpar(fontsize = 10))
 		}
 	}
@@ -637,7 +637,7 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 	n_row_group = 3
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
-		top_annotation = expr_annotation, column_title = "Expression", show_row_dend = FALSE,
+		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
 		use_raster = TRUE, raster_quality = 2)
 	n_heatmap = n_heatmap + 1
 	
@@ -675,13 +675,13 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 # -meth_diff_cutoff cutoff for methylation difference. If there are no subgroup information or only one subgroup,
 #             ``meth_IQR`` column is used for filtering. If there are more than one subgroups, ``meth_diameter``
 #             column is used for filtering.
-# -marks names of histone marks
+# -marks names of histone marks, should be supported in `chipseq_hooks`
 # -type visualize negative correlated regions or positive correlated regions
 # -extend base pairs extended to upstream and downstream
 # -min_reduce base pairs for merging neighbouring regions
 # -min_width minimal width of regions
 # -nearest_by "tss" or "gene", how to connect genomic features to genes
-# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
+# -expr_ha a `ComplexHeatmap::HeatmapAnnotation` class object.It is used for the expression heatmap
 #
 # == details
 # There are several heatmaps visualize various signals enriched at genomic features. After annotate to genes,
@@ -714,7 +714,7 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 # Zuguang Gu <z.gu@dkfz.de>
 cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
-	min_reduce = 1, min_width = 1000, nearest_by = "tss", expr_annotation) {
+	min_reduce = 1, min_width = 1000, nearest_by = "tss", expr_ha) {
 
 	gm_extend = NULL
 	n_subgroup = NULL
@@ -837,9 +837,9 @@ cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	fixed_heatmap = 3
 	eval(SNIPPET_HEATMAP_PAGE)
 
-	if(missing(expr_annotation)) {
+	if(missing(expr_ha)) {
 		if(n_subgroup >= 2) {
-			expr_annotation = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
+			expr_ha = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
 				show_annotation_name = TRUE, annotation_name_side = "left", annotation_name_gp = gpar(fontsize = 10))
 		}
 	}
@@ -854,7 +854,7 @@ cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	n_row_group = 2
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
-		top_annotation = expr_annotation, column_title = "Expression", show_row_dend = FALSE,
+		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
 		use_raster = TRUE, raster_quality = 2)
 	n_heatmap = n_heatmap + 1
 	

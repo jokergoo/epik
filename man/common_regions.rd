@@ -13,7 +13,7 @@ common_regions(gr_list, min_recurrency = floor(length(gr_list)/4),
 \arguments{
 
   \item{gr_list}{a list of \code{\link[GenomicRanges]{GRanges}}}
-  \item{min_recurrency}{minimal cross-sample recurrency for the common regions}
+  \item{min_recurrency}{minimal cross-sample recurrency at each base for the common regions}
   \item{gap}{gap to merge common regions, pass to \code{\link{reduce2}}}
   \item{max_gap}{maximum gap for merging common regions, pass to \code{\link{reduce2}}}
   \item{min_width}{minimal width for the common regions. It can be used to remove a lot of  very short regions.}
@@ -21,7 +21,7 @@ common_regions(gr_list, min_recurrency = floor(length(gr_list)/4),
 }
 \details{
 A common region is defined as a region which is recurrent in at least k samples. The process of 
-fiding common regions are as follows:
+finding common regions are as follows:
 
 \itemize{
   \item merge regions in all samples into one object

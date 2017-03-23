@@ -9,7 +9,7 @@ Annotate genomic regions to a list of genomic features
 \usage{
 annotate_to_genomic_features(gr, genomic_features,
     name = NULL, type = c("percent", "number"), prefix = "overlap_to_",
-    ignore.strand = TRUE, ...)
+    ignore_strand = TRUE, ...)
 }
 \arguments{
 
@@ -18,7 +18,7 @@ annotate_to_genomic_features(gr, genomic_features,
   \item{name}{names for the genomic features if there is no name in \code{genomic_features} list. This is used for constructing the column name of the annotation columns.}
   \item{type}{For each type of genomic features, \code{number} means numbers of genomic features that each  region in \code{gr} overlap; \code{percent} means the percent of each region in \code{gr} that is  overlapped by genomic features}
   \item{prefix}{prefix for the names in the annotation columns. The column names are constructed as "$prefix_$name"}
-  \item{ignore.strand}{whether ignore strand information}
+  \item{ignore_strand}{whether ignore strand information}
   \item{...}{pass to \code{\link[GenomicRanges]{countOverlaps}} or \code{\link{percentOverlaps}}}
 
 }

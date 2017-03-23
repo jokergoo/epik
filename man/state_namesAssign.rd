@@ -7,7 +7,7 @@ Change chromatin state names
 Change chromatin state names
 }
 \usage{
-state_names(x) <-value
+state_names<-(x, value)
 }
 \arguments{
 
@@ -21,5 +21,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

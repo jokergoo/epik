@@ -31,7 +31,7 @@ read methylation dataset for a single chromosome. The function must return a lis
 following mandatory elements:
 
 \describe{
-  \item{gr}{a \code{\link[GenomicRanges]{GRanges}} object which contains genomic positions for CpG sites.}
+  \item{gr}{a \code{\link[GenomicRanges]{GRanges}} object which contains genomic positions for CpG sites. Positions should be sorted.}
   \item{meth}{a matrix which contains methylation rate. This will be the main methylation dataset the epik package uses, so it should be smoothed methylation rate if the CpG coverage is not high. Note, this matrix must have column names which is sample names and will be used to match other datasets (e.g. RNASeq)}
   \item{cov}{a matrix which contains CpG coverage.}
 }
@@ -80,5 +80,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

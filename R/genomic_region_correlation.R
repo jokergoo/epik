@@ -9,7 +9,7 @@
 #
 # == param
 # -gr_list_1 a list of `GenomicRanges::GRanges` objects, should be a named list, e.g. low methylated regions in different samples.
-# -gr_list_2 a list of `GenomicRanges::GRanges` objects, should be a named list, e.g. a list of different genomic features.
+# -gr_list_2 a list of `GenomicRanges::GRanges` objects, should be a named list, e.g. a list of genomic features.
 # -background a `GenomicRanges::GRanges` object. The correlation is only looked in the background regions.
 # -chromosome a vector of chromosome names
 # -species species, used for random shuffling genomic regions
@@ -33,7 +33,7 @@
 # In random shuffling, regions in ``gr_list_1`` will be shuffled. So if you want to shuffle ``gr_list_2``,
 # just switch the first two arguments.
 #
-# Pleast note random shuffling is done by bedtools, so bedtools should be installed and exists in ``PATH``
+# Pleast note random shuffling is done by "bedtools", so "bedtools" should be installed and exists in ``PATH``
 # and should support ``-i -g -incl`` options.
 #
 # This function is very time-consuming.

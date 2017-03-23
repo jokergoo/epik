@@ -10,13 +10,13 @@
 # -ha column annotations, a `ComplexHeatmap::HeatmapAnnotation-class` object
 # -genomic_features a single or a list of `GenomicRanges::GRanges` objects that are used to annotate ``gr``
 # -meth_diff minimal range between mean value in subgroups
-# -cutoff if classification information is provided, cutoff of p-value of the oneway ANOVA test
+# -cutoff if subgroup information is provided, cutoff of p-value of the oneway ANOVA test
 # -adj_method method to calculate adjusted p-values
-# -cluster_columns how to cluster columns
+# -cluster_columns how to cluster columns. "subgroup" means only to cluster samples in every subgroup.
 # -... pass to `ComplexHeatmap::Heatmap`
 #
 # == details
-# Regions having differential methylation are only visualized. 
+# Only those regions having differential methylation are visualized. 
 #
 # == value
 # A `GenomicRanges::GRanges` object which only contains regions with significant differential methylation.
@@ -165,7 +165,7 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 # A list of or a single `GenomicRanges::GRanges` objects (according to ``genomic_features`` you specified) in which mean methylation matrix and number of CpG in each region
 # are attached. The variable can be sent to `heatmap_diff_methylation_in_genomic_features` to visualize.
 #
-# Note it should keep in mind that it doesn't make any sense to calculate mean methylation in long regions where
+# Note it should be kept in mind that it doesn't make any sense to calculate mean methylation in long regions where
 # there are hetergenuous methylation patterns.
 #
 # == author

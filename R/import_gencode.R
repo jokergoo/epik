@@ -1,15 +1,23 @@
 
 # == title
-# Import gencode
+# Import gencode GTF file as a TxDb object
 #
 # == param
-# -gtf path of the gtf file
-# -filter code which filter the gtf records
+# -gtf path of the GTF file
+# -filter code which filters the GTF records
 #
 # == details
 # For example, you can build a `TxDb-class` object only for protein coding genes by defining
 # 
-#   import_gencode_as_txdb(gtf, gene_type == "protein_coding" & transcript_type == "protein_coding")
+#   import_gencode_as_txdb(GTF, gene_type == "protein_coding" & transcript_type == "protein_coding")
+#
+# Here ``gene_type`` and ``transcript_type`` are attributes in the GTF file.
+#
+# Please note, when building the `TxDb-class` object, the positions of genes are calculated by the union of all
+# its transcripts, while the positions in the GTF file are not used. This is important when only using
+# a subset of transcripts for a gene (e.g. only use protein coding transcripts) that the position of the 
+# gene may change. So, when number of transcripts for genes change, the corresponding `TxDb-class` object must be
+# re-generated accordingly.
 #
 # == value
 # a `TxDb-class` object
@@ -60,15 +68,17 @@ import_gencode_as_txdb = function(gtf, filter = NULL) {
 # Filter one GTF annotation by another
 #
 # == param
-# -gtf1 path for gtf1
-# -gtf2 path for gtf2
-# -filter code which additionally filters lines in gtf1
+# -gtf1 path for GTF file 1
+# -gtf2 path for GTF file 2
+# -filter code which additionally filters recodes in ``gtf1``
 #
 # == details
-# In some senarios, the analysis is done with an old version of Gencode and it is impossible to redo it
-# with a new version of Gencode. The only way is to remove those gene/transcript annotations which are not
-# consistent in the two version. This `match_by_gencode` function only keeps genes/transcripts that have
+# In some senarios, the analysis was done with an old version of Gencode and it is impossible to redo it
+# with a new version of Gencode (e.g. you dont have access to the original bam files). The only way is to remove those gene/transcript annotations which are not
+# consistent in the two versions. This `match_by_gencode` function only keeps genes/transcripts that have
 # same gene ids and positions in the two versions.
+#
+# Similar as `import_gencode_as_txdb`, ``filter`` argument can be used to e.g. only mathch protein coding genes/transcripts.
 #
 # == value
 # a `TxDb-class` object

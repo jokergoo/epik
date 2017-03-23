@@ -22,6 +22,8 @@ cr_scatterplot(cr, expr, gi = NULL, text_column, xlab = "Methylation", ylab = "E
 \details{
 Scatterplot for all correlated regions corresponding to the gene will be made. If you want to make
 a subset of correlated regions, directly subset \code{cr}.
+
+Internally it uses \code{\link{scatterplot_with_boxplot}}.
 }
 \value{
 No value is returned
@@ -32,5 +34,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }

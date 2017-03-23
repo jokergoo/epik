@@ -8,8 +8,8 @@
 # Basic qc plot for distribution of methylation and CpG coverage
 #
 # == param
-# -sample_id a vector of sample ids. You can generate plots for a list of samples in a same time
-#            while is faster than make it one by one.
+# -sample_id a vector of sample IDs. You can generate plots for a list of samples in a batch
+#            which is faster than making it one by one.
 # -chromosome a vector of chromosome names
 # -background background regions where the CpG sites will only be looked into
 #
@@ -28,7 +28,7 @@
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background = NULL) {
+methylation_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background = NULL) {
 
 	# coverage and methylation per chromosome
 	data = rep(list(list(cov = NULL, meth = NULL, strand = NULL, cov_count = NULL)), length(sample_id))
@@ -213,7 +213,7 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 # Plot coverage and methylation for a single sample
 #
 # == param
-# -sid a single sample id
+# -sid a single sample ID
 # -chromosome a vector of chromosome names
 # -species species
 # -nw number of windows to segment the genome
@@ -227,13 +227,16 @@ wgbs_qcplot = function(sample_id, chromosome = paste0("chr", 1:22), background =
 # The whole genome is segented by ``nw`` windows and mean methylation and mean CpG coverage
 # are visualized as two tracks.
 #
+# == seealso
+# `methylation_gtrellis_multiple_samples` visualizes methylation for multiple samples.
+#
 # == value
 # No value is returned.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-gtrellis_coverage_and_methylation = function(sid, chromosome = paste0("chr", 1:22), 
+methylation_gtrellis = function(sid, chromosome = paste0("chr", 1:22), 
 	species = "hg19", nw = 10000, pch = 16, pt_gp = gpar(size = unit(1, "mm")), transparency = 0.8, 
 	title = qq("Distribution of CpG coverage and methylation for @{sid}"), ...) {
 
@@ -286,7 +289,7 @@ gp_c = function(gp1, gp2) {
 # Plot methylation for multiple samples as heatmaps
 #
 # == param
-# -sample_id a vector of sample ids
+# -sample_id a vector of sample IDs
 # -subgroup annotation of samples (e.g. subtypes)
 # -chromosome a vector of chromosome names
 # -species species
@@ -304,7 +307,7 @@ gp_c = function(gp1, gp2) {
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup, 
+methylation_gtrellis_multiple_samples = function(sample_id, subgroup, 
 	chromosome = paste0("chr", 1:22), species = "hg19", nw = 2000, 
 	title = qq("genome-wide methylation for @{length(sample_id)} samples"), ...) {
 	
@@ -388,8 +391,9 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 # -subgroup subgroup information
 # -reorder_column if it is true, samples are first ordered by subgroups and in each subgroup, samples are
 #        ordered by median values
-# -od order of columns
-# -ha additional annotation can be specified as a `ComplexHeatmap::HeatmapAnnotation-class` object
+# -od order of columns. If ``reorder_column`` is set to ``TRUE``, this argument is ignored.
+# -ha Annotations that are specified as a `ComplexHeatmap::HeatmapAnnotation-class` object. The annotations
+#     will be put on top of the heatmap.
 # -type three types of plots are supported, see details
 # -title title for the plot
 # -... pass to `ComplexHeatmap::densityHeatmap`
@@ -399,10 +403,10 @@ gtrellis_methylation_for_multiple_samples = function(sample_id, subgroup,
 #
 # -densityHeatmap: density of distribution is visualized as heatmaps, use `ComplexHeatmap::densityHeatmap`
 # -lineplot: distribution is visualized as normal line plot, use `graphics::matplot`
-# -MDS: multiple dimension scaling
+# -MDS: multiple dimension scaling by calling `stats::cmdscale`
 #
 # == value
-# Order of columns in density heatmap
+# Order of columns in the heatmap
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -482,21 +486,22 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 # Global methylation distribution
 # 
 # == param
-# -sample_id a vector of sample ids
+# -sample_id a vector of sample IDs
 # -subgroup subgroup information
 # -reorder_column if it is true, samples are first ordered by subgroups and in each subgroup, samples are
 #        ordered by median values
-# -ha additional annotation can be specified as a `ComplexHeatmap::HeatmapAnnotation-class` object
+# -ha Annotations that are specified as a `ComplexHeatmap::HeatmapAnnotation-class` object. The annotations
+#     will be put on top of the heatmap.
 # -chromosome chromosome names
 # -by_chr whether make the plot by chromosome
 # -background background to look into. The value can be a single `GenomicRanges::GRanges` object or a list of `GenomicRanges::GRanges` objects.
 # -p probability to randomly sample CpG sites
 # -meth_range the range of methylation on the plot
 # -max_cov maximum range for coverage
-# -plot_cov also make plot for coverage
+# -plot_cov whether also make plot for coverage
 #
 # == details
-# There are two plots:
+# There are two types of plots:
 #
 # - a heatmap showing the distribution density of methylation in all samples
 # - a MDS plot
@@ -510,7 +515,7 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-global_methylation_distribution = function(sample_id, subgroup, 
+methylation_global_distribution = function(sample_id, subgroup, 
 	reorder_column = TRUE, 
 	ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE), 
 	chromosome = paste0("chr", 1:22), by_chr = FALSE, 

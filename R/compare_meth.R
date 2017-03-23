@@ -5,7 +5,8 @@
 # == param
 # -gi a single gene id
 # -cr_smoothed correlated regions using smoothed methylation
-# -cr_raw correlated regions using raw methylation
+# -cr_raw correlated regions using raw methylation/ If provided, there will be a line plot
+#       of correlation calculated from raw methylation.
 # -txdb transcriptome annotation if ``start`` and ``end`` are not set
 # -start start position of the region of interested (in the extended gene region)
 # -end end position of the region of interested (in the extended gene region)
@@ -13,12 +14,14 @@
 # == details
 # If ``start`` and ``end`` are not set, the whole extended gene will be plotted.
 #
-# The aim of this function is see whether smoothing can improve the methylation dataset.
+# The aim of this function is see whether smoothing can improve the calculation of correlation
+# between methylation and gene expression.
 #
-# There will be six tracks:
+# There will be six/seven tracks:
 #
 # - smoothed methylation
-# - correlation between methylation and gene expression
+# - correlation between methylation (smoothed) and gene expression
+# - correlation between methylation (raw, if provided) and gene expression
 # - raw methylation
 # - raw methylation for those CpG sites with coverage larger than 25th percential of all CpG coverage
 # - raw methylation for those CpG sites with coverage larger than 50th percential of all CpG coverage

@@ -4,10 +4,10 @@
 # == param
 # -cr correlated regions
 # -chromosome a vector of chromosome names
-# -merge_chr whether to merge all chromosomes in one plot
+# -merge_chr whether merge all chromosomes in one plot
 # -add_chr_name whether add chromosome names to the plot
 # -title title of the plot
-# -legend legend
+# -legend legend generated from `ComplexHeatmap::Legend`
 # -... pass to `HilbertCurve::GenomicHilbertCurve`
 #
 # == value
@@ -56,13 +56,13 @@ cr_hilbert_curve = function(cr, chromosome = paste0("chr", 1:22),
 # -cr correlated regions
 # -txdb transcriptome annotation which was used in `correlated_regions`
 # -expr expression matrix which was used in `correlated_regions`
-# -expr_annotation a `ComplexHeatmap::HeatmapAnnotation` object for the expression heatmap
+# -expr_ha a `ComplexHeatmap::HeatmapAnnotation` object for the expression heatmap
 #
 # == details
 # The landscape of genome-wide correlations is visualized by a list of heatmaps.
 # Each row corresponds to a single gene:
 #
-# - an enriched heatmap in which correlation is normalized at gene bodies
+# - an enriched heatmap in which correlation signals are normalized at gene bodies
 # - a point plot showing the length of genes
 # - a heatmap of gene expression
 # - a heatmap showing the mean methylation in the extended gene regions.
@@ -82,10 +82,11 @@ cr_hilbert_curve = function(cr, chromosome = paste0("chr", 1:22),
 #
 # == value
 # An updated ``cr`` that includes the partitioning, this information is important for many downstream analysis.
+# Users should update it by ``cr = cr_enriched_heatmap(cr, ...)``.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
+cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 
 	cr_param = metadata(cr)$cr_param
 	sample_id = cr_param$sample_id
@@ -197,9 +198,9 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 	}))
 
 	group_mean_col = structure(brewer.pal(9, "Set1")[c(3,4,5,1)], names = c(1:4))
-	if(missing(expr_annotation)) {
+	if(missing(expr_ha)) {
 		if(n_subgroup >= 2) {
-			expr_annotation = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
+			expr_ha = HeatmapAnnotation(subgroup = subgroup, col = list(subgroup = structure(rand_color(n_subgroup), names = subgroup_level)), 
 				show_annotation_name = TRUE, annotation_name_side = "left", annotation_name_gp = gpar(fontsize = 10))
 		}
 	}
@@ -215,7 +216,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 	Heatmap(expr, name = "expr", show_row_names = FALSE, col = colorRamp2(quantile(expr, c(0, 0.5, 0.95)), c("blue", "white", "red")),
 		use_raster = TRUE, raster_quality = 2,
 		show_column_names = FALSE, width = unit(5, "cm"), cluster_columns = FALSE, column_order = expr_col_od,
-		top_annotation = expr_annotation,
+		top_annotation = expr_ha,
 		column_title = "Expression", show_row_dend = FALSE) +
 	EnrichedHeatmap(meth_mat, col = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red")), 
 		name = "methylation", column_title = qq("Methylation"),
@@ -320,7 +321,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 
 
 # == title
-# Visualize significant correlated regions
+# Visualize significantly correlated regions
 #
 # == param
 # -cr correlated regions, should be returned by `cr_enriched_heatmap`.
@@ -335,7 +336,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_annotation) {
 # correlated regions. Rows are same as the heatmaps produced by `cr_enriched_heatmap`.
 #
 # == value
-# no value is returned
+# No value is returned.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -403,10 +404,11 @@ sig_cr_enriched_heatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff
 # == details
 # It simply plots how correlated signals are enriched at extended gene regions for
 # negative correlated regions and positive correlated regions under different combination
-# of cutoffs.
+# of cutoffs. The basic rule for selecting the cutoffs is they should not be too loose while
+# the pattern of the enrichment (on tss/gene body) should still be obvious.
 #
 # == value
-# no value is returned
+# No value is returned.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -572,7 +574,7 @@ sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-gtrellis_cr_genes = function(cr, txdb, expr) {
+cr_genes_gtrellis = function(cr, txdb, expr) {
 	
 	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
@@ -716,11 +718,11 @@ gtrellis_cr_genes = function(cr, txdb, expr) {
 # - genes, green lines are genes in cluster 1, red lines are genes in cluster 4.
 #
 # == value
-# no value is returned
+# No value is returned.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-gtrellis_sig_cytoband = function(cr, txdb, cytoband_list, color_head = TRUE) {
+sig_cytoband_gtrellis = function(cr, txdb, cytoband_list, color_head = TRUE) {
 	
 	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
@@ -836,7 +838,7 @@ if(is.memoised(do_david)) {
 # There is also a heatmap which shows the significant enrichment.
 #
 # == value
-# a list of function enrichments
+# A list of function enrichments.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>

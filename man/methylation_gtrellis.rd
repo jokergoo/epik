@@ -1,5 +1,5 @@
-\name{gtrellis_coverage_and_methylation}
-\alias{gtrellis_coverage_and_methylation}
+\name{methylation_gtrellis}
+\alias{methylation_gtrellis}
 \title{
 Plot coverage and methylation for a single sample
 }
@@ -7,13 +7,13 @@ Plot coverage and methylation for a single sample
 Plot coverage and methylation for a single sample
 }
 \usage{
-gtrellis_coverage_and_methylation(sid, chromosome = paste0("chr", 1:22),
+methylation_gtrellis(sid, chromosome = paste0("chr", 1:22),
     species = "hg19", nw = 10000, pch = 16, pt_gp = gpar(size = unit(1, "mm")), transparency = 0.8,
     title = qq("Distribution of CpG coverage and methylation for @{sid}"), ...)
 }
 \arguments{
 
-  \item{sid}{a single sample id}
+  \item{sid}{a single sample ID}
   \item{chromosome}{a vector of chromosome names}
   \item{species}{species}
   \item{nw}{number of windows to segment the genome}
@@ -28,6 +28,9 @@ gtrellis_coverage_and_methylation(sid, chromosome = paste0("chr", 1:22),
 The whole genome is segented by \code{nw} windows and mean methylation and mean CpG coverage
 are visualized as two tracks.
 }
+\seealso{
+\code{\link{methylation_gtrellis_multiple_samples}} visualizes methylation for multiple samples.
+}
 \value{
 No value is returned.
 }
@@ -37,5 +40,4 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
-
 }
