@@ -60,7 +60,7 @@ EPIK_ENV$optional_config = "PROJECT_DIR"
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-load_epik_config = function(config_file, export_env = parent.frame(), validate = TRUE) {
+load_epik_config = function(config_file, export_env = parent.frame(), validate = NULL) {
 	
 	SAMPLE = NULL
 	COLOR = NULL
@@ -96,6 +96,14 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 		stop("`GENOME` should be defined in the configuration file.")
 	}
 
+	if(is.null(validate)) {
+		if(file.exists(qq("@{PROJECT_DIR}/.validated"))) {
+			validate = FALSE
+		} else {
+			validate = TRUE
+		}
+	}
+
 	if(!validate) {
 		assign("SAMPLE", SAMPLE, envir = export_env)
 		assign("COLOR", COLOR, envir = export_env)
@@ -114,7 +122,11 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 				exported_var = c(exported_var, op)
 			}
 		}
+		return(invisible(NULL))
+	}
 
+	if(file.exists(qq("@{PROJECT_DIR}/.validated"))) {
+		file.remove(qq("@{PROJECT_DIR}/.validated"))
 	}
 
 	# test SAMPLE
@@ -380,6 +392,7 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	}
 
 	gc(verbose = FALSE)
+	file.create(qq("@{PROJECT_DIR}/.validated"))
 
 	qq_message("\nValidation passed and following global variables are imported: @{paste(exported_var, collapse = ', ')}")
 }
