@@ -704,11 +704,11 @@ cr_genes_gtrellis = function(cr, txdb, expr) {
 # == param
 # -cr correlated regions returned from `cr_enriched_heatmap`
 # -txdb transcriptome annotation which was used in `correlated_regions`
-# -cytoband_list a list of cytoband returned by `gtrellis_cr_genes`
+# -cytoband_list a list of cytoband returned by `cr_genes_gtrellis`
 # -color_head internal use
 #
 # == details
-# This function visualizes significant cytobands which have been found in `gtrellis_cr_genes`.
+# This function visualizes significant cytobands which have been found in `cr_genes_gtrellis`.
 # 
 # For each cytoband, there are several tracks:
 #

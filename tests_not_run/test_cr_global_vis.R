@@ -25,12 +25,12 @@ cr_hilbert_curve(cr, add_chr_name = FALSE)
 
 cr = cr_add_fdr_column(cr)
 
-cr = cr_enrichedheatmap(cr, TXDB, EXPR)
+cr = cr_enriched_heatmap(cr, TXDB, EXPR)
 
 sig_cr_enrichedheatmap(cr, TXDB, fdr_cutoff = 0.1, meth_diff_cutoff = 0.1)
 sig_cr_compare_cutoff(cr, TXDB)
 
-cytoband_list = gtrellis_cr_genes(cr, TXDB, EXPR)
-gtrellis_sig_cytoband(cr, TXDB, cytoband_list)
+cytoband_list = cr_genes_gtrellis(cr, TXDB, EXPR)
+sig_cytoband_gtrellis(cr, TXDB, cytoband_list)
 
-cr_genes_david(cr, david_user = "z.gu@dkfz.de")
+cr_genes_function_enrichment(cr, david_user = "z.gu@dkfz.de")

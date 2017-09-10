@@ -1,11 +1,12 @@
-library(methods)
-suppressPackageStartupMessages(library(GetoptLong))
+library(GetoptLong)
 chr = "chr21"
-GetoptLong("chr=s", "a single chromosome, should have 'chr' prefix")
+GetoptLong("chr=s", "a single chromosome name, should have 'chr' prefix")
 
-suppressPackageStartupMessages(library(GenomicRanges))
+library(epik)
+library(epik.cmd)
 
 PROJECT_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap/"
+initialize_project_directory(PROJECT_DIR)
 
 # this xls file is actually a plain text file
 meta = read.table(qq("@{PROJECT_DIR}/data/EG.mnemonics.name.xls"), sep = "\t", stringsAsFactors = FALSE)
@@ -29,8 +30,7 @@ l = cn %in% c("E054", "E070", "E084", "E085")
 meth = meth[, !l]
 cov = cov[, !l]
 
-source("/home/guz/project/development/epik/R/cpg_dinucleotide_methylation.R")
-lt = cpg_dinucleotide_methylation(pos, meth, cov)
+lt = merge_cpg_dinucleotide_methylation(pos, meth, cov)
 pos2 = lt$pos
 meth2 = lt$meth
 cov2 = lt$cov
@@ -45,7 +45,7 @@ cov2 = cov2[l, ]
 pos2 = pos2[l]
 
 library(bsseq)
-bsseq = BSseq(M = round(meth2*cov2), Cov = cov2, pos = pos2, chr = chr, sampleNames = colnames(meth2))
+bsseq = BSseq(M = meth2, Cov = cov2, pos = pos2, chr = chr, sampleNames = colnames(meth2))
 bsseq = BSmooth(bsseq, parallelBy = "sample", mc.cores = 1, verbose = TRUE)
 saveRDS(bsseq, file = qq("@{PROJECT_DIR}/rds_methylation/@{chr}_roadmap_merged_bsseq.rds"))
 

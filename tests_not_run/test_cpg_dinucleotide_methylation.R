@@ -9,8 +9,8 @@ meth = cbind(c(0.9, 0.9, 0.4, 0.5, 0.5, 0.7, 0.8, 0.3, 0.5, 0.7, 0.3),
 cov = cbind(sample(20, 11), sample(20, 11))
 meth = round(meth*cov)
 
-lt = cpg_dinucleotide_methylation(pos, meth, cov)
+lt = merge_cpg_dinucleotide_methylation(pos, meth, cov)
 
 
 load("/icgc/dkfzlsdf/analysis/hipo/hipo_016/wgbs_gbm_smoothed/smoothed_object_list_chr21.RData")
-lt = cpg_dinucleotide_methylation(bs.fit$site, bs.fit$raw, bs.fit$coverage)
+lt = merge_cpg_dinucleotide_methylation(bs.fit$site, bs.fit$raw, bs.fit$coverage)

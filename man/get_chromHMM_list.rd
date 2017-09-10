@@ -12,7 +12,7 @@ get_chromHMM_list(sample_id, ...)
 \arguments{
 
   \item{sample_id}{a vector of sample IDs.}
-  \item{...}{more arguments pass to \code{chipseq_hooks$chromHMM()}.}
+  \item{...}{more arguments pass to \code{\link{chipseq_hooks}}$chromHMM().}
 
 }
 \details{
@@ -21,7 +21,7 @@ It works after \code{\link{chipseq_hooks}} is set.
 \value{
 A list of \code{\link[GenomicRanges]{GRanges}} objects.
 
-If you e.g. set "chr" as the third argument when defining \code{chipseq_hooks$peak()\code{\link{, "chr" can also be passed here through }...}}`.
+If you e.g. set "chr" as the third argument when defining \code{\link{chipseq_hooks}}$peak(), "chr" can also be passed here through \code{...}.
 }
 \author{
 Zuguang Gu <z.gu@dkfz.de>
@@ -29,4 +29,5 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
+
 }

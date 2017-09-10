@@ -1,9 +1,10 @@
 library(GenomicFeatures)
-library(rtracklayer)
 library(GetoptLong)
-source("/home/guz/project/development/epik/R/import_gencode.R")
+library(epik)
+library(epik.cmd)
 
 PROJECT_DIR = "/icgc/dkfzlsdf/analysis/B080/guz/epik_roadmap/"
+initialize_project_directory(PROJECT_DIR)
 
 GTF_FILE = qq("@{PROJECT_DIR}/data/gen10.long.gtf")
 g19 = qq("@{PROJECT_DIR}/data/gencode.v19.annotation.gtf")

@@ -317,7 +317,7 @@ chipseq_hooks = setGlobalOptions(
 # == param
 # -mark name of the histone mark
 # -sample_id a vector of sample IDs. If not defined, it is the total samples that are available for this histone mark.
-# -... more arguments pass to ``chipseq_hooks$peak()``.
+# -... more arguments pass to `chipseq_hooks`$peak().
 #
 # == details
 # It works after `chipseq_hooks` is set.
@@ -325,7 +325,7 @@ chipseq_hooks = setGlobalOptions(
 # == value
 # A list of `GenomicRanges::GRanges` objects.
 #
-# If you e.g. set "chr" as the third argument when defining ``chipseq_hooks$peak()`, "chr" can also be passed here through ``...``.
+# If you e.g. set "chr" as the third argument when defining `chipseq_hooks`$peak(), "chr" can also be passed here through ``...``.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
@@ -348,7 +348,7 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
 #
 # == param
 # -sample_id a vector of sample IDs.
-# -... more arguments pass to ``chipseq_hooks$chromHMM()``.
+# -... more arguments pass to `chipseq_hooks`$chromHMM().
 #
 # == details
 # It works after `chipseq_hooks` is set.
@@ -356,7 +356,7 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
 # == value
 # A list of `GenomicRanges::GRanges` objects.
 #
-# If you e.g. set "chr" as the third argument when defining ``chipseq_hooks$peak()`, "chr" can also be passed here through ``...``.
+# If you e.g. set "chr" as the third argument when defining `chipseq_hooks`$peak(), "chr" can also be passed here through ``...``.
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>

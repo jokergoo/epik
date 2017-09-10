@@ -2,10 +2,10 @@ Package: epik
 Type: Package
 Title: Integrative Analysis and Visualization of Epigenomic Sequencing Data
 Version: 0.99.0
-Date: 2016-4-6
+Date: 2017-4-6
 Author: Zuguang Gu
 Maintainer: Zuguang Gu <z.gu@dkfz.de>
-Depends: R (>= 3.1.2), IRanges, GenomicRanges, GenomicFeatures, AnnotationDbi, 
+Depends: R (>= 3.3.0), IRanges, GenomicRanges, GenomicFeatures, AnnotationDbi, 
     GlobalOptions (>= 0.0.10)
 Imports: circlize (>= 0.3.4), GetoptLong, parallel, ComplexHeatmap (>= 1.11.6),
     EnrichedHeatmap (>= 1.1.5), matrixStats, GenomeInfoDb, S4Vectors (>= 0.12.1),
@@ -14,13 +14,14 @@ Imports: circlize (>= 0.3.4), GetoptLong, parallel, ComplexHeatmap (>= 1.11.6),
     methods, rtracklayer (>= 1.34.2)
 Suggests: testthat (>= 0.3), knitr, markdown, rGREAT
 VignetteBuilder: knitr
-Description: Many functions for analyzing methylome, transcriptome and 
-    histone modifications are provided.
+Description: The package provides three categories of functions: 1) functions for
+    generic genomic regions analysis; 2) functions for methylation data analysis;
+    3) functions for integrative analysis.
 biocViews: Software, Visualization, Sequencing, Epigenetics, Coverage
 URL: https://github.com/jokergoo/epik
 SystemRequirements: Perl, bedtools
 License: GPL (>= 2)
-Packaged: 2016-4-6 00:00:00 UTC; Administrator
+Packaged: 2017-4-6 00:00:00 UTC; Administrator
 Repository: Bioconductor
-Date/Publication: 2016-4-6 00:00:00
+Date/Publication: 2017-4-6 00:00:00
 LinkingTo: Rcpp

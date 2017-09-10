@@ -22,7 +22,7 @@ if(!is.memoised(getChromInfoFromUCSC)) {
 read.chromInfo = function(chromInfo = paste0(system.file(package = "circlize"),
     "/extdata/chromInfo.txt"), species = NULL, chromosome.index = NULL,
     sort.chr = TRUE) {
-	oe = try(res = circlize::read.chromInfo(chromInfo, species, chromosome.index, sort.chr))
+	oe = try(res <- circlize::read.chromInfo(chromInfo, species, chromosome.index, sort.chr))
 	if(inherits(oe, "try-error")) {
 		data = readRDS(system.file("extdata", "chrom_info_list.rds", package = "epik"))
 		res = circlize::read.chromInfo(chromInfo = data[[species]])

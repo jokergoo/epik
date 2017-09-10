@@ -13,12 +13,12 @@ sig_cytoband_gtrellis(cr, txdb, cytoband_list, color_head = TRUE)
 
   \item{cr}{correlated regions returned from \code{\link{cr_enriched_heatmap}}}
   \item{txdb}{transcriptome annotation which was used in \code{\link{correlated_regions}}}
-  \item{cytoband_list}{a list of cytoband returned by \code{\link{gtrellis_cr_genes}}}
+  \item{cytoband_list}{a list of cytoband returned by \code{\link{cr_genes_gtrellis}}}
   \item{color_head}{internal use}
 
 }
 \details{
-This function visualizes significant cytobands which have been found in \code{\link{gtrellis_cr_genes}}.
+This function visualizes significant cytobands which have been found in \code{\link{cr_genes_gtrellis}}.
 
 For each cytoband, there are several tracks:
 
@@ -38,4 +38,5 @@ Zuguang Gu <z.gu@dkfz.de>
 \examples{
 # There is no example
 NULL
+
 }

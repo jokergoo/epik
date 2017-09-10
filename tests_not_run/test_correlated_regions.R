@@ -30,8 +30,8 @@ mcols(cr)
 
 cr = cr_add_fdr_column(cr)
 
-cr2 = reduce_cr(cr, TXDB)
-cr2 = reduce_cr(cr, TXDB, EXPR)
+cr2 = cr_reduce(cr, TXDB)
+cr2 = cr_reduce(cr, TXDB, EXPR)
 
 library(gtrellis)
 compare_meth(g[seqnames(g) == "chr21"], cr)

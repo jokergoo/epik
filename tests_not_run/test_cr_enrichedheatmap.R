@@ -36,7 +36,7 @@ cr_enriched_heatmap_at_cgi(cr, TXDB, EXPR, CGI, type = "pos")
 
 cr_enriched_heatmap_at_tss(cr, TXDB, EXPR, CGI, marks = MARKS[1])
 
-cr = cr_enrichedheatmap(cr, TXDB, EXPR)
+cr = cr_enriched_heatmap(cr, TXDB, EXPR)
 cr_enriched_heatmap_at_gene(cr, TXDB, EXPR, CGI, marks = MARKS[1])
 
 tfbs = read.table("/icgc/dkfzlsdf/analysis/hipo/hipo_016/analysis/WGBS_final/bed/encode_uniform_tfbs_merged_1kb.bed", sep = "\t", stringsAsFactors = FALSE)

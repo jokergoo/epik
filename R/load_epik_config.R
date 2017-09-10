@@ -1,5 +1,8 @@
 
 
+EPIK_ENV = new.env()
+EPIK_ENV$optional_config = "PROJECT_DIR"
+
 # == title
 # Load and validate configuration file
 #
@@ -9,7 +12,7 @@
 # -validate whether do validation
 #
 # == details
-# To run functions in epic package smoothly, users can validate their data by `load_config` function.
+# To run functions in epic package smoothly, users can validate their data by `load_epik_config` function.
 # All necessary variables are initialized in a configuration file.
 # The configuration file should provide following variables:
 #
@@ -92,9 +95,6 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	if(is.null(GENOME)) {
 		stop("`GENOME` should be defined in the configuration file.")
 	}
-	if(is.null(PROJECT_DIR) && use_std_dir) {
-		stop("`PROJECT_DIR` should be defined in the configuration file.")
-	}
 
 	if(!validate) {
 		assign("SAMPLE", SAMPLE, envir = export_env)
@@ -103,18 +103,18 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 		assign("EXPR", EXPR, envir = export_env)
 		assign("CHROMOSOME", CHROMOSOME, envir = export_env)
 		assign("GENOME", GENOME, envir = export_env)
-		assign("PROJECT_DIR", OUTPUT_DIR, envir = export_env)
 		assign("GENOMIC_FEATURE_LIST", GENOMIC_FEATURE_LIST, envir = export_env)
 		assign("MARKS", MARKS, envir = export_env)
 		assign("GTF_FILE", GTF_FILE, envir = export_env)
 		assign("CGI_SHORE_EXTEND", CGI_SHORE_EXTEND, envir = export_env)
 
-		if(exists("CHROMATIN_STATES_COLOR")) {
-			assign("CHROMATIN_STATES_COLOR", CHROMATIN_STATES_COLOR, envir = export_env)
+		for(op in EPIK_ENV$optional_config) {
+			if(exists(op)) {
+				assign(op, get(op), envir = export_env)
+				exported_var = c(exported_var, op)
+			}
 		}
-		if(exists("CHROMATIN_STATES_ORDER")) {
-			assign("CHROMATIN_STATES_ORDER", CHROMATIN_STATES_ORDER, envir = export_env)
-		}
+
 	}
 
 	# test SAMPLE
@@ -146,11 +146,6 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	qq_message("Following sample annotations will be used: @{paste0(cn, collapse = ',')}")
 
 	sample_id = rownames(SAMPLE)
-
-	# initialize the folder structure
-	if(use_std_dir) {
-		initialize_project_directory(PROJECT_DIR)
-	}
 
 	# check chromosome and GENOME
 	chrom_info = getChromInfoFromUCSC(GENOME)
@@ -205,6 +200,7 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	}
 	if(is.null(GENOMIC_FEATURE_LIST$cgi)) {
 		if(exists("CGI")) {
+			CGI = get("CGI")
 			if(inherits(CGI, c("GRanges", "data.frame"))) {
 				qq_message("There is no `GENOMIC_FEATURE_LIST$cgi`, but found `CGI` which is a GRanges object or a data frame, assign it with `CGI`")
 				GENOMIC_FEATURE_LIST$cgi = CGI
@@ -214,6 +210,7 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	}
 	if(is.null(GENOMIC_FEATURE_LIST$cgi_shore)) {
 		if(exists("CGI_SHORE")) {
+			CGI_SHORE = get("CGI_SHORE")
 			if(inherits(CGI_SHORE, c("GRanges", "data.frame"))) {
 				qq_message("There is no `GENOMIC_FEATURE_LIST$cgi_shore`, but found `CGI_SHORE` which is a GRanges object or a data frame, assign it with `CGI_SHORE`")
 				GENOMIC_FEATURE_LIST$cgi_shore = CGI_SHORE
@@ -378,9 +375,6 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 
 	qq_message("\nValidation passed and following global variables are imported: @{paste(exported_var, collapse = ', ')}")
 }
-
-EPIK_ENV = new.env()
-EPIK_ENV$optional_config = "PROJECT_DIR"
 
 # == title
 # Register global variables
