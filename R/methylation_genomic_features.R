@@ -198,7 +198,7 @@ get_mean_methylation_in_genomic_features = function(sample_id, genomic_features,
 
 	for(chr in chromosome) {
 		methylation_hooks$set_chr(chr, verbose = FALSE)
-		meth_mat = methylation_hooks$meth[, sample_id]
+		meth_mat = methylation_hooks$meth[, sample_id, drop = FALSE]
 		meth_gr = methylation_hooks$gr
 		
 		for(i in seq_along(genomic_features)) {
@@ -207,8 +207,11 @@ get_mean_methylation_in_genomic_features = function(sample_id, genomic_features,
 			mean_meth = tapply(mtch[,2], mtch[,1], function(i) colMeans(meth_mat[i, , drop = FALSE], na.rm = TRUE))
 			ncpg = tapply(mtch[,2], mtch[,1], length)
 			ind = as.integer(names(mean_meth))
-
-			mean_meth_list[[i]][ind, ] = do.call("rbind", mean_meth)
+			if(is.list(mean_meth)) {
+				mean_meth_list[[i]][ind, ] = do.call("rbind", mean_meth)
+			} else {
+				mean_meth_list[[i]][ind, ] = mean_meth
+			}
 			ncpg_list[[i]][ind] = ncpg
 		}
 	}

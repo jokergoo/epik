@@ -76,6 +76,14 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 		min_2 = 0
 	}
 
+	if(is.null(names(gr_list_1))) {
+		stop("`gr_list_1` needs sample ids as names.")
+	}
+
+	if(is.null(names(gr_list_2))) {
+		stop("`gr_list_2` needs sample ids as names.")
+	}
+
 	min_1 = floor(min_1*length(gr_list_1))
 	min_2 = floor(min_2*length(gr_list_2))
 
@@ -143,23 +151,31 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 			methylation_hooks$set_chr(chr, verbose = FALSE)
 			meth_gr = methylation_hooks$gr
 			meth_mat = methylation_hooks$meth
+
+			if(length(intersect(names(gr_list_1), colnames(meth_mat))) == 0) {
+				stop("`gr_list_1` do not contain matched sample ids.")
+			}
+			if(length(intersect(names(gr_list_2), colnames(meth_mat))) == 0) {
+				stop("`gr_list_2` do not contain matched sample ids.")
+			}
 			
 			mtch = as.matrix(findOverlaps(gr_subset, meth_gr))
 
 			message("calculating mean methylation for transistions from `gr_list_1`")
 			x = tapply(mtch[, 2], mtch[, 1], function(ind) {
-				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_1), colnames(meth_mat)), drop = FALSE]))
+				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_1), colnames(meth_mat)), drop = FALSE], na.rm = TRUE))
 			})
 			sum_meth1[which(l_chr)[as.numeric(names(x))]] = x
 			
 			message("calculating mean methylation for transistions from `gr_list_2`")
 			x = tapply(mtch[, 2], mtch[, 1], function(ind) {
-				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_2), colnames(meth_mat)), drop = FALSE]))
+				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_2), colnames(meth_mat)), drop = FALSE], na.rm = TRUE))
 			})
 			sum_meth2[which(l_chr)[as.numeric(names(x))]] = x
 			n_cpg[which(l_chr)[as.numeric(names(x))]] = tapply(mtch[, 2], mtch[, 1], length)
 		}
 
+		# subset by methylation difference
 		l = abs(sum_meth1/n_cpg - sum_meth2/n_cpg) >= meth_diff
 		l[is.na(l)] = FALSE
 		states1 = states1[l]
@@ -192,9 +208,9 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 		for(s1 in rownames(mat2)) {
 			for(s2 in colnames(mat2)) {
 				l1 = all_states[states1] == s1 & all_states[states2] == s2 & !is.na(sum_meth1)
-				if(sum(l1)) meth_mean_1[s1, s2] = mean(sum_meth1[l1]/n_cpg[l1])
+				if(sum(l1)) meth_mean_1[s1, s2] = mean(sum_meth1[l1]/n_cpg[l1], na.rm = TRUE)
 				l2 = all_states[states1] == s1 & all_states[states2] == s2 & !is.na(sum_meth2)
-				if(sum(l2)) meth_mean_2[s1, s2] = mean(sum_meth2[l2]/n_cpg[l2])
+				if(sum(l2)) meth_mean_2[s1, s2] = mean(sum_meth2[l2]/n_cpg[l2], na.rm = TRUE)
 			}
 		}
 	}

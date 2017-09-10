@@ -173,7 +173,7 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 #           ``min_dp``, the CpG window is just excluded.
 # -col color for subgroups. This setting will be saved in the returned object and will be used in downstream analysis.
 #      If not set, random colors are assigned.
-# -species species. This setting will be saved and used in downstream analysis
+# -genome genome This setting will be saved and used in downstream analysis
 #
 # == details
 # A correlated region is defined as a region where methylation is correlated with the expression of associated gene.
@@ -217,7 +217,7 @@ correlated_regions_by_window = function(site, meth, expr, chr, cov = NULL, cov_c
 correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	cov_filter = function(x) sum(x > 0, na.rm = TRUE) > length(x)/2,
 	cor_method = "spearman", subgroup = NULL, window_size = 5, window_step = window_size, 
-	max_width = 10000, raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL, species = "hg19") {
+	max_width = 10000, raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL, genome = "hg19") {
 
 	message(qq("extracting gene model (extend = @{extend}, chr = @{chr})..."))
 	gene = genes(txdb)
@@ -364,54 +364,29 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 		}
 	}
 	param$col = col
-	param$species = species
+	param$genome = genome
 
 	metadata(res) = list(cr_param = param)
+
+	## add the fdr column
+	# separate neg and pos
+	l_neg = res$corr < 0
+	l_pos = res$corr > 0
+
+	# add corr_fdr column
+	res$corr_fdr = 1
+	res$corr_fdr[l_neg] = p.adjust(res$corr_p[l_neg], "BH")
+	res$corr_fdr[l_pos] = p.adjust(res$corr_p[l_pos], "BH")
+
+	if(!is.null(res$meth_anova)) {
+		res$meth_anova_fdr = 1
+		res$meth_anova_fdr[l_neg] = p.adjust(res$meth_anova[l_neg], "BH")
+		res$meth_anova_fdr[l_pos] = p.adjust(res$meth_anova[l_pos], "BH")
+	}
+
 	return(res)
 }
 
-
-# == title
-# Calcualte FDRs for CRs
-#
-# == param
-# -cr original correlated regions from `correlated_regions`. CRs from all chromosomes should be concatenated into one object by `cr_concatenate`.
-# -fdr_method method to calculate FDR
-#
-# == details
-# Since correlated region detection is per-chromosome, after merging correlated regions from all chromosomes, FDR
-# can be calcualted based on ``corr_p`` and/or ``meth_anno`` column.
-#
-# Please note, FDRs are calculated for negative CRs and positive CRs separatedly.
-#
-# == value
-# Correlated regions with two/one columns (``corr_fdr``, ``meth_anova_fdr``)
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-#
-cr_add_fdr_column = function(cr, fdr_method = "BH") {
-
-	# separate neg and pos
-	l_neg = cr$corr < 0
-	l_pos = cr$corr > 0
-
-	# add corr_fdr column
-	cr$corr_fdr = 1
-	cr$corr_fdr[l_neg] = p.adjust(cr$corr_p[l_neg], fdr_method)
-	cr$corr_fdr[l_pos] = p.adjust(cr$corr_p[l_pos], fdr_method)
-
-	if(!is.null(cr$meth_anova)) {
-		cr$meth_anova_fdr = 1
-		cr$meth_anova_fdr[l_neg] = p.adjust(cr$meth_anova[l_neg], fdr_method)
-		cr$meth_anova_fdr[l_pos] = p.adjust(cr$meth_anova[l_pos], fdr_method)
-	}
-
-	cr_param = metadata(cr)$cr_param
-	cr_param$fdr_method = fdr_method
-	metadata(cr)$cr_param = cr_param
-	cr
-}
 
 # gr is sorted
 reduce_cr_by_gene = function(gr, gap = 1) {

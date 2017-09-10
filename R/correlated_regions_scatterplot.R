@@ -91,7 +91,8 @@ cr_scatterplot = function(cr, expr, gi = NULL, text_column, xlab = "Methylation"
 #
 scatterplot_with_boxplot = function(x, y, subgroup = rep("unknown", length(x)), 
 	subgroup_col = structure(seq_along(levels(subgroup)), names = levels(subgroup)),
-	main = NULL, xlab = NULL, ylab = NULL, xlim = range(x), ylim = range(y), text_list = NULL) {
+	main = NULL, xlab = NULL, ylab = NULL, xlim = range(x, na.rm = TRUE), ylim = range(y, na.rm = TRUE), 
+	text_list = NULL) {
 
 	if(!is.factor(subgroup)) {
 		subgroup = factor(subgroup)
