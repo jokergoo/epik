@@ -102,7 +102,7 @@ merge_cpg_dinucleotide_methylation = function(pos, meth, cov) {
 
 	cov2 = round(cov2)
 	meth2 = round(meth2)
-	l = meth2 < cov2
+	l = meth2 > cov2
 	meth2[l] = cov2[l]
 
 	colnames(meth2) = colnames(meth)

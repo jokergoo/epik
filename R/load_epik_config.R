@@ -142,10 +142,13 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	SAMPLE = SAMPLE[, cn, drop = FALSE]
 
 	qq_message("There are @{nrow(SAMPLE)} samples defined in `SAMPLE`.")
-	qq_message("@{length(unique(SAMPLE$subgroup))} subgroups: @{paste0(unique(SAMPLE$subgroup))}")
+	qq_message("@{length(unique(SAMPLE$subgroup))} subgroups: @{paste(unique(SAMPLE$subgroup), collapse=',')}")
 	qq_message("Following sample annotations will be used: @{paste0(cn, collapse = ',')}")
 
 	sample_id = rownames(SAMPLE)
+
+	# initialize the folder structure
+	initialize_project_directory(PROJECT_DIR)
 
 	# check chromosome and GENOME
 	chrom_info = getChromInfoFromUCSC(GENOME)
@@ -153,18 +156,23 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	if(length(chr_cn) == 0) {
 		stop("Cannot match 'GENOME' to 'CHROMOSOME'.")
 	}
-	chrom_info = chrom_info[chrom_info[, 1] %in% chr_cn]
+	chrom_info = chrom_info[chrom_info[, 1] %in% chr_cn, , drop = FALSE]
 	CHROMOSOME = chr_cn
 	qq_message("@{length(chr_cn)} chromosomes after match to @{GENOME}")
 
 	if(!is.null(TXDB)) {
 		
 		if(is.null(GTF_FILE)) GTF_FILE = metadata(TXDB)[3, "value"]
+		if(is.na(GTF_FILE)) {
+			stop("`GTF_FILE` needs to be defined.")
+		}
 		if(!file.exists(GTF_FILE)) {
 			stop("cannot find ", GTF_FILE)
 		}
-		if(basename(metadata(TXDB)[3, "value"]) != basename(GTF_FILE)) {
-			qq_warning("Base name is not the same for 'GTF_FILE' (@{basename(GTF_FILE)}) and the one used to build 'TXDB' (@{basename(metadata(TXDB)[3, 'value'])})")
+		if(!is.na(metadata(TXDB)[3, "value"])) {
+			if(basename(metadata(TXDB)[3, "value"]) != basename(GTF_FILE)) {
+				qq_warning("Base name is not the same for 'GTF_FILE' (@{basename(GTF_FILE)}) and the one used to build 'TXDB' (@{basename(metadata(TXDB)[3, 'value'])})")
+			}
 		}
 	}
 
@@ -286,7 +294,7 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 	if(length(setdiff(meth_sample_id, sample_id)) > 0) {
 		stop("column names in methylation data should be all included in 'SAMPLE'.")
 	}
-	qq_message("There are @{length(meth_sample_id} samples have methylation data.")
+	qq_message("There are @{length(meth_sample_id)} samples have methylation data.")
 
 	if(!is.null(EXPR) && !is.null(TXDB)) {
 		EXPR = as.matrix(EXPR)
@@ -310,7 +318,7 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 		chr = as.vector(seqnames(genes))
 		names(chr) = names(genes)
 		EXPR = EXPR[chr[rownames(EXPR)] %in% CHROMOSOME, , drop = FALSE]
-		message("take @{nrow(EXPR)} genes into analysis.")
+		qq_message("take @{nrow(EXPR)} genes into analysis.")
 	}
 	
 
@@ -397,3 +405,29 @@ register_global_var = function(var_name) {
 	assign("optional_config", optional_config, envir = EPIK_ENV)
 	return(invisible(NULL))
 }
+
+
+
+# == title
+# Initialize project directories
+#
+# == param
+# -project_dir path of the project directory
+#
+# == value
+# No value is returned
+#
+# == author
+# Zuguang Gu <z.gu@dkfz.de>
+initialize_project_directory = function(project_dir) {
+	dir.create(project_dir, showWarnings = FALSE)
+	dir.create(paste0(project_dir, "/image"), showWarnings = FALSE)
+	dir.create(paste0(project_dir, "/rds_cr"), showWarnings = FALSE)
+	dir.create(paste0(project_dir, "/temp"), showWarnings = FALSE)
+
+	message("Following folders created:")
+	message(qq("  @{project_dir}/image/ for general plots"))
+	message(qq("  @{project_dir}/rds_cr/ for CR-related rds files"))
+	message(qq("  @{project_dir}/temp/ for temporary files"))
+}
+

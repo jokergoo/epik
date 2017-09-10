@@ -132,7 +132,7 @@ average_in_window = function(gr1, gr2, v, empty_value = 0, chromosome = unique(a
 	x = rep(empty_value, length(gr1))
 	chromosome = intersect(chromosome, intersect( unique(as.vector(seqnames(gr1))),  unique(as.vector(seqnames(gr2)))))
 	for(chr in chromosome) {
-		message(qq("  averaging in window for @{chr}"))
+		# message(qq("  averaging in window for @{chr}"))
 		l = as.vector(seqnames(gr1) == chr)
 		l2 = as.vector(seqnames(gr2) == chr)
 		if(sum(l)) {
@@ -198,6 +198,9 @@ hilbert_curve_chipseq_difference = function(mark, subgroup, comparison, chromoso
 	if(is.null(names(subgroup))) {
 		stop("`subgroup` must have names to correspond to sample IDs.")
 	} else {
+		if(!missing(comparison)) {
+			subgroup = subgroup[subgroup %in% comparison]
+		}
 		sample_id = intersect(names(subgroup), sample_id)
 		subgroup = subgroup[sample_id]
 	}

@@ -68,7 +68,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 	raw_meth = cr_param$raw_meth
 	cov_cutoff = cr_param$cov_cutoff
 	min_dp = cr_param$min_dp
-	species = cr_param$species
+	genome = cr_param$genome
 
 	if(is.null(raw_meth)) raw_meth = FALSE
 	if(is.null(cov_cutoff)) cov_cutoff = 0
@@ -118,7 +118,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 	options(Gviz.ucscUrl="http://genome-euro.ucsc.edu/cgi-bin/")
 	trackList = list()
 	trackList = pushTrackList(trackList, GenomeAxisTrack())
-	trackList = pushTrackList(trackList, IdeogramTrack(genome = species, chromosome = chr))
+	trackList = pushTrackList(trackList, IdeogramTrack(genome = genome, chromosome = chr))
 	grtrack = GeneRegionTrack(txdb, chromosome = chr, start = gene_start, end = gene_end, 
 		name="Gene\nmodel", showId = TRUE, rotate.title = TRUE, col = NA, showTitle = FALSE,
 		size = 0.5)
@@ -172,7 +172,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 	corr_mat[2, gr$corr < 0] = gr$corr[gr$corr < 0]
 	trackList = pushTrackList(trackList, DataTrack(name = qq("Correlation\nCpG window = @{window_size}"),
 								range = gr,
-								genome = species,
+								genome = genome,
 								data = corr_mat,
 								type = c("hist"),
 								groups = c("pos", "neg"),
@@ -202,7 +202,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 										start = start(gr),
 										end = end(gr),
 										chromosome = seqnames(gr),
-										genome = species,
+										genome = genome,
 										data = t(meth_mat),
 										type = "heatmap",
 										showSampleNames = FALSE,
@@ -217,7 +217,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 										start = start(gr),
 										end = end(gr),
 										chromosome = seqnames(gr),
-										genome = species,
+										genome = genome,
 										data = t(mat),
 										type = "heatmap",
 										showSampleNames = FALSE,
@@ -239,7 +239,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 		                            start = start,
 		                            end = end,
 		                            chromosome = rep(chr, length(start)),
-									genome = species,
+									genome = genome,
 									data = num,
 									col = "black",
 									type = "hist",
@@ -306,7 +306,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 													start = start(segments),
 													end = end(segments),
 													chromosome = seqnames(segments),
-													genome = species,
+													genome = genome,
 													data = mean_signal,
 													type = "hist",
 													size = 1,
@@ -333,7 +333,7 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 													start = start(segments),
 													end = end(segments),
 													chromosome = seqnames(segments),
-													genome = species,
+													genome = genome,
 													data = mean_signal,
 													type = "hist",
 													size = 1,

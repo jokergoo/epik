@@ -137,6 +137,7 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 	stat = foldChange
 	stat_random_mean = stat
 	stat_random_sd = stat
+	max_reduce = stat
 
 	if(nperm > 1) {
 		chr_len_df = getChromInfoFromUCSC(species)
@@ -203,11 +204,16 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 
 			foldChange[, i] = stat[, i]/stat_random_mean[, i]
 			p[, i] = sapply(seq_len(length(gr_list_2)), function(i) sum(stat_random[i, ] > stat[i])/nperm)
+			
+			max_reduce[, i] = sapply(seq_len(length(gr_list_2)), function(i) {
+				max_reduce_of_significance(stat[i], make_ecdf(stat_random[i, ]), plot = FALSE)$rel_change
+			})
 		} else {
 			stat_random_mean[, i]  = NA
 			stat_random_sd[, i] = NA
 			foldChange[, i] = NA
 			p[, i] = NA
+			max_reduce[, i] = NA
 		}
 	}
 
@@ -223,13 +229,15 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		p = NULL
 		stat_random_mean = NULL
 		stat_random_sd = NULL
+		max_reduce = NULL
 	}
 
 	res = list(stat = stat,
 		       fold_change = foldChange, 
 		       p.value = p,
 		       stat_random_mean = stat_random_mean,
-		       stat_random_sd = stat_random_sd)
+		       stat_random_sd = stat_random_sd,
+		       max_reduce = max_reduce)
 	
 	return(res)
 }
@@ -456,3 +464,58 @@ genomic_corr_intersect = function(gr1, gr2, method = c("number", "percent", "len
 	return(res)
 }
 
+
+make_ecdf = function(x) {
+	x = sort(x)
+	env = new.env()
+	env$fun = ecdf(x)
+	env$range = c(x[1], x[length(x)])
+	env	
+}
+
+max_reduce_of_significance = function(x0, cdf, alpha = 0.05, plot = FALSE) {
+	x = seq(cdf$range[1], cdf$range[2], length = 1000)
+	p = cdf$fun(x)
+	ind = 2:1000
+	null_mean =  sum((x[ind] + x[ind-1])/2 * (p[ind] - p[ind-1]))
+	fc = x0/null_mean
+
+	if(x0 <= null_mean) {
+		return(data.frame(p = 1 - cdf$fun(x0),
+			 fold_change = fc,
+		     null_mean = null_mean,
+		     max_offset = NA,
+		     rel_change = NA,
+		     alpha = NA))
+	}
+
+	s = seq(0, x0 - null_mean, length = 1000)
+	p = sapply(s, function(x) {
+		1 - cdf$fun(x0 - x)
+	})
+
+	x = seq(cdf$range[1], cdf$range[2], length = 1000)
+	if(plot) plot(x, cdf$fun(x), type = "l", ylab = "P(X >= x)")
+	if(plot) abline(v = x0)
+
+	ind = which(p < alpha)
+	if(length(ind) == 0) {
+		return(data.frame(p = 1 - cdf$fun(x0),
+			 fold_change = fc,
+		     null_mean = null_mean,
+		     max_offset = NA,
+		     rel_change = NA,
+		     alpha = NA))
+	} else {
+		if(plot) abline(v = x0 - s[length(ind)], col = "red", lty = 2)
+		max_offset = s[length(ind)]	
+	}
+
+	
+	return(data.frame(p = 1 - cdf$fun(x0),
+			 fold_change = fc,
+		     null_mean = null_mean,
+		     max_offset = max_offset,
+		     rel_change = max_offset/x0,
+		     alpha = 1 - cdf$fun(x0 - max_offset)))
+}

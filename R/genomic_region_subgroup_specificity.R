@@ -293,8 +293,12 @@ heatmap_subgroup_specificity = function(gr_list, genomic_features = NULL,
 		} else {
 			# cluster rows for each sub-matrix
 			message(qq("cluster rows for sub-matrix @{gr_list_name[i]} (@{length(gr_list[[i]])} rows)."))
-			rclust = hclust(dist(sub_matrix))
-			mat = rbind(mat, sub_matrix[rclust$order, ])
+			if(nrow(sub_matrix) == 1) {
+				rclust = list(order = 1)
+			} else {
+				rclust = hclust(dist(sub_matrix))
+			}
+			mat = rbind(mat, sub_matrix[rclust$order, , drop = FALSE])
 			gr_combine = c(gr_combine, gr_list[[i]][rclust$order])
 			type = c(type, rep(gr_list_name[i], length(gr_list[[i]])))
 		}
@@ -333,7 +337,7 @@ heatmap_subgroup_specificity = function(gr_list, genomic_features = NULL,
 		
 	len = width(gr_combine)
 	len[len > quantile(len, 0.95)] = quantile(len, 0.95)
-	ht_list = ht_list + rowAnnotation(length = row_anno_points(len, axis = TRUE, axis_side = "top", size = unit(0.5, "mm"), gp = gpar(col = "#00000040")), width = unit(1, "cm"),
+	ht_list = ht_list + rowAnnotation(length = row_anno_points(len, axis = TRUE, axis_side = "top", size = unit(1, "mm"), gp = gpar(col = "#00000040")), width = unit(2, "cm"),
 		show_annotation_name = TRUE)
 	
 	if(!is.null(genomic_features)) {
