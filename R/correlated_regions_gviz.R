@@ -140,6 +140,8 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 		if("bar" %in% ls(envir = env)) {
 			bar = get("bar", envir = env)
 			arrow_col = ifelse(tx_gene_mapping[rownames(bar)] == gi, "darkgrey", "#00000020")
+		} else{
+			arrow_col = "darkgrey"
 		}
 		getFromNamespace("get_origin_fun", "epik.Gviz")(".arrowBar")(xx1 = xx1, xx2 = xx2, strand = strand, coords = coords, y=y, W=W, D=D, H, col = arrow_col, lwd = lwd, lty = lty, alpha = alpha, barOnly=barOnly,
         	diff=diff, min.height=min.height)

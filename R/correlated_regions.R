@@ -263,7 +263,6 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	expr = expr[, sample_id, drop = FALSE]
 
 	if(!is.null(cov_filter)) {
-		
 		l = apply(cov, 1, cov_filter)
 		if(any(is.na(l))) {
 			stop("`cov_filter` generates `NA`, check it.")
@@ -362,6 +361,8 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 			n_subgroup = length(unique(subgroup))
 			col = structure(rand_color(n_subgroup), names = unique(subgroup))
 		}
+	} else {
+		col = col[unique(subgroup)]
 	}
 	param$col = col
 	param$genome = genome
@@ -369,22 +370,15 @@ correlated_regions = function(sample_id, expr, txdb, chr, extend = 50000,
 	metadata(res) = list(cr_param = param)
 
 	## add the fdr column
-	# separate neg and pos
-	l_neg = res$corr < 0
-	l_pos = res$corr > 0
-
-	# add corr_fdr column
-	res$corr_fdr = 1
-	res$corr_fdr[l_neg] = p.adjust(res$corr_p[l_neg], "BH")
-	res$corr_fdr[l_pos] = p.adjust(res$corr_p[l_pos], "BH")
+	res$corr_fdr = p.adjust(res$corr_p, "BH")
 
 	if(!is.null(res$meth_anova)) {
-		res$meth_anova_fdr = 1
-		res$meth_anova_fdr[l_neg] = p.adjust(res$meth_anova[l_neg], "BH")
-		res$meth_anova_fdr[l_pos] = p.adjust(res$meth_anova[l_pos], "BH")
+		res$meth_anova_fdr = p.adjust(res$meth_anova, "BH")
 	}
 
-	return(res)
+	res = cr_add_subtype_specificity(res)
+
+	return2(res)
 }
 
 
@@ -649,6 +643,8 @@ cr_reduce = function(cr, txdb, expr = NULL, gap = bp(1), mc.cores = 1) {
 	cr2 = do.call("c", cr_reduced_list)
 
 	metadata(cr2)$cr_param = cr_param
+
+	cr2 = cr_add_subtype_specificity(cr2)
 	return(cr2) 
 }
 
@@ -732,12 +728,13 @@ cr_add_subtype_specificity = function(cr, cutoff = 0.05, suffix = "_ss") {
 		ss[!l] = 0
 		subtype_ss[i, ] = ss
 
-		counter()
+		if(interactive()) counter()
 	}
 
 	colnames(subtype_ss) = paste0(colnames(subtype_ss), suffix)
 
 	mcols(cr) = cbind(as.data.frame(mcols(cr)), subtype_ss)
+
 	return(cr)
 }
 
@@ -759,8 +756,12 @@ cr_add_subtype_specificity = function(cr, cutoff = 0.05, suffix = "_ss") {
 # Zuguang Gu <z.gu@dkfz.de>
 cr_concatenate = function(...) {
 	cr_list = list(...)
+	cr_list = cr_list[!sapply(cr_list, is.null)]
+	if(length(cr_list) == 1) {
+		return(cr_list[[1]])
+	}
 	cr_param = metadata(cr_list[[1]])$cr_param
-	suppressWarnings(cr <- c(...))
+	suppressWarnings(cr <- do.call("c", cr_list))
 	metadata(cr) = list(cr_param = cr_param)
 	return(cr)
 }

@@ -104,7 +104,7 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 		}
 	}
 
-	if(!validate) {
+	if(FALSE) {
 		assign("SAMPLE", SAMPLE, envir = export_env)
 		assign("COLOR", COLOR, envir = export_env)
 		assign("TXDB", TXDB, envir = export_env)
@@ -116,12 +116,14 @@ load_epik_config = function(config_file, export_env = parent.frame(), validate =
 		assign("GTF_FILE", GTF_FILE, envir = export_env)
 		assign("CGI_SHORE_EXTEND", CGI_SHORE_EXTEND, envir = export_env)
 
+		exported_var = c("SAMPLE", "COLOR", "TXDB", "EXPR", "CHROMOSOME", "GENOME", "GENOMIC_FEATURE_LIST", "MARKS", "GTF_FILE")
 		for(op in EPIK_ENV$optional_config) {
 			if(exists(op)) {
 				assign(op, get(op), envir = export_env)
 				exported_var = c(exported_var, op)
 			}
 		}
+		qq_message("\nValidation passed and following global variables are imported: @{paste(exported_var, collapse = ', ')}")
 		return(invisible(NULL))
 	}
 

@@ -63,14 +63,19 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 	}
 	
 	if(cutoff < 1) {
-		p = numeric(nrow(mat))
-		for(j in seq_len(nrow(mat))) {
-			group = factor(subgroup)
-			data = mat[j, ]
-			data = data + rnorm(length(data), 0, 0.01)
-			df = data.frame(data = data, group = group)
-			p[j] = oneway.test(data ~ group, data = df)$p.value
+		# p = numeric(nrow(mat))
+		# for(j in seq_len(nrow(mat))) {
+		# 	group = factor(subgroup)
+		# 	data = mat[j, ]
+		# 	data = data + rnorm(length(data), 0, 0.01)
+		# 	df = data.frame(data = data, group = group)
+		# 	p[j] = oneway.test(data ~ group, data = df)$p.value
+		# }
+		data = mat
+		for(j in seq_len(ncol(mat))) {
+			data[, j] = data[, j] + rnorm(nrow(mat), 0, 0.01)
 		}
+		p = rowFtests(mat, factor(subgroup))[, "p.value"]
 		adjp = p.adjust(p, method = adj_method)
 		l = adjp < cutoff
 
@@ -129,10 +134,12 @@ heatmap_diff_methylation_in_genomic_features = function(gr, subgroup,
 	gr2 = gr
 	mcols(gr2) = NULL
 
-	len = width(gr2)
-	len[len > quantile(len, 0.95)] = quantile(len, 0.95)
-	ht_list = ht_list + rowAnnotation(length = row_anno_points(len, axis = TRUE, axis_side = "top", size = unit(0.5, "mm"), gp = gpar(col = "#00000040")), width = unit(1, "cm"),
-		show_annotation_name = TRUE)
+	# len = width(gr2)
+	# len[len > quantile(len, 0.95)] = quantile(len, 0.95)
+	# if(length(unique(len)) > 1) {
+	# 	ht_list = ht_list + rowAnnotation(length = row_anno_points(len, axis = TRUE, axis_side = "top", size = unit(0.5, "mm"), gp = gpar(col = "#00000040")), width = unit(1, "cm"),
+	# 		show_annotation_name = TRUE)
+	# }
 	
 	if(!is.null(genomic_features)) {
 		if(inherits(genomic_features, "GRanges")) {

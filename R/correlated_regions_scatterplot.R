@@ -108,7 +108,7 @@ scatterplot_with_boxplot = function(x, y, subgroup = rep("unknown", length(x)),
     title(ylab = ylab, cex.lab = 1.5)
 
     par(mar = c(0, 0, 5, 5))
-    plot(x, y, xlim = xrange, ylim = yrange, axes = FALSE, ann = FALSE, cex = 1.5, pch = 16, col = subgroup_col[subgroup])
+    plot(x, y, xlim = xrange, ylim = yrange, axes = FALSE, ann = FALSE, cex = 1.5, pch = 16, col = subgroup_col[as.character(subgroup)])
     box()
     title(main, cex.main = 1)
 

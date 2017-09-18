@@ -217,7 +217,7 @@ add_boxplot_as_column_annotation = function(ht_list, width, anno_name, anno_titl
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
+cr_enriched_heatmap_at_tss_cgi = function(cr, txdb, expr, cgi,
 	fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
 	expr_ha) {
 	
@@ -237,7 +237,7 @@ cr_enriched_heatmap_at_cgi = function(cr, txdb, expr, cgi,
 
 	message("extracting gene tss")
 	tss = promoters(gene, upstream = 1, downstream = 0)
-	tss = tss[names(tss) %in% cr$gene_id]
+	tss = tss[names(tss) %in% sig_cr$gene_id]
 
 	if(length(extend) == 1) extend = rep(extend, 2)
 
@@ -463,7 +463,7 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 	                width = unit(1, "cm"))
 
 	if(is.not.null(km)) {
-		ht_list = ht_list + Heatmap(km[names(tss)], name = "km_groups", col = km_col, show_row_names = FALSE,
+		ht_list = ht_list + Heatmap(km[names(target)], name = "km_groups", col = km_col, show_row_names = FALSE,
 			width = unit(1, "cm"))
 	}
 
@@ -644,7 +644,7 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 	ht_list = ht_list + rowAnnotation(foo_width = row_anno_points(width_anno, axis = TRUE, gp = gpar(col = "#00000040")),
 	                width = unit(1, "cm"))
 
-	ht_list = ht_list + Heatmap(km[names(gene)], name = "km_groups", col = km_col, show_row_names = FALSE,
+	ht_list = ht_list + Heatmap(km[names(target)], name = "km_groups", col = km_col, show_row_names = FALSE,
 			width = unit(1, "cm"))
 
 	ht_list = ht_list + EnrichedHeatmap(mat_cgi, col = c("white", "darkorange"), name = "CGI",

@@ -7,7 +7,7 @@ Visualize landscape of genome-wide correlations
 Visualize landscape of genome-wide correlations
 }
 \usage{
-cr_enriched_heatmap(cr, txdb, expr, expr_ha)
+cr_enriched_heatmap(cr, txdb, expr, expr_ha, p_na = 0.25)
 }
 \arguments{
 

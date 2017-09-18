@@ -84,6 +84,13 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 		stop("`gr_list_2` needs sample ids as names.")
 	}
 
+	if(min_1 > 1) {
+		stop("`min_1` should be a percent value (<= 1).")
+	}
+	if(min_2 > 1) {
+		stop("`min_2` should be a percent value (<= 1).")
+	}
+
 	min_1 = floor(min_1*length(gr_list_1))
 	min_2 = floor(min_2*length(gr_list_2))
 

@@ -219,8 +219,10 @@ cor_columns = function (x, abs_cutoff = 0.5, size = 1000, mc = 1, ...) {
 generate_diff_color_fun = function(x, quantile = 0.95, col = c("#3794bf", "#FFFFFF", "#df8640")) {
 	x = x[abs(x) > 1e-6]
 	q = quantile(abs(x), quantile)
-	if(sum(x < 0)) {
-		colorRamp2(c(-q, 0, q), col)
+	if(q == 0) {
+		colorRamp2(c(-1, 0, 1), col)
+	} else if(sum(x < 0)) {
+		colorRamp2(c(-q, 0, q), c("#3794bf", "#FFFFFF", "#df8640"))
 	} else {
 		if(length(col) == 3) {
 			colorRamp2(c(0, q), col[2:3])
@@ -269,4 +271,35 @@ qq_stop = function(text, envir = parent.frame(), ...) {
 qq_warning = function(text, envir = parent.frame(), ...) {
 	text = paste(strwrap(qq(text, envir = envir)), collapse = "\n")
 	warning(text, ...)
+}
+
+
+return2 = function(expr, invisible = FALSE) {
+	env = parent.frame()
+	
+	if(identical(env, .GlobalEnv)) {
+		base::return(NULL)
+	}
+	
+	# check on.exit
+	if(exists(".on.exit.expression", envir = env)) {
+		.on.exit.expression = get(".on.exit.expression", envir = env)
+		for(i in seq_along(.on.exit.expression)) {
+			eval(.on.exit.expression[[i]], envir = env)
+		}
+	}
+
+	value = eval(substitute(expr), envir = env)
+	
+	obj = ls(envir = env)
+	
+	all_obj = ls(envir = env, all.names = TRUE)
+	rm(list = all_obj, envir = env)
+	gc(verbose = FALSE)
+	
+	if(invisible) {
+		base::return(invisible(value))
+	} else {
+		base::return(value)
+	}
 }

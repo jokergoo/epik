@@ -1,6 +1,7 @@
 
 
 library(GetoptLong)
+library(GlobalOptions)
 library(parallel)
 library(ComplexHeatmap)
 library(EnrichedHeatmap)

@@ -96,6 +96,7 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 	}
 
 	if(!is.null(chipseq_hooks$chromHMM) && n_subgroup == 2) {
+		message("overlap to chrome states")
 		sample_id_subgroup1 = sample_id[subgroup == subgroup_level[1]]
 		sample_id_subgroup2 = sample_id[subgroup == subgroup_level[2]]
 
@@ -202,41 +203,44 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 		decorate_heatmap_body("overlap0", slice = i, {
 			grid.rect(gp = gpar(col = "black", fill = "transparent"))
 		})
-		decorate_heatmap_body("overlap_diff", slice = i, {
-			grid.rect(gp = gpar(col = "black", fill = "transparent"))
-		})
+		if(!is.null(overlap_diff_cs)) {
+			decorate_heatmap_body("overlap_diff", slice = i, {
+				grid.rect(gp = gpar(col = "black", fill = "transparent"))
+			})
+		}
 	}
 
-	if(!interactive()) {
+	if(!dev.interactive()) {
 		
 		device_type = .Device
 		filepath = attr(.Device, "filepath")
+
+		n_plots = 3
+		if(!is.null(overlap_gf)) {
+			n_plots = n_plots + ncol(overlap_gf)
+		}
+		if(!is.null(overlap_diff_cs)) {
+			n_plots = n_plots + ncol(overlap_diff_cs)
+		}
+		nrow_plots = ceiling(sqrt(n_plots))
+		ncol_plots = ceiling(n_plots/nrow_plots)
+		stat_plot_width = ncol_plots*3
+		stat_plot_height = nrow_plots*3
 		if(device_type == "pdf") {
 			filepath = gsub("\\.pdf$", ".stat.pdf", filepath, ignore.case = TRUE)
-			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)
-			stat_plot_height = 3
 			pdf(filepath, width = stat_plot_width, height = stat_plot_height)
 		} else if(device_type == "png") {
 			filepath = gsub("\\.png$", ".stat.png", filepath, ignore.case = TRUE)
-			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)*200
-			stat_plot_height = 3*200
-			png(filepath, width = stat_plot_width, height = stat_plot_height)
+			png(filepath, width = stat_plot_width*200, height = stat_plot_height*200)
 		} else {
 			filepath = gsub("\\.[^.]+$", ".stat.png", filepath, ignore.case = TRUE)
-			stat_plot_width = ifelse(n_subgroup == 2, 12, 9)*200
-			stat_plot_height = 3*200
-			png(filepath, width = stat_plot_width, height = stat_plot_height)
+			png(filepath, width = stat_plot_width*200, height = stat_plot_height*200)
 		}
-
+		
 		op = par(no.readonly = TRUE)
 		on.exit(par(op))
 
-		par(mar = c(4, 4, 4, 1))
-		if(!is.null(overlap_gf) && !is.null(overlap_diff_cs)) {
-			par(mfrow = c(1, 3))
-		} else {
-			par(mfrow = c(3, 5))
-		}
+		par(mfrow = c(nrow_plots, ncol_plots))
 
 		plot(1:8, ylim = c(0, 1), type = "n", main = "mean methylation", axes = FALSE, ylab = "mean methylation")
 		for(i in seq_along(subgroup_level)) {

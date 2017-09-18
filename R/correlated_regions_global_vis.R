@@ -19,7 +19,7 @@ cr_hilbert_curve = function(cr, chromosome = paste0("chr", 1:22),
 	merge_chr = TRUE, add_chr_name = TRUE, title = "cr", legend = lgd, ...) {
 
 	cr_param = metadata(cr)$cr_param
-	species = cr_param$species
+	species = cr_param$genome
 
 	chr_len = read.chromInfo(species = species)$chr.len
 
@@ -86,7 +86,7 @@ cr_hilbert_curve = function(cr, chromosome = paste0("chr", 1:22),
 #
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
-cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
+cr_enriched_heatmap = function(cr, txdb, expr, expr_ha, p_na = 0.25) {
 
 	cr_param = metadata(cr)$cr_param
 	sample_id = cr_param$sample_id
@@ -100,6 +100,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 	tss = promoters(g, upstream = 1, downstream = 0)
 
 	CHROMOSOME = unique(as.vector(seqnames(g)))
+	message("normalize cr to genes")
 	mat = normalizeToMatrix(cr, g, 
 		mapping_column = "gene_id", value_column = "corr",
 	    extend = extend, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0,
@@ -108,8 +109,8 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 	target_index = attr(mat, "target_index")
 	n_target = length(target_index)
 	p = apply(mat[, target_index], 1, function(x) sum(is.na(x))/n_target)
-	l = p < 0.25
-	message(qq("there are @{length(l) - sum(l)} rows that have too many NAs in the body."))
+	l = p < p_na
+	message(qq("there are @{length(l) - sum(l)} genes that have too many NAs (> @{p_na}) in the body."))
 	mat2 = mat[l, ]
 	mat2[is.na(mat2)] = 0
 
@@ -124,12 +125,14 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 
 	mat_target = mat2
 	
+	message("apply kmeans clustering with 4 groups")
 	km4 = kmeans(mat_target, centers = 4)$cluster
 	x = tapply(rowMeans(mat_target), km4, mean)
 	od = structure(rank(x), names = names(x))
 	km4 = structure(od[as.character(km4)], names = names(km4))
 
 	expr = expr[cr_gi, sample_id, drop = FALSE]
+	expr = t(scale(t(expr)))
 
 	expr_split = NULL
 	if(n_subgroup == 2) {
@@ -141,8 +144,10 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 		expr_split = factor(expr_split, levels = c("high", "low"))
 	}
 
+	message("normalize methylation to genes")
 	meth_mat = enrich_with_methylation(g, sample_id, target_ratio = 1/3, extend = extend, w = 200)
 
+	message("normalize methylation difference to genes")
 	meth_diff_column = ifelse(n_subgroup == 0 | n_subgroup == 1, "meth_IQR", ifelse(n_subgroup == 2, "meth_diff", "meth_diameter"))
 	meth_mat_diff = normalizeToMatrix(cr, g, 
 		mapping_column = "gene_id", value_column = meth_diff_column,
@@ -204,6 +209,8 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 				show_annotation_name = TRUE, annotation_name_side = "left", annotation_name_gp = gpar(fontsize = 10))
 		}
 	}
+
+	message("making heatmaps")
 	ht_list = Heatmap(km4, name = "cluster", col = group_mean_col, show_row_names = FALSE, width = 2*grobHeight(textGrob("1", gp = gpar(fontsize = 10))))
 	if(n_subgroup == 2) {
 		ht_list = ht_list + Heatmap(expr_split, name = "expr_direction", show_row_names = FALSE, width = unit(5, "mm"), col = c("high" = "Red", "low" = "darkgreen"))
@@ -251,7 +258,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 	cr_param$expr_split = expr_split
 	metadata(cr) = list(cr_param = cr_param)
 
-	if(!interactive()) {
+	if(!dev.interactive()) {
 		
 		device_type = .Device
 		filepath = attr(.Device, "filepath")
@@ -316,7 +323,7 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha) {
 		dev.off()
 	}
 
-	return(invisible(cr))
+	return2(cr, invisible = TRUE)
 }
 
 
@@ -579,7 +586,7 @@ cr_genes_gtrellis = function(cr, txdb, expr) {
 	cr_param = metadata(cr)$cr_param
 	subgroup = cr_param$subgroup
 	n_subgroup = length(unique(subgroup))
-	species = cr_param$species
+	species = cr_param$genome
 
 	km4 = cr_param$km
 	if(is.null(km4)) {
@@ -799,208 +806,87 @@ sig_cytoband_gtrellis = function(cr, txdb, cytoband_list, color_head = TRUE) {
 	}
 }
 
-do_david = function(gene_list, david_user) {
-	# https should be supported by the machine
-	david = RDAVIDWebService::DAVIDWebService$new(email = david_user, url = "https://david.abcc.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
-
-	map_result = list()
-	res_list = list()
-	for(i in names(gene_list)) {
-		map_result[[i]] <- RDAVIDWebService::addList(david, gene_list[[i]],
-			idType="ENSEMBL_GENE_ID", listName=gsub(",","_",i), listType="Gene")
-		message(qq("current gene list position is @{getCurrentGeneListPosition(david)}"))
-		RDAVIDWebService::setAnnotationCategories(david, c("GOTERM_BP_ALL", "GOTERM_MF_ALL", "GOTERM_CC_ALL"))
-		res_list[[i]] = RDAVIDWebService::getClusterReport(david, type="Term")
-	}
-	return(res_list)
-}
-
-if(is.memoised(do_david)) {
-	do_david = memoise(do_david)
-}
-
 # == title
-# Functional enrichment for CR genes by DAVID
+# CR coverage on genes
 #
 # == param
-# -cr correlated regions returned by `cr_enriched_heatmap`
-# -david_user username for DAVID API (https://david.ncifcrf.gov/content.jsp?file=WS.html )
-# -count_cutoff minimal number of CR genes in a function term
-# -fdr_cutoff cutoff of fdr of the enrichment test
-# -pop_count_cutoff maximum number of population genes in a function term.
+# -cr correlated regions
+# -txdb transcriptome annotation which was used in `correlated_regions`
 #
-# == details
-# Genes in k-means group 1 and 4 are sent to DAVID web server to do functional enrichment. 
-# The significant functions are visualized as a heatmap.
-#
-# Only three Gene Ontology (biological process, molecular function and cellular component) categories are used.
-#
-# There is also a heatmap which shows the significant enrichment.
-#
-# == value
-# A list of function enrichments.
-#
-# == author
-# Zuguang Gu <z.gu@dkfz.de>
-cr_genes_function_enrichment = function(cr, david_user, count_cutoff = 50, fdr_cutoff = 0.01,
-	pop_count_cutoff = 5000) {
+cr_coverage_on_genes = function(cr, txdb) {
 	
 	cr_param = metadata(cr)$cr_param
-	subgroup = cr_param$subgroup
-	n_subgroup = length(unique(subgroup))
+	extend = cr_param$extend
 
-	km4 = cr_param$km
-	if(is.null(km4)) {
-		stop("`cr` should be returned by `cr_enrichedheatmap()`.")
-	}
-	group_mean_col = cr_param$group_mean_col
-	row_order = cr_param$row_order
-	cr_gi = names(km4)
-
-	combined_split = cr_param$combined_split
-	expr_split = cr_param$expr_split
-
-	cr = cr[cr$gene_id %in% cr_gi]
-
-	gene_list = tapply(names(km4), cr_param$combined_split, function(x) {
-		gsub("\\.\\d+$", "", x)
-	})
-
-	gene_list = gene_list[grepl("^[1:4]", names(gene_list))]
-
-	res_list = do_david(gene_list, david_user)
-
-	# filter by count and fdr
-	df_list0 = lapply(res_list, function(res) {
-		# merge into one data frame
-		df = do.call("rbind", lapply(res@cluster, function(x) {class(x$Members) = "data.frame"; x$Members}))
-		df$cluster = rep(seq_along(res@cluster), times = sapply(res@cluster, function(x) nrow(x$Members)))
-		df
-	})
-
-	df_list = lapply(res_list, function(res) {
-		# merge into one data frame
-		df = do.call("rbind", lapply(res@cluster, function(x) {class(x$Members) = "data.frame"; x$Members}))
-		df$cluster = rep(seq_along(res@cluster), times = sapply(res@cluster, function(x) nrow(x$Members)))
-
-		l = df$Count >= count_cutoff & df$FDR < fdr_cutoff
-		df[l, ]
-	})
+	gm = genes(txdb)
+	gm_start = start(gm)
+	gm_end = end(gm)
+	names(gm_start) = names(gm)
+	names(gm_end) = names(gm)
 
 
-	df_list2 = lapply(df_list, function(df) {
-		# for each cluster, each category, pick the one with max count
-
-		index = tapply(seq_len(nrow(df)), paste0(df$cluster, df$Category), function(ind) {
-			ind[which.max(df$Count[ind])]
-		})
-		df[index, ]
-	})
-
-	# merge four groups into one data frame
-	enriched_df = do.call("rbind", df_list2)
-	enriched_df$group = rep(names(df_list2), times = sapply(df_list2, nrow))
-
-	# a data frame which has unified term
-	term_df = data.frame(Term = tapply(as.vector(enriched_df$Term), enriched_df$Term, unique),
-		Category = tapply(as.vector(enriched_df$Category), enriched_df$Term, unique),
-		Pop.Hits = tapply(enriched_df$Pop.Hits, enriched_df$Term, unique),
-		group = tapply(enriched_df$group, enriched_df$Term, function(x) sort(x)[1]))
-
-	term_df = term_df[order(term_df$group), ]
-
-	# concatenate gene list from all four groups
-	term_df$gene_list = ""
-	for(i in seq_len(nrow(term_df))) {
-		term = term_df[i, "Term"]
-
-		# check four groups and concatenate the gene list
-		for(j in seq_along(res_list)) {
-			# for each cluster in current group
-			for(k in seq_along(res_list[[j]]@cluster)) {
-				df = res_list[[j]]@cluster[[k]]$Members
-				ind = which(df$Term == term)
-				if(length(ind)) {
-					term_df$gene_list[i] = paste0(term_df$gene_list[i], ", ", df$Genes[ind])
-					message(qq("find @{term} in @{names(res_list)[j]} cluster @{k}, row @{ind}"))
-				}
-			}
-		}
+	cr_list = split(cr, cr$gene_id)
+	if(length(cr_list) > 2000) {
+		cr_list = cr_list[sample(seq_len(length(cr_list)), 2000)]
 	}
 
-	term_df = term_df[term_df$Pop.Hits < pop_count_cutoff, ]
+	pct_list = lapply(cr_list, function(gr) {
+		gi = gr$gene_id[1]
+		gr = reduce(ranges(gr))
+		start = start(gr)
+		end = end(gr)
 
-	l = (km4 == 1 | km4 == 4)
-	gene_mat = matrix(0, nrow = sum(l), ncol = nrow(term_df))
-	rownames(gene_mat) = gsub("\\.\\d+$", "", names(km4)[l])
-	colnames(gene_mat) = gsub("GO:.*~", "", term_df[, 1])
-	for(i in seq_len(nrow(term_df))) {
-		g_vector = unique(unlist(strsplit(term_df$gene_list[i], ", ")))
-		g_vector = g_vector[g_vector != ""]
-		gene_mat[g_vector, i] = 1
+		g_start = gm_start[gi] - extend
+		g_end = gm_end[gi] + extend
+		g_range = g_end - g_start + 1
+		start = (start - g_start + 1)/g_range
+		end = (end - g_start)/g_range
+		start[start < 0] = 0
+		data.frame(start = start, end = end)
+	})
+
+	pct = sapply(pct_list, function(x) sum(x$end - x$start))
+	od = order(pct)
+	pct_list = pct_list[od]
+	pct = pct[od]
+	gene_length = gm_end[names(pct_list)] - gm_start[names(pct_list)]
+
+	for(i in seq_along(pct_list)) {
+		pct_list[[i]] = cbind(pct_list[[i]], i = i)
 	}
+	pct_df = do.call("rbind", pct_list)
 
-	combined_split2 = combined_split[l]
+	n = length(pct_list)
+	grid.newpage()
+	pushViewport(viewport(x = unit(5, "mm"), width = unit(1, "npc") - unit(5, "cm"), 
+		height = 0.85, xscale = c(0, 1), yscale = c(0, n),
+		just = "left"))
+	grid.rect(x = pct_df$start, y = pct_df$i - 1, width = pct_df$end - pct_df$start, height = 1, 
+		default.units = "native", gp = gpar(fill = "black", col = NA), just = c("left", "bottom"))
+	grid.xaxis(at = c(0, 1), label = c(-extend, extend))
+	upViewport()
 
-	# index_14 = which(l)
-	# rod = NULL
-	# if(n_subgroup == 2) {
-	# 	for(i1 in c(1, 4)) {
-	# 		for(i2 in c("high", "low")) {
-	# 			label = paste(i1, i2, sep = ",")
-	# 			lx = combined_split[index_14] == label
-	# 			message(qq("cluster @{label}, @{sum(lx)} rows"))
-	# 			dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
-	# 			dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
-	# 			row_od1 = order.dendrogram(dend1)
+	pushViewport(viewport(x = unit(1, "npc") - unit(5, "mm"), width = unit(3.5, "cm"), height = 0.85,
+		just = "right", xscale = c(0, 1), yscale = c(0, n)))
+	grid.lines(pct, seq_len(n), default.units = "native")
+	grid.xaxis()
+	grid.rect(gp = gpar(fill = "transparent"))
+	upViewport() 
 
-	# 			rod = c(rod, which(lx)[row_od1])
-	# 		}
-	# 	}
-	# } else {
-	# 	for(i1 in c("1", "4")) {
-	# 		label = i1
-	# 		lx = combined_split[index_14] == label
-	# 		message(qq("cluster @{label}, @{sum(lx)} rows"))
-	# 		dend1 = as.dendrogram(hclust(dist(meth_mat[index_14[lx], ])))
-	# 		dend1 = reorder(dend1, rowMeans(meth_mat[index_14[lx], ]))
-	# 		row_od1 = order.dendrogram(dend1)
+	fake_mat = matrix(0, nrow = n, ncol = 10)
 
-	# 		rod = c(rod, which(lx)[row_od1])
-	# 	}
-	# }
-
-	ht_list = Heatmap(km4[l], name = "cluster", col = group_mean_col, show_row_names = FALSE, width = 2*grobHeight(textGrob("1", gp = gpar(fontsize = 10)))) +
-		Heatmap(expr_split[l], name = "expr_direction", show_row_names = FALSE, width = unit(5, "mm"), 
-			col = c("high" = "Red", "low" = "darkgreen")) +
-		Heatmap(gene_mat, name = "GO", col = c("0" = "white", "1" = "blue"), show_row_names = FALSE, 
-			cluster_columns = FALSE, combined_name_fun = NULL, column_names_max_height = max_text_width(colnames(gene_mat), gp = gpar(fontsize = 12)),
-			use_raster = TRUE, raster_quality = 2, show_row_dend = FALSE, split = combined_split2, show_heatmap_legend = FALSE,
-			top_annotation = HeatmapAnnotation(Category = term_df$Category, col = list(Category = brewer.pal(3, "Set2")), show_annotation_name = TRUE,
-				annotation_legend_param = list(Category = list(at = c("GOTERM_MF_ALL", "GOTERM_BP_ALL", "GOTERM_CC_ALL"), labels = c("MF", "BP", "CC")))))
-	draw(ht_list, main_heatmap = "GO", row_order = row_order, cluster_rows = FALSE)
-
-	term_names = colnames(gene_mat)
-	n_term = ncol(gene_mat)
-	for(i in 1:4) {
-		for(j in seq_len(ncol(gene_mat))) {
-			current_term_list = df_list[[i]]$Term
-			ind = which(gsub("GO:.*~", "", df_list[[i]]$Term) == term_names[j])
-			if(length(ind)) {
-				message(qq("@{term_names[j]} is significant in @{names(df_list)[i]}"))
-				decorate_heatmap_body("GO", slice = i, {
-					grid.rect(x = j/n_term, width = 1/n_term, default.units = "native", just = "right", gp = gpar(fill = "transparent", lwd = 2))
-					grid.text(paste(df_list[[i]][ind, "Count"], sprintf("%.1e", df_list[[i]][ind, "Benjamini"]), sep = ", "), 
-						x = (j-0.5)/n_term, y = unit(1, "npc") - unit(2, "mm"), rot = 90, just = "right", gp = gpar(fontsize = 8))
-				})
-			}
-		}
-	}
-	decorate_heatmap_body("cluster", slice = 1, {grid.text("1", rot = 90)})
-	decorate_heatmap_body("cluster", slice = 2, {grid.text("1", rot = 90)})
-	decorate_heatmap_body("cluster", slice = 3, {grid.text("4", rot = 90)})
-	decorate_heatmap_body("cluster", slice = 4, {grid.text("4", rot = 90)})
-	draw(ht_list, main_heatmap = "GO")
-
-	return(invisible(res_list))
+	ht = Heatmap(fake_mat, name = "fake", col = c("0" = "white"), cluster_rows = FALSE, cluster_columns = FALSE, 
+		rect_gp = gpar(type = "none"), show_heatmap_legend = FALSE, column_title = "CR coverage on genes") +
+	rowAnnotation(pct = row_anno_points(pct, axis = TRUE), width = unit(3, "cm")) +
+	rowAnnotation(len = row_anno_points(gene_length, axis = TRUE), width = unit(3, "cm"))
+	draw(ht, padding = unit(c(2, 1, 0.5, 0.5), "cm"))
+	decorate_heatmap_body("fake", {
+		pushViewport(viewport(xscale = c(0, 1), yscale = c(0, n)))
+		grid.rect(x = pct_df$start, y = n - pct_df$i - 1, width = pct_df$end - pct_df$start, height = 1, 
+			default.units = "native", gp = gpar(fill = "black", col = NA), just = c("left", "bottom"))
+		grid.xaxis(at = c(0, 1), label = c(-extend, extend))
+		upViewport()
+	})
+	decorate_annotation("pct", {grid.text("Percent", x = 0.5, y = unit(1, "npc") + unit(5, "mm"))})
+	decorate_annotation("len", {grid.text("Gene length", x = 0.5, y = unit(1, "npc") + unit(5, "mm"))})
 }

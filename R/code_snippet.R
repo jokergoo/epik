@@ -3,6 +3,10 @@ SNIPPET_ATTACH_CR_PARAM = expression({
 	cr_param = metadata(cr)$cr_param
 	sample_id = cr_param$sample_id
 	km = cr_param$km
+	if(!is.null(km)) {
+		km = km[names(km) %in% unique(cr$gene_id)]
+		cr = cr[cr$gene_id %in% names(km)]
+	}
 	km_col = cr_param$group_mean_col
 	subgroup = cr_param$subgroup
 	subgroup_level = unique(subgroup)
@@ -226,7 +230,7 @@ SNIPPET_APPEND_EPI_HEATMAP = expression({
 		    epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("corr_@{MARKS[i]}"))
 	   	 }
 
-	    ht_list = ht_list + EnrichedHeatmap(hist_mat_mean_list[[i]], col = colorRamp2(quantile(hist_mat_mean_list[[i]], c(0, 0.95)), c("white", "purple")), 
+	    ht_list = ht_list + EnrichedHeatmap(hist_mat_mean_list[[i]], col = generate_color_fun(hist_mat_mean_list[[i]]), 
 	    	name = qq("@{MARKS[i]}_mean"), column_title = qq("@{MARKS[i]}"),
 			heatmap_legend_param = list(title = qq("@{MARKS[i]}_density")),
 			top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(col = "purple", lty = 1:n_row_group))),

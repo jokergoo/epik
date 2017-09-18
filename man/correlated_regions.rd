@@ -10,7 +10,7 @@ Correlation between methylation and expression
 correlated_regions(sample_id, expr, txdb, chr, extend = 50000,
     cov_filter = function(x) sum(x > 0, na.rm = TRUE) > length(x)/2,
     cor_method = "spearman", subgroup = NULL, window_size = 5, window_step = window_size,
-    max_width = 10000, raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL, species = "hg19")
+    max_width = 10000, raw_meth = FALSE, cov_cutoff = 3, min_dp = 4, col = NULL, genome = "hg19")
 }
 \arguments{
 
@@ -29,7 +29,7 @@ correlated_regions(sample_id, expr, txdb, chr, extend = 50000,
   \item{cov_cutoff}{cutoff for CpG coverage when using raw methylation rate, used for raw methylation. Note when the CpG coverage is too low, the raw methylation rate is not reliable. Raw methylation rate for those CpGs with coverage less this this cutoff is set to \code{NA} will be further filtered by \code{min_gp}.}
   \item{min_dp}{minimal number of non-NA values for calculating correlations. When \code{meth} is the raw methylation, values for which CpG coverage is too low will be replaced with \code{NA}, We only use non-NA values to calculate correlations. If the number of data points for calculating correlation is less than \code{min_dp}, the CpG window is just excluded.}
   \item{col}{color for subgroups. This setting will be saved in the returned object and will be used in downstream analysis. If not set, random colors are assigned.}
-  \item{species}{species. This setting will be saved and used in downstream analysis}
+  \item{genome}{genome This setting will be saved and used in downstream analysis}
 
 }
 \details{

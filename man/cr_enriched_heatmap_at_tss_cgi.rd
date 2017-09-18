@@ -1,5 +1,5 @@
-\name{cr_enriched_heatmap_at_cgi}
-\alias{cr_enriched_heatmap_at_cgi}
+\name{cr_enriched_heatmap_at_tss_cgi}
+\alias{cr_enriched_heatmap_at_tss_cgi}
 \title{
 Visualizing enrichment for epigenomic signals at TSS-CGIs
 }
@@ -7,7 +7,7 @@ Visualizing enrichment for epigenomic signals at TSS-CGIs
 Visualizing enrichment for epigenomic signals at TSS-CGIs
 }
 \usage{
-cr_enriched_heatmap_at_cgi(cr, txdb, expr, cgi,
+cr_enriched_heatmap_at_tss_cgi(cr, txdb, expr, cgi,
     fdr_cutoff = 0.05, meth_diff_cutoff = 0.1, marks = NULL, type = "neg", extend = 5000,
     expr_ha)
 }
