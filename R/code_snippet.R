@@ -36,12 +36,12 @@ SNIPPET_FILTER_SIG_CR = expression({
 })
 
 SNIPPET_NORMALIZE_SIG_CR = expression({
-	mat_cr = normalizeToMatrix(sig_cr, target, extend = extend, w = 50, trim = 0, mean_mode = "absolute",
+	mat_cr = normalizeToMatrix(sig_cr, target, extend = extend, mean_mode = "absolute",
 		mapping_column = "gene_id", target_ratio = target_ratio)
 	if(type == "neg") {
 		mat_cr[mat_cr == 1] = -1
 	}
-	mat_cr_vice = normalizeToMatrix(sig_cr_vice, target, extend = extend, w = 50, trim = 0, mean_mode = "absolute",
+	mat_cr_vice = normalizeToMatrix(sig_cr_vice, target, extend = extend, mean_mode = "absolute",
 		mapping_column = "gene_id", target_ratio = target_ratio)
 	if(type == "pos") {
 		mat_cr_vice[mat_cr_vice == 1] = -1
@@ -221,32 +221,38 @@ SNIPPET_APPEND_EPI_HEATMAP = expression({
 		epi_mark_list[i+1] = list(NULL)
 		epi_title_list[i+1] = list(NULL)
 		if(is.not.null(hist_mat_corr_list[[i]])) {
-			ht_list = ht_list + EnrichedHeatmap(hist_mat_corr_list[[i]], col = cor_col_fun, name = qq("corr_@{MARKS[i]}"), 
-		          top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(pos_col = "red", neg_col = "darkgreen", lty = 1:n_row_group))), 
-	              top_annotation_height = unit(2, "cm"), column_title = qq("corr_@{MARKS[i]}"),
-	              use_raster = TRUE, raster_quality = 2)
-		    n_heatmap = n_heatmap + 1
-		    epi_mark_list[[i+1]] = c(epi_mark_list[[i+1]], qq("corr_@{MARKS[i]}"))
-		    epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("corr_@{MARKS[i]}"))
-	   	 }
+			if(sum(hist_mat_mean_list[[i]]) > 0) {
+				ht_list = ht_list + EnrichedHeatmap(hist_mat_corr_list[[i]], col = cor_col_fun, name = qq("corr_@{MARKS[i]}"), 
+			          top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(pos_col = "red", neg_col = "darkgreen", lty = 1:n_row_group))), 
+		              top_annotation_height = unit(2, "cm"), column_title = qq("corr_@{MARKS[i]}"),
+		              use_raster = TRUE, raster_quality = 2)
+			    n_heatmap = n_heatmap + 1
+			    epi_mark_list[[i+1]] = c(epi_mark_list[[i+1]], qq("corr_@{MARKS[i]}"))
+			    epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("corr_@{MARKS[i]}"))
+			}
+	   	}
 
-	    ht_list = ht_list + EnrichedHeatmap(hist_mat_mean_list[[i]], col = generate_color_fun(hist_mat_mean_list[[i]]), 
-	    	name = qq("@{MARKS[i]}_mean"), column_title = qq("@{MARKS[i]}"),
-			heatmap_legend_param = list(title = qq("@{MARKS[i]}_density")),
-			top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(col = "purple", lty = 1:n_row_group))),
-			use_raster = TRUE, raster_quality = 2)
-		n_heatmap = n_heatmap + 1
-		epi_mark_list[[i+1]] = c(epi_mark_list[[i+1]], qq("@{MARKS[i]}_mean"))
-		epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("@{MARKS[i]}"))
+	   	if(sum(hist_mat_mean_list[[i]]) > 0) {
+		    ht_list = ht_list + EnrichedHeatmap(hist_mat_mean_list[[i]], col = generate_color_fun(hist_mat_mean_list[[i]]), 
+		    	name = qq("@{MARKS[i]}_mean"), column_title = qq("@{MARKS[i]}"),
+				heatmap_legend_param = list(title = qq("@{MARKS[i]}_density")),
+				top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(col = "purple", lty = 1:n_row_group))),
+				use_raster = TRUE, raster_quality = 2)
+			n_heatmap = n_heatmap + 1
+			epi_mark_list[[i+1]] = c(epi_mark_list[[i+1]], qq("@{MARKS[i]}_mean"))
+			epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("@{MARKS[i]}"))
+		}
 
-		ht_list = ht_list + EnrichedHeatmap(hist_mat_diff_list[[i]], name = qq("@{MARKS[i]}_diff"), col = generate_diff_color_fun(hist_mat_diff_list[[i]]),
-			column_title = qq("@{MARKS[i]}_diff"),
-			heatmap_legend_param = list(title = qq("@{MARKS[i]}_diff")),
-			top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(pos_col = "#df8640", neg_col = "#3794bf", lty = 1:n_row_group))),
-			use_raster = TRUE, raster_quality = 2)
-		n_heatmap = n_heatmap + 1
-		epi_mark_list[[i+1]] = c(epi_mark_list[[i+1]], qq("@{MARKS[i]}_diff"))
-		epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("@{MARKS[i]}_diff"))
+		if(sum(abs(hist_mat_diff_list[[i]])) > 0) {
+			ht_list = ht_list + EnrichedHeatmap(hist_mat_diff_list[[i]], name = qq("@{MARKS[i]}_diff"), col = generate_diff_color_fun(hist_mat_diff_list[[i]]),
+				column_title = qq("@{MARKS[i]}_diff"),
+				heatmap_legend_param = list(title = qq("@{MARKS[i]}_diff")),
+				top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(pos_col = "#df8640", neg_col = "#3794bf", lty = 1:n_row_group))),
+				use_raster = TRUE, raster_quality = 2)
+			n_heatmap = n_heatmap + 1
+			epi_mark_list[[i+1]] = c(epi_mark_list[[i+1]], qq("@{MARKS[i]}_diff"))
+			epi_title_list[[i+1]] = c(epi_title_list[[i+1]], qq("@{MARKS[i]}_diff"))
+		}
 	}
 	if(n_heatmap > n_heatmap_first_page) {
 		ht_list2 = ht_list

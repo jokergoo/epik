@@ -35,7 +35,7 @@ enrich_with_histone_mark = function(target, mark, sample_id, mode = mean, return
 	flag = 0
 	for(i in seq_along(sample)) {
 		message(qq("@{sample[i]}: normalize @{mark} signal to @{target_name}."))
-	    tm = normalizeToMatrix(hm_list[[i]], target, trim = c(0, 0.01), ...)
+	    tm = normalizeToMatrix(hm_list[[i]], target, keep = c(0, 0.99), ...)
 	    if(!flag) {
 	    	arr = array(dim = c(length(target), dim(tm)[2], length(hm_list)))
 	    	dimnames(arr) = list(rownames(tm), colnames(tm), names(hm_list))

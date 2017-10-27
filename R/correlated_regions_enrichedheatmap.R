@@ -14,7 +14,7 @@ normalize_epigenomic_signals = function(cr, target, marks = NULL, expr = NULL, i
 
 	if(include_correlation_matrix) {
 		meth_mat_corr = normalizeToMatrix(cr, target, mapping_column = "gene_id", value_column = "corr",
-			extend = extend, mean_mode = "absolute", w = 50, target_ratio = target_ratio, trim = 0, empty_value = 0)
+			extend = extend, mean_mode = "absolute", w = 50, target_ratio = target_ratio, background = 0)
 	} else {
 		meth_mat_corr = NULL
 	}
@@ -268,8 +268,9 @@ cr_enriched_heatmap_at_tss_cgi = function(cr, txdb, expr, cgi,
 	eval(SNIPPET_NORMALIZE_SIG_CR)
 
 	if(is.not.null(km)) {
-		km = km[names(cgi2)]
+		km = km[names(target)]
 	}
+	cgi2 = cgi2[names(target)]
 
 	cgi_width = width(cgi2)
 	cgi_width[cgi_width > quantile(cgi_width, 0.99)] = quantile(cgi_width, 0.99)
@@ -306,6 +307,13 @@ cr_enriched_heatmap_at_tss_cgi = function(cr, txdb, expr, cgi,
 
 	n_heatmap = 0
 	n_row_group = 2
+	expr = t(apply(expr, 1, function(x) {
+		qu = quantile(x, c(0.05, 0.95), na.rm = TRUE)
+	    x[x < qu[1]] = qu[1]
+	    x[x > qu[2]] = qu[2]
+	    x
+	}))
+	expr = t(scale(t(expr)))
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
 		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
@@ -422,7 +430,7 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 	width_anno = gl
 
 	# normalize to CGI
-	mat_cgi = normalizeToMatrix(cgi, target, extend = extend, mean_mode = "absolute", w = 50)
+	mat_cgi = normalizeToMatrix(cgi, target, extend = extend, mean_mode = "absolute")
 
 	message("normalize to epi signals")
 	eval(SNIPPET_NORMALIZE_EPI_SIGNALS)
@@ -453,6 +461,13 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 
 	n_heatmap = 0
 	n_row_group = 2
+	expr = t(apply(expr, 1, function(x) {
+		qu = quantile(x, c(0.05, 0.95), na.rm = TRUE)
+	    x[x < qu[1]] = qu[1]
+	    x[x > qu[2]] = qu[2]
+	    x
+	}))
+	expr = t(scale(t(expr)))
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
 		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
@@ -614,7 +629,7 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 	}))
 
 	cor_col_fun = colorRamp2(c(-1, 0, 1), c("darkgreen", "white", "red"))
-	meth_col_fun = colorRamp2(c(-1, 0, 1), c("blue", "white", "red"))
+	meth_col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 	cr_col = c("-1" = "darkgreen", "0" = "white", "1" = "red")
 
 	fixed_heatmap = 2
@@ -635,6 +650,13 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 
 	n_heatmap = 0
 	n_row_group = 3
+	expr = t(apply(expr, 1, function(x) {
+		qu = quantile(x, c(0.05, 0.95), na.rm = TRUE)
+	    x[x < qu[1]] = qu[1]
+	    x[x > qu[2]] = qu[2]
+	    x
+	}))
+	expr = t(scale(t(expr)))
 	ht_list = Heatmap(expr, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, width = unit(5, "cm"), show_column_dend = FALSE, cluster_columns = FALSE, column_order = expr_col_od,
 		top_annotation = expr_ha, column_title = "Expression", show_row_dend = FALSE,
@@ -806,7 +828,7 @@ cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	eval(SNIPPET_NORMALIZE_SIG_CR)
 
 	message("normalize to gf")
-	mat_gf = normalizeToMatrix(gf_origin, target, extend = extend, w = 50, trim = 0, target_ratio = target_ratio)
+	mat_gf = normalizeToMatrix(gf_origin, target, extend = extend, target_ratio = target_ratio)
 	
 	if(length(target) < 10) {
 		message("too few regions left, just quit.")

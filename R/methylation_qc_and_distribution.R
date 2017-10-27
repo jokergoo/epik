@@ -519,7 +519,7 @@ methylation_global_distribution = function(sample_id, subgroup,
 	reorder_column = TRUE, 
 	ha = HeatmapAnnotation(subgroup = subgroup, show_annotation_name = TRUE), 
 	chromosome = paste0("chr", 1:22), by_chr = FALSE, 
-	background = NULL, p = NULL, meth_range = c(0, 1),
+	background = NULL, p = 0.001, meth_range = c(0, 1),
 	max_cov = 100, plot_cov = FALSE) {
 	
 	###############################################

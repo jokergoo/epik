@@ -348,6 +348,9 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
 #
 # == param
 # -sample_id a vector of sample IDs.
+# -merge if the sample IDs specified are from a same subgroup and user wants to merge them as consensus states
+# -window window 
+# -min minimal overlap
 # -... more arguments pass to `chipseq_hooks`$chromHMM().
 #
 # == details
@@ -361,7 +364,7 @@ get_peak_list = function(mark, sample_id = chipseq_hooks$sample_id(mark), ...) {
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-get_chromHMM_list = function(sample_id, ...) {
+get_chromHMM_list = function(sample_id, merge = FALSE, window = NULL, min = 0.5, ...) {
 	lt = lapply(sample_id, function(sid) {
 		oe = try(gr <- chipseq_hooks$chromHMM(sid, ...))
 		if(inherits(oe, "try-error")) {
@@ -371,5 +374,48 @@ get_chromHMM_list = function(sample_id, ...) {
 		}
 	})
 	names(lt) = sample_id
-	lt[!sapply(lt, is.null)]
+	lt = lt[!sapply(lt, is.null)]
+
+	if(merge) {
+		gr_list_1 = lt
+		if(is.null(window)) {
+			window = numbers::mGCD(c(sapply(gr_list_1, function(gr) numbers::mGCD(unique(width(gr))))))
+			message(qq("window is set to @{window}"))
+			if(window == 1) {
+				message("when converting bed files to GRanges objects, be careful with the 0-based and 1-based coordinates.")
+			}
+		}
+
+		# if(is.null(all_states)) {
+			all_states = unique(c(unlist(lapply(gr_list_1, function(gr) {unique(as.character(mcols(gr)[, 1]))}))))
+			all_states = sort(all_states)
+			message(qq("@{length(all_states)} states in total"))
+		# }
+
+		message("extracting states")
+		m1 = as.data.frame(lapply(gr_list_1, function(gr) {
+			k = round(width(gr)/window)
+			s = as.character(mcols(gr)[, 1])
+			as.integer(factor(rep(s, times = k), levels = all_states))
+		}))
+
+		m1 = as.matrix(m1)
+
+		gr = makeWindows(gr_list_1[[1]], w = window)
+
+		message("counting for each state")
+		t1 = rowTabulates(m1)
+		l = rowMaxs(t1) >= min
+		t1 = t1[l, , drop = FALSE]
+		gr = gr[l]
+
+		message("determine states")
+		states1 = rowWhichMax(t1)
+
+		mcols(gr) = NULL
+		gr$states = all_states[states1]
+		return(gr)
+	} else {
+		return(lt)
+	}
 }

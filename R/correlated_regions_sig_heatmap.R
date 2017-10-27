@@ -103,11 +103,16 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 		cs_list1 = get_chromHMM_list(sample_id_subgroup1)
 		cs_list2 = get_chromHMM_list(sample_id_subgroup2)
 
-		all_states = unique(cs_list1[[1]]$states)
-		overlap_diff_cs = matrix(0, nrow = length(sig_cr), ncol = length(all_states))
-		colnames(overlap_diff_cs) = all_states
-		for(i in seq_along(all_states)) {
-			overlap_diff_cs[, i] = mean_chromHMM_overlap(sig_cr, cs_list1, all_states[i]) - mean_chromHMM_overlap(sig_cr, cs_list2, all_states[i])
+		if(length(cs_list1) && length(cs_list2)) {
+
+			all_states = unique(cs_list1[[1]]$states)
+			overlap_diff_cs = matrix(0, nrow = length(sig_cr), ncol = length(all_states))
+			colnames(overlap_diff_cs) = all_states
+			for(i in seq_along(all_states)) {
+				overlap_diff_cs[, i] = mean_chromHMM_overlap(sig_cr, cs_list1, all_states[i]) - mean_chromHMM_overlap(sig_cr, cs_list2, all_states[i])
+			}
+		} else {
+			overlap_diff_cs = NULL
 		}
 	} else {
 		overlap_diff_cs = NULL
@@ -163,6 +168,13 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 			show_row_names = FALSE, width = unit(5, "mm"), show_heatmap_legend = FALSE) 
 	}
 	## 3. expression matrix
+	expr_mat = t(apply(expr_mat, 1, function(x) {
+		qu = quantile(x, c(0.05, 0.95), na.rm = TRUE)
+	    x[x < qu[1]] = qu[1]
+	    x[x > qu[2]] = qu[2]
+	    x
+	}))
+	expr_mat = t(scale(t(expr_mat)))
 	ht_list = ht_list + Heatmap(expr_mat, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, cluster_columns = FALSE, column_order = col_od,
 		top_annotation = ha, column_title = "Expression", show_row_dend = FALSE,

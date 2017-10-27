@@ -103,8 +103,8 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha, p_na = 0.25) {
 	message("normalize cr to genes")
 	mat = normalizeToMatrix(cr, g, 
 		mapping_column = "gene_id", value_column = "corr",
-	    extend = extend, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0,
-	    empty_value = NA)
+	    extend = extend, mean_mode = "absolute", w = 200, target_ratio = 1/3,
+	    background = NA)
 	
 	target_index = attr(mat, "target_index")
 	n_target = length(target_index)
@@ -132,6 +132,12 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha, p_na = 0.25) {
 	km4 = structure(od[as.character(km4)], names = names(km4))
 
 	expr = expr[cr_gi, sample_id, drop = FALSE]
+	expr = t(apply(expr, 1, function(x) {
+		qu = quantile(x, c(0.05, 0.95), na.rm = TRUE)
+	    x[x < qu[1]] = qu[1]
+	    x[x > qu[2]] = qu[2]
+	    x
+	}))
 	expr = t(scale(t(expr)))
 
 	expr_split = NULL
@@ -151,8 +157,8 @@ cr_enriched_heatmap = function(cr, txdb, expr, expr_ha, p_na = 0.25) {
 	meth_diff_column = ifelse(n_subgroup == 0 | n_subgroup == 1, "meth_IQR", ifelse(n_subgroup == 2, "meth_diff", "meth_diameter"))
 	meth_mat_diff = normalizeToMatrix(cr, g, 
 		mapping_column = "gene_id", value_column = meth_diff_column,
-	    extend = extend, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0,
-	    empty_value = 0)
+	    extend = extend, mean_mode = "absolute", w = 200, target_ratio = 1/3,
+	    background = 0)
 	meth_mat_diff[is.na(meth_mat_diff)] = 0
 	
 	if(n_subgroup == 2) {
@@ -374,9 +380,9 @@ sig_cr_enriched_heatmap = function(cr, txdb, fdr_cutoff = 0.05, meth_diff_cutoff
 	
 	cr2 = cr[l]
 	mat_neg_cr = normalizeToMatrix(cr2[cr2$corr < 0], g, mapping_column = "gene_id",
-	    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0, empty_value = 0)
+	    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, background = 0)
 	mat_pos_cr = normalizeToMatrix(cr2[cr2$corr > 0], g, mapping_column = "gene_id",
-	    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0, empty_value = 0)
+	    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, background = 0)
 	
 	ymax = max(c(tapply(seq_len(nrow(mat_neg_cr)), km4, function(ind) max(colMeans(mat_neg_cr[ind, ]))), 
 		  tapply(seq_len(nrow(mat_pos_cr)), km4, function(ind) max(colMeans(mat_pos_cr[ind, ])))))
@@ -456,9 +462,9 @@ sig_cr_compare_cutoff = function(cr, txdb, fdr_cutoff = c(0.1, 0.05, 0.01),
 
 			cr2 = cr[l]
 			mat_neg_cr = normalizeToMatrix(cr2[cr2$corr < 0], g, mapping_column = "gene_id",
-			    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0, empty_value = 0)
+			    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, background = 0)
 			mat_pos_cr = normalizeToMatrix(cr2[cr2$corr > 0], g, mapping_column = "gene_id",
-			    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, trim = 0, empty_value = 0)
+			    extend = 50000, mean_mode = "absolute", w = 200, target_ratio = 1/3, background = 0)
 			
 			mat_neg_cr_list[[qq("fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}")]] = mat_neg_cr
 			mat_pos_cr_list[[qq("fdr_cutoff_@{fdr_cutoff[i]}_meth_diff_cutoff_@{meth_diff_cutoff[j]}")]] = mat_pos_cr

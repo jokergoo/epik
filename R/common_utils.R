@@ -218,9 +218,12 @@ cor_columns = function (x, abs_cutoff = 0.5, size = 1000, mc = 1, ...) {
 
 generate_diff_color_fun = function(x, quantile = 0.95, col = c("#3794bf", "#FFFFFF", "#df8640")) {
 	x = x[abs(x) > 1e-6]
+	if(length(x) == 0) {
+		return(colorRamp2(c(-1, 0, 1), c("#3794bf", "#FFFFFF", "#df8640")))
+	}
 	q = quantile(abs(x), quantile)
 	if(q == 0) {
-		colorRamp2(c(-1, 0, 1), col)
+		colorRamp2(c(-1, 0, 1), c("#3794bf", "#FFFFFF", "#df8640"))
 	} else if(sum(x < 0)) {
 		colorRamp2(c(-q, 0, q), c("#3794bf", "#FFFFFF", "#df8640"))
 	} else {
