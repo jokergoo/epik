@@ -191,7 +191,7 @@ SNIPPET_APPEND_EPI_HEATMAP = expression({
 	}
 
 	# methylation
-	ht_list = ht_list + EnrichedHeatmap(meth_mat_mean, col = meth_col_fun, 
+	ht_list = ht_list + EnrichedHeatmap(meth_mat_mean, col = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red")), 
 		name = "methylation", column_title = qq("meth"),
 			heatmap_legend_param = list(title = "methylation"),
 			top_annotation = HeatmapAnnotation(lines1 = anno_enriched(gp = gpar(col = "red", lty = 1:n_row_group))),
@@ -212,10 +212,12 @@ SNIPPET_APPEND_EPI_HEATMAP = expression({
 	ht_list2 = NULL
 	ht_list1 = ht_list
 	# correlation to histone marks
+	done_split = FALSE
 	for(i in seq_along(hist_mat_mean_list)) {
-		if(n_heatmap == n_heatmap_first_page) {
+		if(n_heatmap >= n_heatmap_first_page & !done_split) {
 			ht_list1 = ht_list
 			ht_list = NULL
+			done_split = TRUE
 		}
 
 		epi_mark_list[i+1] = list(NULL)

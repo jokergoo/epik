@@ -14,7 +14,7 @@ normalize_epigenomic_signals = function(cr, target, marks = NULL, expr = NULL, i
 
 	if(include_correlation_matrix) {
 		meth_mat_corr = normalizeToMatrix(cr, target, mapping_column = "gene_id", value_column = "corr",
-			extend = extend, mean_mode = "absolute", w = 50, target_ratio = target_ratio, background = 0)
+			extend = extend, mean_mode = "absolute", target_ratio = target_ratio, background = 0)
 	} else {
 		meth_mat_corr = NULL
 	}
@@ -285,7 +285,7 @@ cr_enriched_heatmap_at_tss_cgi = function(cr, txdb, expr, cgi,
 	eval(SNIPPET_ROW_ORDER_AND_COLUMN_ORDER)
 
 	cor_col_fun = colorRamp2(c(-1, 0, 1), c("darkgreen", "white", "red"))
-	meth_col_fun = colorRamp2(c(-1, 0, 1), c("blue", "white", "red"))
+	meth_col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 	cr_col = c("-1" = "darkgreen", "0" = "white", "1" = "red")
 
 	fixed_heatmap = 2
@@ -440,7 +440,7 @@ cr_enriched_heatmap_at_tss = function(cr, txdb, expr, cgi, fdr_cutoff = 0.05,
 	eval(SNIPPET_ROW_ORDER_AND_COLUMN_ORDER)
 
 	cor_col_fun = colorRamp2(c(-1, 0, 1), c("darkgreen", "white", "red"))
-	meth_col_fun = colorRamp2(c(-1, 0, 1), c("blue", "white", "red"))
+	meth_col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 	cr_col = c("-1" = "darkgreen", "0" = "white", "1" = "red")
 
 	fixed_heatmap = 3
@@ -576,7 +576,7 @@ cr_enriched_heatmap_at_gene = function(cr, txdb, expr, cgi, K = 1, marks = NULL,
 	km = km[names(gene)]
 
 	# normalize to CGI
-	mat_cgi = normalizeToMatrix(cgi, gene, extend = extend, target_ratio = target_ratio, mean_mode = "absolute", w = 50)
+	mat_cgi = normalizeToMatrix(cgi, gene, extend = extend, target_ratio = target_ratio, mean_mode = "absolute")
 
 	message("normalize to epi signals")
 	eval(SNIPPET_NORMALIZE_EPI_SIGNALS)
@@ -852,7 +852,7 @@ cr_enriched_heatmap_at_genomic_features = function(cr, txdb, expr, gf,
 	eval(SNIPPET_ROW_ORDER_AND_COLUMN_ORDER)
 
 	cor_col_fun = colorRamp2(c(-1, 0, 1), c("darkgreen", "white", "red"))
-	meth_col_fun = colorRamp2(c(-1, 0, 1), c("blue", "white", "red"))
+	meth_col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red"))
 	cr_col = c("-1" = "darkgreen", "0" = "white", "1" = "red")
 	gf_col = colorRamp2(c(0, 1), c("white", "blue"))
 

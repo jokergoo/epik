@@ -86,7 +86,7 @@ genomic_regions_basic_stat = function(gr_list, subgroup = NULL, subgroup_color =
 						if(length(gr) == 0) {
 							return(0)
 						} else {
-							sum(width(gr))/chromInfo$chr.len[chromInfo$chromosome == chr]
+							sum(as.numeric(width(gr)))/chromInfo$chr.len[chromInfo$chromosome == chr]
 						}
 					})
 				})
@@ -125,8 +125,8 @@ genomic_regions_basic_stat = function(gr_list, subgroup = NULL, subgroup_color =
 	} else {
 		if(type %in% "proportion") {
 			# proportion in genome
-			genome.len = sum(chromInfo$chr.len)
-			x = sapply(gr_list, function(gr) sum(width(gr))/genome.len)
+			genome.len = sum(as.numeric(chromInfo$chr.len))
+			x = sapply(gr_list, function(gr) sum(as.numeric(width(gr)))/genome.len)
 			ylab = "proportion in genome"
 
 		} else if(type %in% "number") {
