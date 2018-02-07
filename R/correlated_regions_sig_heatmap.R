@@ -70,7 +70,7 @@ mean_chromHMM_overlap = function(gr, cs_list, state) {
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
+sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL, gf_width = unit(2*length(gf_list), "mm")) {
 
 	cr_param = metadata(sig_cr)$cr_param
 	sig_cr$direction = ifelse(sig_cr$corr > 0, "pos", "neg")
@@ -137,12 +137,31 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 	q = quantile(abs_tss_dist, 0.9)
 	abs_tss_dist[abs_tss_dist > q] = q
 
+	simple_best_k = function(mydata) {
+		wss <- (nrow(mydata)-1)*sum(rowVars(mydata))
+		maxk = 10
+		for (i in 2:maxk) {
+		  	wss[i] <- sum(kmeans(mydata, centers=i)$withinss)
+		}
+		diff = (wss[1:(maxk-1)] - wss[2:maxk])/(wss[1] - wss[maxk])
+		print(diff)
+		max(which(diff >= mean(diff[6:9])*10)) + 1
+	}
+
 	# rows are split into four slices for neg_cr and pos_cr separately and ordered by mean value
-	km_meth1 = kmeans(meth_mat[sig_cr$direction == "neg", ], centers = 4)$cluster
+	# km_meth1 = kmeans(meth_mat[sig_cr$direction == "neg", ], centers = 4)$cluster
+	# pamk.best = fpc::pamk(meth_mat[sig_cr$direction == "neg", ], usepam = FALSE)
+	# km_meth1 = cluster::clara(meth_mat[sig_cr$direction == "neg", ], pamk.best$nc)$cluster
+	k = simple_best_k(meth_mat[sig_cr$direction == "neg", ])
+	km_meth1 = kmeans(meth_mat[sig_cr$direction == "neg", ], centers = k)$cluster
 	x = tapply(rowMeans(meth_mat[sig_cr$direction == "neg", ]), km_meth1, mean)
 	od = structure(rank(x), names = names(x))
 	km_meth1 = od[as.character(km_meth1)]
-	km_meth2 = kmeans(meth_mat[sig_cr$direction == "pos", ], centers = 4)$cluster
+	# km_meth2 = kmeans(meth_mat[sig_cr$direction == "pos", ], centers = 4)$cluster
+	# pamk.best = fpc::pamk(meth_mat[sig_cr$direction == "pos", ], usepam = FALSE)
+	# km_meth2 = cluster::clara(meth_mat[sig_cr$direction == "pos", ], pamk.best$nc)$cluster
+	k = simple_best_k(meth_mat[sig_cr$direction == "pos", ])
+	km_meth2 = kmeans(meth_mat[sig_cr$direction == "pos", ], centers = k)$cluster
 	x = tapply(rowMeans(meth_mat[sig_cr$direction == "pos", ]), km_meth2, mean)
 	od = structure(rank(x), names = names(x))
 	km_meth2 = od[as.character(km_meth2)]
@@ -182,7 +201,7 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 	## 4. overlapping matrix for CGI/shore/tfbs
 	ht_list = ht_list + Heatmap(overlap_gf, name = "overlap0", show_row_names = FALSE, col = colorRamp2(c(0, 1), c("white", "orange")),
 		show_column_names = TRUE, cluster_columns = FALSE,
-		column_title = "overlap to gf", show_row_dend = FALSE)
+		column_title = "overlap to gf", show_row_dend = FALSE, width = gf_width)
 
 	if(!is.null(overlap_diff_cs)) {
 		ht_list = ht_list + Heatmap(overlap_diff_cs, col = colorRamp2(c(-1, 0, 1), c("green", "white", "red")), 
@@ -199,7 +218,7 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 	ht_list = ht_list + Heatmap(ga, name = "anno", col = c("tss" = "red", "gene" = "blue", "intergenic" = "green"), show_row_names = FALSE,
 		width = unit(5, "mm"))
 
-	draw(ht_list, main_heatmap = "methylation", split = split,
+	ht_list = draw(ht_list, main_heatmap = "methylation", split = split,
 		column_title = qq("@{length(sig_cr)} cr, sum_width=@{sum(width(sig_cr))}"))
 	all_levels = sort(unique(split))
 	for(i in seq_along(all_levels)) {
@@ -254,13 +273,14 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 
 		par(mfrow = c(nrow_plots, ncol_plots))
 
-		plot(1:8, ylim = c(0, 1), type = "n", main = "mean methylation", axes = FALSE, ylab = "mean methylation")
+		n_split = length(unique(split))
+		plot(1:n_split, ylim = c(0, 1), type = "n", main = "mean methylation", axes = FALSE, ylab = "mean methylation")
 		for(i in seq_along(subgroup_level)) {
 			x1 = tapply(rowMeans(meth_mat[, subgroup == subgroup_level[i]]), split, mean)
-			lines(1:8, x1, lty = i)
-			points(1:8, x1, cex = 1.5, bg = meth_col_fun(x1), pch = 21)
+			lines(1:n_split, x1, lty = i)
+			points(1:n_split, x1, cex = 1.5, bg = meth_col_fun(x1), pch = 21)
 		}
-		axis(side = 1, at = 1:8, labels = names(x1))
+		axis(side = 1, at = 1:n_split, labels = names(x1))
 		axis(side = 2)
 
 		if(!is.null(overlap_gf)) {
@@ -294,5 +314,5 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL) {
 		dev.off()
 	}
 
-	return(invisible(NULL))
+	return(invisible(ht_list))
 }

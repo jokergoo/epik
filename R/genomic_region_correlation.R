@@ -137,7 +137,6 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 	stat = foldChange
 	stat_random_mean = stat
 	stat_random_sd = stat
-	max_reduce = stat
 
 	if(nperm > 1) {
 		chr_len_df = getChromInfoFromUCSC(species)
@@ -203,17 +202,13 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 			stat_random_sd[, i] = rowSds(stat_random)
 
 			foldChange[, i] = stat[, i]/stat_random_mean[, i]
-			p[, i] = sapply(seq_len(length(gr_list_2)), function(i) sum(stat_random[i, ] > stat[i])/nperm)
+			p[, i] = sapply(seq_len(length(gr_list_2)), function(k) sum(stat_random[k, ] > stat[k, i])/nperm)
 			
-			max_reduce[, i] = sapply(seq_len(length(gr_list_2)), function(i) {
-				max_reduce_of_significance(stat[i], make_ecdf(stat_random[i, ]), plot = FALSE)$rel_change
-			})
 		} else {
 			stat_random_mean[, i]  = NA
 			stat_random_sd[, i] = NA
 			foldChange[, i] = NA
 			p[, i] = NA
-			max_reduce[, i] = NA
 		}
 	}
 
@@ -229,7 +224,6 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		p = NULL
 		stat_random_mean = NULL
 		stat_random_sd = NULL
-		max_reduce = NULL
 	}
 
 	res = list(stat = stat,
@@ -237,7 +231,7 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		       p.value = p,
 		       stat_random_mean = stat_random_mean,
 		       stat_random_sd = stat_random_sd,
-		       max_reduce = max_reduce)
+		       z = (stat - stat_random_mean)/stat_random_sd)
 	
 	return(res)
 }

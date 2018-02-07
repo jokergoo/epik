@@ -58,8 +58,9 @@
 # 	    states = paste0("state_", sample(1:9, 100, replace = TRUE)))
 # })
 # mat = make_transition_matrix_from_chromHMM(gr_list_1, gr_list_2)
-make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_1, sample_id_2,
-	window = NULL, min_1 = 0.5, min_2 = 0.5, meth_diff = 0, chromosome = paste0("chr", 1:22)) {
+make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_1 = NULL, sample_id_2 = NULL,
+	window = NULL, min_1 = 0.5, min_2 = 0.5, meth_diff = 0, chromosome = paste0("chr", 1:22),
+	add_meth = FALSE, background = NULL) {
 
 	if(missing(gr_list_1)) {
 		gr_list_1 = get_chromHMM_list(sample_id_1)
@@ -76,13 +77,13 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 		min_2 = 0
 	}
 
-	if(is.null(names(gr_list_1))) {
-		stop("`gr_list_1` needs sample ids as names.")
-	}
+	# if(is.null(names(gr_list_1))) {
+	# 	stop("`gr_list_1` needs sample ids as names.")
+	# }
 
-	if(is.null(names(gr_list_2))) {
-		stop("`gr_list_2` needs sample ids as names.")
-	}
+	# if(is.null(names(gr_list_2))) {
+	# 	stop("`gr_list_2` needs sample ids as names.")
+	# }
 
 	if(min_1 > 1) {
 		stop("`min_1` should be a percent value (<= 1).")
@@ -140,13 +141,27 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 	t2 = t2[l, , drop = FALSE]
 	gr = gr[l]
 
+	if(!is.null(background)) {
+		message("overlap to background")
+		mtch = as.matrix(findOverlaps(gr, background))
+		ind = unique(mtch[, 1])
+		gr = gr[ind]
+		t1 = t1[ind, , drop = FALSE]
+		t2 = t2[ind, , drop = FALSE]
+	}
+
 	message("determine states")
 	states1 = rowWhichMax(t1)
 	states2 = rowWhichMax(t2)
 
 	meth_hooks_defined = !is.null(methylation_hooks$get_by_chr)
 
-	if(meth_hooks_defined) {
+	if(meth_hooks_defined && add_meth) {
+		sn1 = names(gr_list_1)
+		sn2 = names(gr_list_2)
+		if(length(sn1) == 0) sn1 = sample_id_1
+		if(length(sn2) == 0) sn2 = sample_id_2
+
 		## get sum_meth and n_cpg in each window
 		sum_meth1 = rep(NA, length(states1))
 		sum_meth2 = rep(NA, length(states1))
@@ -159,10 +174,10 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 			meth_gr = methylation_hooks$gr
 			meth_mat = methylation_hooks$meth
 
-			if(length(intersect(names(gr_list_1), colnames(meth_mat))) == 0) {
+			if(length(intersect(sn1, colnames(meth_mat))) == 0) {
 				stop("`gr_list_1` do not contain matched sample ids.")
 			}
-			if(length(intersect(names(gr_list_2), colnames(meth_mat))) == 0) {
+			if(length(intersect(sn2, colnames(meth_mat))) == 0) {
 				stop("`gr_list_2` do not contain matched sample ids.")
 			}
 			
@@ -170,13 +185,13 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 
 			message("calculating mean methylation for transistions from `gr_list_1`")
 			x = tapply(mtch[, 2], mtch[, 1], function(ind) {
-				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_1), colnames(meth_mat)), drop = FALSE], na.rm = TRUE))
+				sum(rowMeans(meth_mat[ind, intersect(sn1, colnames(meth_mat)), drop = FALSE], na.rm = TRUE))
 			})
 			sum_meth1[which(l_chr)[as.numeric(names(x))]] = x
 			
 			message("calculating mean methylation for transistions from `gr_list_2`")
 			x = tapply(mtch[, 2], mtch[, 1], function(ind) {
-				sum(rowMeans(meth_mat[ind, intersect(names(gr_list_2), colnames(meth_mat)), drop = FALSE], na.rm = TRUE))
+				sum(rowMeans(meth_mat[ind, intersect(sn2, colnames(meth_mat)), drop = FALSE], na.rm = TRUE))
 			})
 			sum_meth2[which(l_chr)[as.numeric(names(x))]] = x
 			n_cpg[which(l_chr)[as.numeric(names(x))]] = tapply(mtch[, 2], mtch[, 1], length)
@@ -207,7 +222,7 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 
 	meth_mean_1 = NULL
 	meth_mean_2 = NULL
-	if(meth_hooks_defined) {
+	if(meth_hooks_defined && add_meth) {
 		meth_mean_1 = matrix(NA, nrow = nrow(mat2), ncol = ncol(mat2))
 		dimnames(meth_mean_1) = dimnames(mat2)
 		meth_mean_2 = matrix(NA, nrow = nrow(mat2), ncol = ncol(mat2))
@@ -434,6 +449,8 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 	on.exit(par(op))
 	par(xpd = NA)
 
+	circos.clear()
+
 	meth_mean_1 = attr(mat, "meth_mean_1")
 	meth_mean_2 = attr(mat, "meth_mean_2")
 
@@ -487,9 +504,12 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 		}
 	}
 
+	state_col = state_col[intersect(names(state_col), all_states)]
+
 	if(remove_unchanged_transition) {
 		for(i in all_states) {
 			mat[i, i] = 0
+			max_mat[i, i] = 0
 		}
 	}
 
@@ -564,6 +584,17 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 					col = col_fun2(meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]] - meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]]), 
 					border = col_fun2(meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]] - meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]]),
 					sector.index = cdm_res$cn[i], track.index = 1)
+			}
+		}
+		par(ljoin = oljoin)
+	} else {
+		oljoin = par("ljoin")
+	    par(ljoin = "mitre")
+		for(i in seq_len(nrow(cdm_res))) {
+			if(cdm_res$value[i] > 0) {	
+				circos.rect(cdm_res[i, "x1"], -0.5, cdm_res[i, "x1"] - abs(cdm_res[i, "value"]), -0.7, 
+					col = state_col2[cdm_res$cn[i]], border = state_col2[cdm_res$cn[i]],
+					sector.index = cdm_res$rn[i], track.index = 2)
 			}
 		}
 		par(ljoin = oljoin)

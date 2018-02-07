@@ -405,7 +405,7 @@ get_chromHMM_list = function(sample_id, merge = FALSE, window = NULL, min = 0.5,
 
 		message("counting for each state")
 		t1 = rowTabulates(m1)
-		l = rowMaxs(t1) >= min
+		l = rowMaxs(t1) >= floor(min*length(lt))
 		t1 = t1[l, , drop = FALSE]
 		gr = gr[l]
 
