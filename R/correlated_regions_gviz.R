@@ -281,7 +281,8 @@ cr_gviz = function(sig_cr, gi, expr, txdb, gf_list = NULL, hm_list = NULL, title
 			hm_merged = GRanges(seqnames = hm_merged[[1]], ranges = IRanges(hm_merged[[2]], hm_merged[[3]]))
 			if(length(hm_merged) == 0) hm_merged = GRanges(seqnames = chr, ranges = IRanges(1, 2), score = 0)
 			if(length(hm_merged) > 0) {
-				segments = as(coverage(hm_merged), "GRanges")[-1]
+				# use [chr] in case hm_merged has more than one seqname levels
+				segments = as(coverage(hm_merged)[chr], "GRanges")[-1]
 				# also add zero-coverage to the GRanges object
 				gr_g = GRanges(seqnames = chr, ranges = IRanges(gene_start, gene_end))
 				gr_diff = GRanges(seqnames = chr, ranges = setdiff(ranges(gr_g), ranges(segments)))

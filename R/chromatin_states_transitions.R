@@ -151,8 +151,8 @@ make_transition_matrix_from_chromHMM = function(gr_list_1, gr_list_2, sample_id_
 	}
 
 	message("determine states")
-	states1 = rowWhichMax(t1)
-	states2 = rowWhichMax(t2)
+	states1 = as.numeric(colnames(t1)[rowWhichMax(t1)])
+	states2 = as.numeric(colnames(t2)[rowWhichMax(t2)])
 
 	meth_hooks_defined = !is.null(methylation_hooks$get_by_chr)
 
@@ -442,11 +442,9 @@ state_names = function(x) {
 # })
 # mat = make_transition_matrix_from_chromHMM(gr_list_1, gr_list_2)
 # chromatin_states_transition_chord_diagram(mat, legend_position = "bottomleft")
-chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, max_mat = mat, 
+chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, max_sum = NULL, 
 	remove_unchanged_transition = TRUE, state_col = NULL, legend_position = NULL, ...) {
 
-	op = par(no.readonly = TRUE)
-	on.exit(par(op))
 	par(xpd = NA)
 
 	circos.clear()
@@ -509,7 +507,6 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 	if(remove_unchanged_transition) {
 		for(i in all_states) {
 			mat[i, i] = 0
-			max_mat[i, i] = 0
 		}
 	}
 
@@ -532,7 +529,11 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 	colmat[mat <= qati] = paste0(colmat[mat <= qati], "20")
 	dim(colmat) = dim(mat)
 
-	de = 360 - (360 - 20 - 30) * sum(mat)/sum(max_mat) - 30
+	if(is.null(max_sum)) {
+		 de = 360 - (360 - 20 - 30) - 30
+	} else {
+		de = 360 - (360 - 20 - 30) * sum(mat)/max_sum - 30
+	}
 	circos.par(start.degree = -de/4, gap.degree = c(rep(1, n_states-1), de/2, rep(1, n_states-1), de/2),
 		points.overflow.warning = FALSE)
 

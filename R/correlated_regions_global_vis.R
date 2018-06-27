@@ -16,7 +16,7 @@
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 cr_hilbert_curve = function(cr, chromosome = paste0("chr", 1:22), 
-	merge_chr = TRUE, add_chr_name = TRUE, title = "cr", legend = lgd, ...) {
+	merge_chr = TRUE, add_chr_name = TRUE, title = "cr", legend = lgd, level = 10, ...) {
 
 	cr_param = metadata(cr)$cr_param
 	species = cr_param$genome
@@ -28,22 +28,16 @@ cr_hilbert_curve = function(cr, chromosome = paste0("chr", 1:22),
 	cm = ColorMapping(col_fun = col_fun)
 	lgd = color_mapping_legend(cm, title = "type", plot = FALSE)
 	if(merge_chr) {
-		hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = 10, title = title, legend = legend, ...)
+		hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = level, title = title, legend = legend, ...)
 	    hc_layer(hc, cr, col = col_fun(cr$corr), mean_mode = "absolute")
-	    hc_map(hc, add = TRUE, fill = NA, border = "#808080")
-
-	    if(add_chr_name) {
-			seekViewport(qq("hilbert_curve_@{HilbertCurve:::.ENV$I_PLOT}"))
-			hc = GenomicHilbertCurve(chr = chromosome, mode = "normal", level = 6, newpage = FALSE)
-			hc_map(hc, add = TRUE, fill = NA, border = NA, labels_gp = gpar(fontsize = 20))
-		}
+	    hc_map(hc, add = TRUE, fill = NA, border = "#808080", show_labels = add_chr_name)
 	} else {
 		chromosome = intersect(chromosome, unique(as.vector(seqnames(cr))))
 		for(i in seq_along(chromosome)) {
 		    chr = chromosome[i]
 		    message(qq("make hilbert curve for cr for @{chr}"))
 		    cr2 = cr[seqnames(cr) == chr]
-		    hc = HilbertCurve(s = 1, e = max(chr_len), mode = "pixel", level = 10, title = qq("@{title}@{ifelse(title == '', '', ', ')}@{chr}"), legend = legend)
+		    hc = HilbertCurve(s = 1, e = max(chr_len), mode = "pixel", level = level, title = qq("@{title}@{ifelse(title == '', '', ', ')}@{chr}"), legend = legend)
 		    hc_layer(hc, ranges(cr2), col = col_fun(cr2$corr), mean_mode = "absolute")
 		}
 	}

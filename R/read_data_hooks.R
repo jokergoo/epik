@@ -304,7 +304,7 @@ chipseq_hooks = setGlobalOptions(
 		        .class = "function",
 		        .validate = function(f) length(as.list(f)) >= 4,
 		        .failed_msg = strwrap2("The function should have more than two arguments which are the name of the histone mark, sample id and other stuff. If you only use the first two, simply add `...` as the third argument.")),
-	chromHMM = list(.value = function(sid, ...) stop("you need to define `chromHMM` hook"),
+	chromHMM = list(.value = NULL,
 		            .class = "function",
 		            .validate = function(f) length(as.list(f)) >= 3,
 		            .failed_msg = strwrap2("The function should have more than one arguments which are the sample id and other stuff. If you only use the first one, simply add `...` as the second argument."))

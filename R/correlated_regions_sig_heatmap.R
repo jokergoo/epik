@@ -45,6 +45,7 @@ mean_chromHMM_overlap = function(gr, cs_list, state) {
 # -expr expression matrix which was used in `correlated_regions`
 # -ha top annotation for the expression heatmap, should be constructed by `ComplexHeatmap::HeatmapAnnotation`
 # -gf_list a list of `GenomicRanges::GRanges` objects which are additional genomic features used as annotations
+# -add_states whether add chromatin states annotations
 #
 # == details
 # There are several heatmaps showing associations between difference sources of datasets, each row in the heatmaps is
@@ -70,7 +71,8 @@ mean_chromHMM_overlap = function(gr, cs_list, state) {
 # == author
 # Zuguang Gu <z.gu@dkfz.de>
 #
-sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL, gf_width = unit(2*length(gf_list), "mm")) {
+sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL, gf_width = unit(2*length(gf_list), "mm"),
+	add_states = FALSE) {
 
 	cr_param = metadata(sig_cr)$cr_param
 	sig_cr$direction = ifelse(sig_cr$corr > 0, "pos", "neg")
@@ -95,27 +97,28 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL, gf_widt
 		overlap_gf = NULL
 	}
 
-	if(!is.null(chipseq_hooks$chromHMM) && n_subgroup == 2) {
-		message("overlap to chrome states")
-		sample_id_subgroup1 = sample_id[subgroup == subgroup_level[1]]
-		sample_id_subgroup2 = sample_id[subgroup == subgroup_level[2]]
+	overlap_diff_cs = NULL
+	if(add_states) {
+		if(!is.null(chipseq_hooks$chromHMM) && n_subgroup == 2) {
+			message("overlap to chrome states")
+			sample_id_subgroup1 = sample_id[subgroup == subgroup_level[1]]
+			sample_id_subgroup2 = sample_id[subgroup == subgroup_level[2]]
 
-		cs_list1 = get_chromHMM_list(sample_id_subgroup1)
-		cs_list2 = get_chromHMM_list(sample_id_subgroup2)
+			cs_list1 = get_chromHMM_list(sample_id_subgroup1)
+			cs_list2 = get_chromHMM_list(sample_id_subgroup2)
 
-		if(length(cs_list1) && length(cs_list2)) {
+			if(length(cs_list1) && length(cs_list2)) {
 
-			all_states = unique(cs_list1[[1]]$states)
-			overlap_diff_cs = matrix(0, nrow = length(sig_cr), ncol = length(all_states))
-			colnames(overlap_diff_cs) = all_states
-			for(i in seq_along(all_states)) {
-				overlap_diff_cs[, i] = mean_chromHMM_overlap(sig_cr, cs_list1, all_states[i]) - mean_chromHMM_overlap(sig_cr, cs_list2, all_states[i])
+				all_states = unique(cs_list1[[1]]$states)
+				overlap_diff_cs = matrix(0, nrow = length(sig_cr), ncol = length(all_states))
+				colnames(overlap_diff_cs) = all_states
+				for(i in seq_along(all_states)) {
+					overlap_diff_cs[, i] = mean_chromHMM_overlap(sig_cr, cs_list1, all_states[i]) - mean_chromHMM_overlap(sig_cr, cs_list2, all_states[i])
+				}
+			} else {
+				overlap_diff_cs = NULL
 			}
-		} else {
-			overlap_diff_cs = NULL
 		}
-	} else {
-		overlap_diff_cs = NULL
 	}
 
 	gm = genes(txdb)
@@ -193,11 +196,14 @@ sig_cr_heatmap = function(sig_cr, txdb, expr, ha = NULL, gf_list = NULL, gf_widt
 	    x[x > qu[2]] = qu[2]
 	    x
 	}))
+	expr_basemean = rowMeans(expr_mat)
 	expr_mat = t(scale(t(expr_mat)))
 	ht_list = ht_list + Heatmap(expr_mat, name = "expr", show_row_names = FALSE,
 		show_column_names = FALSE, cluster_columns = FALSE, column_order = col_od,
 		top_annotation = ha, column_title = "Expression", show_row_dend = FALSE,
-		use_raster = TRUE, raster_quality = 2)
+		use_raster = TRUE, raster_quality = 2) +
+		Heatmap(expr_basemean, name = "basemean", show_row_names = FALSE,
+			width = unit(5, "mm"))
 	## 4. overlapping matrix for CGI/shore/tfbs
 	ht_list = ht_list + Heatmap(overlap_gf, name = "overlap0", show_row_names = FALSE, col = colorRamp2(c(0, 1), c("white", "orange")),
 		show_column_names = TRUE, cluster_columns = FALSE,
