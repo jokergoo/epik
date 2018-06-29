@@ -562,29 +562,29 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 		y1 = ylim[1] + (ylim[2] - ylim[1])*0.4
 		y2 = ylim[2]
 		for(i in seq_len(nrow(cdm_res))) {
-			if(cdm_res$value[i] > 0) {
-				circos.rect(cdm_res[i, "x1"], y1, cdm_res[i, "x1"] - abs(cdm_res[i, "value"]), y1 + (y2-y1)*0.45, 
+			if(cdm_res$value1[i] > 0 || cdm_res$value2[i] > 0) {
+				circos.rect(cdm_res[i, "x1"], y1, cdm_res[i, "x1"] - abs(cdm_res[i, "value1"]), y1 + (y2-y1)*0.45, 
 					col = col_fun(meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]]), border = col_fun(meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]]),
 					sector.index = cdm_res$rn[i], track.index = 1)
 
-				circos.rect(cdm_res[i, "x1"], y1 + (y2-y1)*0.55, cdm_res[i, "x1"] - abs(cdm_res[i, "value"]), y2, 
+				circos.rect(cdm_res[i, "x1"], y1 + (y2-y1)*0.55, cdm_res[i, "x1"] - abs(cdm_res[i, "value1"]), y2, 
 					col = col_fun2(meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]] - meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]]), 
 					border = col_fun2(meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]] - meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]]),
 					sector.index = cdm_res$rn[i], track.index = 1)
 
-				circos.rect(cdm_res[i, "x1"], -0.5, cdm_res[i, "x1"] - abs(cdm_res[i, "value"]), -0.7, 
-					col = state_col2[cdm_res$cn[i]], border = state_col2[cdm_res$cn[i]],
-					sector.index = cdm_res$rn[i], track.index = 2)
-
-				circos.rect(cdm_res[i, "x2"], y1, cdm_res[i, "x2"] - abs(cdm_res[i, "value"]), y1 + (y2-y1)*0.45, 
+				circos.rect(cdm_res[i, "x2"], y1, cdm_res[i, "x2"] - abs(cdm_res[i, "value2"]), y1 + (y2-y1)*0.45, 
 					col = col_fun(meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]]), 
 					border = col_fun(meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]]),
 					sector.index = cdm_res$cn[i], track.index = 1)
 
-				circos.rect(cdm_res[i, "x2"], y1 + (y2-y1)*0.55, cdm_res[i, "x2"] - abs(cdm_res[i, "value"]), y2, 
+				circos.rect(cdm_res[i, "x2"], y1 + (y2-y1)*0.55, cdm_res[i, "x2"] - abs(cdm_res[i, "value2"]), y2, 
 					col = col_fun2(meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]] - meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]]), 
 					border = col_fun2(meth_mean_1[cdm_res$rn[i], cdm_res$cn[i]] - meth_mean_2[cdm_res$rn[i], cdm_res$cn[i]]),
 					sector.index = cdm_res$cn[i], track.index = 1)
+
+				circos.rect(cdm_res[i, "x1"], -0.5, cdm_res[i, "x1"] - abs(cdm_res[i, "value2"]), -0.7, 
+					col = state_col2[cdm_res$cn[i]], border = state_col2[cdm_res$cn[i]],
+					sector.index = cdm_res$rn[i], track.index = 2)
 			}
 		}
 		par(ljoin = oljoin)
@@ -592,8 +592,8 @@ chromatin_states_transition_chord_diagram = function(mat, group_names = NULL, ma
 		oljoin = par("ljoin")
 	    par(ljoin = "mitre")
 		for(i in seq_len(nrow(cdm_res))) {
-			if(cdm_res$value[i] > 0) {	
-				circos.rect(cdm_res[i, "x1"], -0.5, cdm_res[i, "x1"] - abs(cdm_res[i, "value"]), -0.7, 
+			if(cdm_res$value2[i] > 0) {	
+				circos.rect(cdm_res[i, "x1"], -0.5, cdm_res[i, "x1"] - abs(cdm_res[i, "value2"]), -0.7, 
 					col = state_col2[cdm_res$cn[i]], border = state_col2[cdm_res$cn[i]],
 					sector.index = cdm_res$rn[i], track.index = 2)
 			}
