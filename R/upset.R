@@ -1,5 +1,5 @@
 
-plot_upset = function(lt, title = NULL, value_fun = length, remove_full = FALSE) {
+plot_upset = function(lt, title = NULL, value_fun = length, remove_full = FALSE, ...) {
 
     n = length(lt)
     nm = names(lt)
@@ -44,13 +44,13 @@ plot_upset = function(lt, title = NULL, value_fun = length, remove_full = FALSE)
         paste(nm2, collapse = "&")
     })
 
-    make_upset(set_mat, set_value, title = title)
+    make_upset(set_mat, set_value, title = title, ...)
 
     return(invisible(structure(set_value, names = set_name)))
 }
 
 
-make_upset = function(set_mat, set_value, title = NULL) {
+make_upset = function(set_mat, set_value, title = NULL, width_ratio = c(2, 1), height_ratio = c(4, 1)) {
     set_size = sapply(seq_len(nrow(set_mat)), function(i) {
         sum(set_value[set_mat[i, ]])
     })
@@ -61,11 +61,11 @@ make_upset = function(set_mat, set_value, title = NULL) {
 
     grid.newpage()
     sn_width = max_text_width(sn) + unit(1, "cm")
-    pushViewport(viewport(layout = grid.layout(nrow = 2, ncol = 2, width = unit(c(2, 1), "null"), height = unit(c(4, 1), "null")), x = sn_width, just = "left", width = unit(0.95, "npc") - sn_width, height = unit(0.95, "npc")))
+    pushViewport(viewport(layout = grid.layout(nrow = 2, ncol = 2, width = unit(width_ratio, "null"), height = unit(height_ratio, "null")), x = sn_width, just = "left", width = unit(0.95, "npc") - sn_width, height = unit(0.95, "npc")))
     pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1, xscale = c(0, nc), yscale = c(0, max(set_value))))
     grid.rect(1:nc - 0.5, 0, width = 0.6, height = set_value, default.units = "native", just = "bottom", gp = gpar(fill = "black"))
     grid.yaxis(gp = gpar(fontsize = 8))
-    grid.text("#intersections", unit(-1.5, "cm"), just = "bottom", rot = 90)
+    grid.text("Intersection size", unit(-1.5, "cm"), just = "bottom", rot = 90)
     popViewport()
 
     pushViewport(viewport(layout.pos.row = 2, layout.pos.col = 1, xscale = c(0, nc), yscale = c(0, nr)))
@@ -84,7 +84,7 @@ make_upset = function(set_mat, set_value, title = NULL) {
     pushViewport(viewport(x = unit(5, "mm"), width = unit(1, "npc") - unit(5, "mm"), just = "left", xscale = c(0, max(set_size)), yscale = c(0, nr)))
     grid.rect(unit(0, "npc"), 1:nr - 0.5, width = set_size, height = 0.6, just = "left", default.units = "native", gp = gpar(fill = "black"))
     grid.xaxis(main = FALSE, gp = gpar(fontsize = 8))
-    grid.text("set size", y = unit(1, "npc") + unit(1, "cm"), just = "bottom")
+    grid.text("Set size", y = unit(1, "npc") + unit(1, "cm"), just = "bottom")
     popViewport()
     popViewport()
 

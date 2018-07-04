@@ -86,10 +86,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 
 		hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = 10, title = qq("mean methylation in all samples"), legend = lgd)
 		hc_layer(hc, gr_meth[l], col = col_fun(gr_meth[l]$mean))
-		hc_map(hc, add = TRUE, fill = NA, border = "#808080")
-		seekViewport(qq("hilbert_curve_@{HilbertCurve:::.ENV$I_PLOT}"))
-		hc = GenomicHilbertCurve(chr = chromosome, mode = "normal", level = 6, newpage = FALSE)
-		hc_map(hc, add = TRUE, fill = NA, border = NA, labels_gp = gpar(fontsize = 20))
+		hc_map(hc, add = TRUE, fill = NA, border = "#808080", show_labels = TRUE)
 	}
 
 	if("subgroup_mean" %in% type) {
@@ -101,10 +98,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 
 			hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = 10, title = qq("mean methylation in @{le[i]}"), legend = lgd)
 			hc_layer(hc, gr_meth[l], col = col_fun(mcols(gr_meth)[l, qq("mean_@{le[i]}")]))
-			hc_map(hc, add = TRUE, fill = NA, border = "#808080")
-			seekViewport(qq("hilbert_curve_@{HilbertCurve:::.ENV$I_PLOT}"))
-			hc = GenomicHilbertCurve(chr = chromosome, mode = "normal", level = 6, newpage = FALSE)
-			hc_map(hc, add = TRUE, fill = NA, border = NA, labels_gp = gpar(fontsize = 20))
+			hc_map(hc, add = TRUE, fill = NA, border = "#808080", show_labels = TRUE)
 		}
 	}
 
@@ -118,10 +112,7 @@ hilbert_curve_methylation_difference = function(subgroup, comparison, chromosome
 
 		hc = GenomicHilbertCurve(chr = chromosome, mode = "pixel", level = 10, title = qq("mean methylation difference (@{comparison[1]} - @{comparison[2]})"), legend = lgd)
 		hc_layer(hc, gr_meth[l], col = col_fun(diff))
-		hc_map(hc, add = TRUE, fill = NA, border = "#808080")
-		seekViewport(qq("hilbert_curve_@{HilbertCurve:::.ENV$I_PLOT}"))
-		hc = GenomicHilbertCurve(chr = chromosome, mode = "normal", level = 6, newpage = FALSE)
-		hc_map(hc, add = TRUE, fill = NA, border = NA, labels_gp = gpar(fontsize = 20))
+		hc_map(hc, add = TRUE, fill = NA, border = "#808080", show_labels = TRUE)
 	}
 
 	return(invisible(gr_meth))
