@@ -224,6 +224,9 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		p = NULL
 		stat_random_mean = NULL
 		stat_random_sd = NULL
+		z = NULL
+	} else {
+		z = (stat - stat_random_mean)/stat_random_sd
 	}
 
 	res = list(stat = stat,
@@ -231,7 +234,7 @@ genomic_regions_correlation = function(gr_list_1, gr_list_2, background = NULL,
 		       p.value = p,
 		       stat_random_mean = stat_random_mean,
 		       stat_random_sd = stat_random_sd,
-		       z = (stat - stat_random_mean)/stat_random_sd)
+		       z = z)
 	
 	return(res)
 }

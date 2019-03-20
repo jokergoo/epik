@@ -439,7 +439,7 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 			}
 		} 
 
-		densityHeatmap(x, anno = ha, title = title, column_order = od, ...)
+		draw(densityHeatmap(x, top_annotation = ha, title = title, column_order = od, cluster_columns = TRUE, ...))
 	}
 
 	if("lineplot" %in% type) {
@@ -469,7 +469,7 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 		## MDS plot
 		if(is.data.frame(x) || is.matrix(x)) {
 			mat = as.matrix(x)
-			loc = cmdscale(dist2(t(mat), pairwise_fun = function(x, y) {l = is.na(x) | is.na(y); x = x[!l]; y = y[!l]; sqrt(sum((x-y)^2))}))
+			loc = cmdscale(dist2(mat, fun = function(x, y) {l = is.na(x) | is.na(y); x = x[!l]; y = y[!l]; sqrt(sum((x-y)^2))}))
 			
 			plot(loc[, 1], loc[, 2], pch = 16, cex = 1, col = col_v, main = qq("MDS:@{title}"), xlab = "dimension 1", ylab = "dimension 2")
 			legend("bottomleft", pch = 16, legend = names(col), col = col)
