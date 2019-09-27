@@ -10,7 +10,7 @@ Depends: R (>= 3.3.0), IRanges, GenomicRanges, GenomicFeatures, AnnotationDbi,
 Imports: circlize (>= 0.3.4), GetoptLong, parallel, ComplexHeatmap (>= 1.11.6),
     EnrichedHeatmap (>= 1.1.5), matrixStats, GenomeInfoDb, S4Vectors (>= 0.12.1),
     epik.Gviz, HilbertCurve, gtrellis (>= 1.7.1), numbers, ggplot2, Rcpp, memoise, 
-    graphics, utils, stats, grDevices, RColorBrewer, grid, gridBase, RDAVIDWebService,
+    graphics, utils, stats, grDevices, RColorBrewer, grid, gridBase,
     methods, rtracklayer (>= 1.34.2), genefilter, xml2, httr
 Suggests: testthat (>= 0.3), knitr, markdown, rGREAT
 VignetteBuilder: knitr

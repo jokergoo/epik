@@ -197,7 +197,7 @@ annotate_to_genomic_features = function(gr, genomic_features,
 	}
 
     type = match.arg(type)[1]
-	
+
     if(inherits(genomic_features, "GRanges")) {
         
         message(qq("annotating to @{name}"))
@@ -221,7 +221,7 @@ annotate_to_genomic_features = function(gr, genomic_features,
     }
 
     # if genomic_features is a list, first annotate to the first one and send the rest recursively
-	if(inherits(genomic_features, "list")) {
+	# if(inherits(genomic_features, "list")) {
 		if(length(genomic_features) == 0) {
 			return(gr)
 		}
@@ -239,7 +239,7 @@ annotate_to_genomic_features = function(gr, genomic_features,
 			gr = annotate_to_genomic_features(gr, genomic_features, name = name, type = type, prefix = prefix, ...)
             return(gr)
 		}
-	}
+	# }
 
 }
 

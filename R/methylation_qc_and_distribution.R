@@ -439,7 +439,7 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 			}
 		} 
 
-		draw(densityHeatmap(x, top_annotation = ha, title = title, column_order = od, cluster_columns = TRUE, ...))
+		draw(densityHeatmap(x, top_annotation = ha, title = title, column_order = od, cluster_columns = FALSE, ...))
 	}
 
 	if("lineplot" %in% type) {
@@ -469,9 +469,20 @@ mat_dist = function(x, subgroup = NULL, reorder_column = TRUE, od = if(is.matrix
 		## MDS plot
 		if(is.data.frame(x) || is.matrix(x)) {
 			mat = as.matrix(x)
-			loc = cmdscale(dist2(mat, fun = function(x, y) {l = is.na(x) | is.na(y); x = x[!l]; y = y[!l]; sqrt(sum((x-y)^2))}))
+			# loc = cmdscale(dist2(mat, fun = function(x, y) {l = is.na(x) | is.na(y); x = x[!l]; y = y[!l]; sqrt(sum((x-y)^2))}))
 			
-			plot(loc[, 1], loc[, 2], pch = 16, cex = 1, col = col_v, main = qq("MDS:@{title}"), xlab = "dimension 1", ylab = "dimension 2")
+			# plot(loc[, 1], loc[, 2], pch = 16, cex = 1, col = col_v, main = qq("MDS:@{title}"), xlab = "dimension 1", ylab = "dimension 2")
+			
+			nl = min(c(2000, round(nrow(mat)*0.1)))
+			print(nl)
+			mat = mat[order(rowSds(mat), decreasing = TRUE)[1:nl], ]
+			fit = prcomp(t(mat))
+			sm = summary(fit)
+			prop = sm$importance[2, 1:2]
+			loc = fit$x[, 1:2]
+			plot(loc[, 1], loc[, 2], pch = 16, cex = 1, col = col_v, main = qq("PCA:@{title}"), xlab = qq("PC1 (@{round(prop[1]*100)}%)"), ylab = qq("PC2 (@{round(prop[2]*100)}%)"))
+				
+
 			legend("bottomleft", pch = 16, legend = names(col), col = col)
 
 			# plot(loc[, 1], loc[, 2], type = "n", pch = 16, cex = 1, col = col[anno], main = qq("MDS:@{title}"), xlab = "dimension 1", ylab = "dimension 2")

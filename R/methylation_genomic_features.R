@@ -234,3 +234,61 @@ get_mean_methylation_in_genomic_features = function(sample_id, genomic_features,
 	return(genomic_features)
 }
 
+get_mean_histone_density_in_genomic_features = function(mark, sample_id, genomic_features, chromosome = paste0("chr", 1:22)) {
+	
+	is_single_gf = FALSE
+	if(inherits(genomic_features, "GRanges")) {
+		gf_name = deparse(substitute(genomic_features))
+		genomic_features = list(genomic_features)
+		names(genomic_features) = gf_name
+		is_single_gf = TRUE
+	}
+
+	genomic_features = lapply(genomic_features, function(gf) {
+		gf = gf[seqnames(gf) %in% chromosome]
+		# mcols(gf) = NULL
+		gf
+	})
+
+	sample_id = intersect(chipseq_hooks$sample_id(mark), sample_id)
+
+	mean_dend_list = lapply(genomic_features, function(gf) {
+		m = matrix(NA, nrow = length(gf), ncol = length(sample_id))
+		colnames(m) = qq("mean_@{mark}_@{sample_id}", collapse = FALSE)
+		m
+	})
+
+	for(sid in sample_id) {
+		peak = chipseq_hooks$peak(mark, sid)
+		for(i in seq_along(genomic_features)) {
+			message(qq("overlapping to @{names(genomic_features)[i]} on @{sid}"))
+			mean_dend_list[[i]][, qq("mean_@{mark}_@{sid}")] = overlap_mean_signals(genomic_features[[i]], peak, peak$density, "w0", 0)
+		}
+	}
+	
+	for(i in seq_along(genomic_features)) {
+		mcols(genomic_features[[i]]) = cbind(as.data.frame(mcols(genomic_features[[i]])), mean_dend_list[[i]])
+	}
+
+	if(is_single_gf) {
+		genomic_features = genomic_features[[1]]
+	}
+
+	return(genomic_features)
+}
+
+overlap_mean_signals = function(gr1, gr2, value, mean_mode = c("w0", "absolute", "weighted"), empty_value = 0) {
+	mean_mode = match.arg(mean_mode)[1]
+	mtch = as.matrix(findOverlaps(gr1, gr2))
+	if(is.atomic(value) && length(value) == 1) {
+		value = mcols(gr2)[, value]
+	}
+	if(!is.null(ncol(value))) {
+		value = as.data.frame(value)
+	}
+	v = HilbertCurve:::average_in_window(gr1, gr2, mtch, value, mean_mode, empty_value)
+	v2 = matrix(empty_value, nc = ncol(v), nr = length(gr1))
+	v2[unique(mtch[, 1]), ] = v
+	colnames(v2) = colnames(v)
+	return(v2)
+}
